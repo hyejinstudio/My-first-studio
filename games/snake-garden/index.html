@@ -667,7 +667,8 @@ const Sound = (function () {
   // 음소거
   function setMuteIcon() {
     var m = Sound.isMuted();
-    $('icoOn').hidden = m; $('icoOff').hidden = !m;
+    // SVG 요소에는 hidden 프로퍼티가 없으므로 속성을 직접 바꾼다
+    $('icoOn').toggleAttribute('hidden', m); $('icoOff').toggleAttribute('hidden', !m);
     muteBtn.setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
     muteBtn.setAttribute('aria-pressed', m ? 'true' : 'false');
   }
@@ -725,6 +726,12 @@ const Sound = (function () {
     if (!mqReduce.matches) addFx({ type: 'ring', x: c.x, y: c.y, dur: 260 });
     Sound.play('bonusSpawn');
   }
+  // 빈칸이 없어 산딸기를 못 만든 상태(berry = null)에서 칸이 비면 다시 생성
+  function respawnBerry() {
+    if (berry) return;
+    var c = randomEmpty();
+    if (c) berry = { x: c.x, y: c.y, born: gt };
+  }
   function checkHigh() {
     if (!hsPlayed && prevBest > 0 && score > prevBest) {
       hsPlayed = true;
@@ -773,6 +780,7 @@ const Sound = (function () {
       setTimeout(function () { board.classList.remove('flash'); }, 300);
       Sound.play('bonusEat');
       if (snake.length >= N * N) { updateHud(true); win(); return; }
+      respawnBerry();
     }
     if (grow) checkHigh();
     updateHud(grow);
@@ -962,7 +970,13 @@ const Sound = (function () {
         g.globalAlpha = 1 - t; g.fillStyle = P[f.color];
         g.font = '800 ' + f.size + 'px system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
         g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillText(f.text, x, y - .4 * c - .8 * c * easeOut(t));
+        // 팝업이 보드 밖(특히 맨 위 줄)으로 나가 잘리지 않게 보드 안으로 클램프
+        var tw = g.measureText(f.text).width / 2 + 2, th = f.size * .6 + 2;
+        var tx = Math.min(size - tw, Math.max(tw, x));
+        var ty = Math.max(th, y - .4 * c - .8 * c * easeOut(t));
+        // 클램프되어 머리와 겹칠 때 읽히도록 밝은 테두리
+        if (ty !== y - .4 * c - .8 * c * easeOut(t) || tx !== x) { g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = P['tile-a']; g.strokeText(f.text, tx, ty); }
+        g.fillText(f.text, tx, ty);
       } else if (f.type === 'ring') {
         g.globalAlpha = .6 * (1 - easeOut(t)); g.strokeStyle = P['gold-edge']; g.lineWidth = .06 * c;
         g.beginPath(); g.arc(x, y, (.5 + .4 * easeOut(t)) * c, 0, Math.PI * 2); g.stroke();
@@ -1010,6 +1024,7 @@ const Sound = (function () {
           if (!mqReduce.matches) addFx({ type: 'goldOut', x: gold.x, y: gold.y, dur: 200 });
           gold = null;
           Sound.play('bonusExpire');
+          respawnBerry();
         }
       }
       acc += dt;
@@ -1066,7 +1081,8 @@ const Sound = (function () {
   reset();
   showOnly(ovStart);
   requestAnimationFrame(function () { setAppH(); requestAnimationFrame(frame); });
-  try { $('startBtn').focus({ preventScroll: true }); } catch (e) {}
+  // 터치 기기에서는 자동 포커스 링이 보이지 않도록 키보드 기기에서만 포커스
+  if (!mqCoarse.matches) { try { $('startBtn').focus({ preventScroll: true }); } catch (e) {} }
 })();
 </script>
 </body>
