@@ -1,5 +1,7 @@
 name: Deploy to GitHub Pages
 
+# 배포는 main 브랜치에 push 하거나, Actions 탭에서 수동 실행(workflow_dispatch)할 때만 진행됩니다.
+# pull_request 이벤트에서는 실행되지 않습니다.
 on:
   push:
     branches: [main]
@@ -12,23 +14,30 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
+    # 수동 실행 시 main 이외의 브랜치를 선택해도 배포되지 않도록 막습니다.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Prepare site
         run: |
-          mkdir _site
+          mkdir -p _site
           cp index.html _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
