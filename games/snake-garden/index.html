@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>뱀 정원</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="뱀 정원">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
+    --grid: #e7e2d8; --well: #fbfaf7; --accent: #e4572e;
+    --fence: #c9b48a; --tile-a: #e9f2dc; --tile-b: #dfeccf;
+    --snake: #3f9d5a; --snake-head: #2f8049; --snake-spot: #8fd19e;
+    --eye: #ffffff; --pupil: #1f2430;
+    --berry: #e0374f; --berry-seed: #ffd6dc; --leaf: #3f9d5a;
+    --gold: #f2b134; --gold-edge: #b9801a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
+      --grid: #262a35; --well: #161921; --accent: #ff7a50;
+      --fence: #4a4232; --tile-a: #18221b; --tile-b: #1c2820;
+      --snake: #5cc27a; --snake-head: #4aae68; --snake-spot: #9be3ad;
+      --eye: #ffffff; --pupil: #12141a;
+      --berry: #ff5c72; --berry-seed: #ffd6dc; --leaf: #5cc27a;
+      --gold: #ffc94d; --gold-edge: #e09a20;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
+    --grid: #262a35; --well: #161921; --accent: #ff7a50;
+    --fence: #4a4232; --tile-a: #18221b; --tile-b: #1c2820;
+    --snake: #5cc27a; --snake-head: #4aae68; --snake-spot: #9be3ad;
+    --eye: #ffffff; --pupil: #12141a;
+    --berry: #ff5c72; --berry-seed: #ffd6dc; --leaf: #5cc27a;
+    --gold: #ffc94d; --gold-edge: #e09a20;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    display: flex; flex-direction: column; gap: 10px;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  .home {
+    flex: none; align-self: flex-start;
+    min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* 제목 + HUD 행 */
+  .top {
+    flex: none; height: 52px; width: 100%; max-width: max(var(--board, 560px), 480px); align-self: center;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; flex: 1; }
+  .hud { display: flex; gap: 6px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--grid); border-radius: 10px;
+    padding: 6px 12px; min-width: 72px; line-height: 1.15;
+  }
+  .card .lab { display: block; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .08em; }
+  .card b { display: inline-block; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; transform-origin: left center; }
+  .card b.rec { color: var(--accent); }
+  .card b.bump { animation: bump 160ms ease-out; }
+  @keyframes bump { 50% { transform: scale(1.15); } }
+  .btns { display: flex; gap: 6px; }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out;
+  }
+  button:active, button.is-pressed { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 22px; height: 22px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; text-decoration: none;
+  }
+
+  /* 보드 */
+  .stage { flex: 1 1 0; min-height: 0; position: relative; }
+  .board {
+    position: absolute; inset: 0; margin: auto; width: 300px; height: 300px;
+    border: 4px solid var(--fence); border-radius: 12px; background: var(--tile-a);
+    touch-action: none; transition: border-color 150ms ease-out;
+  }
+  .board.flash { border-color: var(--gold); }
+  .board.shake { animation: shake 240ms linear; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); } 16% { transform: translateX(-6px); } 33% { transform: translateX(6px); }
+    50% { transform: translateX(-6px); } 66% { transform: translateX(6px); } 83% { transform: translateX(-6px); }
+  }
+  canvas#cv { display: block; width: 100%; height: 100%; border-radius: 8px; }
+  .overlay {
+    position: absolute; inset: 0; border-radius: 8px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; text-align: center;
+    background: color-mix(in srgb, var(--well) 84%, transparent); line-height: 1.4;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .small { font-size: 12px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .legend { display: flex; gap: 14px; color: var(--ink); font-size: 14px; font-weight: 700; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend canvas { width: 20px; height: 20px; }
+  .big { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .badge { background: var(--gold); color: #1f2430; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 4px 10px; }
+  .badge[hidden] { display: none; }
+
+  .hint { flex: none; height: 40px; margin: 0; display: flex; align-items: center; justify-content: center;
+          color: var(--muted); font-size: 13px; text-align: center; }
+  .dpad { display: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 터치 기기: D-pad */
+  @media (pointer: coarse) {
+    .hint { display: none; }
+    .dpad {
+      flex: none; align-self: center; display: grid; gap: 8px;
+      grid-template-columns: repeat(3, 72px); grid-template-rows: repeat(3, 72px);
+      touch-action: none;
+    }
+    .dpad button { border-radius: 16px; font-size: 26px; color: var(--ink); padding: 0; touch-action: none; }
+    .dpad .up { grid-area: 1 / 2; } .dpad .left { grid-area: 2 / 1; }
+    .dpad .right { grid-area: 2 / 3; } .dpad .down { grid-area: 3 / 2; }
+    .dpad .dot { grid-area: 2 / 2; width: 20px; height: 20px; border-radius: 50%; background: var(--grid); place-self: center; }
+  }
+  @media (pointer: coarse) and (max-width: 499px) {
+    .dpad { grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); }
+    .title { display: none; }
+    .hud { flex: 1; }
+    .card { min-width: 0; flex: 1; padding: 6px 8px; }
+  }
+  /* iPad 가로: 보드 왼쪽, 오른쪽 열(제목·버튼·HUD·D-pad) */
+  @media (pointer: coarse) and (orientation: landscape) {
+    body {
+      display: grid; column-gap: 20px; row-gap: 10px;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      grid-template-rows: 44px auto auto auto minmax(0, 1fr) auto;
+      grid-template-areas: "home home" "stage title" "stage btns" "stage hud" "stage ." "stage dpad";
+    }
+    .home { grid-area: home; }
+    .top { display: contents; }
+    .title { grid-area: title; font-size: 18px; flex: none; }
+    .btns { grid-area: btns; }
+    .hud { grid-area: hud; flex-direction: column; gap: 8px; }
+    .stage { grid-area: stage; }
+    .dpad { grid-area: dpad; justify-self: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .board.shake { animation: none; }
+    .overlay, .overlay > *, .card b.bump { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <a class="home" href="../../">← 게임 목록</a>
+  <header class="top">
+    <h1 class="title">뱀 정원</h1>
+    <div class="hud">
+      <div class="card"><span class="lab">점수</span><b id="score">0</b></div>
+      <div class="card"><span class="lab">길이</span><b id="len">3</b></div>
+      <div class="card"><span class="lab">최고</span><b id="best">0</b></div>
+    </div>
+    <div class="btns">
+      <button class="icon" id="muteBtn" aria-label="소리 끄기" aria-pressed="false">
+        <svg id="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg id="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="board" id="board">
+      <canvas id="cv" role="img" aria-label="뱀 정원 게임 보드"></canvas>
+
+      <div class="overlay" id="ovStart">
+        <h2>뱀 정원</h2>
+        <p>열매를 먹고 길어지세요. 울타리와 내 몸은 피하기!</p>
+        <div class="legend">
+          <span><canvas class="mini" data-kind="berry" width="40" height="40"></canvas>+10</span>
+          <span><canvas class="mini" data-kind="gold" width="40" height="40"></canvas>+50</span>
+        </div>
+        <p>최고 <b id="startBest">0</b>점</p>
+        <button class="primary" id="startBtn">시작하기</button>
+        <p class="small" id="ctrlHint">방향키/WASD 이동 · Space 일시정지</p>
+      </div>
+
+      <div class="overlay" id="ovPause" hidden>
+        <h2>일시정지</h2>
+        <div class="row">
+          <button class="primary" id="resumeBtn">계속하기</button>
+          <button class="secondary" id="restartBtn">처음부터</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="ovOver" hidden>
+        <span class="badge" id="newRec" hidden>새 기록!</span>
+        <h2 id="overTitle">게임 끝</h2>
+        <div class="big" id="overScore">0</div>
+        <p id="overInfo">길이 3칸 · 최고 0점</p>
+        <div class="row">
+          <button class="primary" id="againBtn">다시 하기</button>
+          <a class="secondary" href="../../">← 게임 목록</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">방향키/WASD 이동 · P/Esc/Space 일시정지 · Enter 시작</p>
+
+  <div class="dpad" id="dpad">
+    <button class="up" data-dir="up" aria-label="위로">▲</button>
+    <button class="left" data-dir="left" aria-label="왼쪽으로">◀</button>
+    <span class="dot" aria-hidden="true"></span>
+    <button class="right" data-dir="right" aria-label="오른쪽으로">▶</button>
+    <button class="down" data-dir="down" aria-label="아래로">▼</button>
+  </div>
+
+  <div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+/* ===== 뱀 정원 (snake-garden) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
+ * AudioContext 미지원·실패 시 모든 호출은 조용히 무시된다.
+ * 사용법: 첫 터치/클릭/키 입력 핸들러 안에서 Sound.unlock() 호출 → 이후 Sound.play('eat') 등.
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'snake-garden-muted';
+  var MASTER_VOL = 0.5;   // 효과음 전체
+  var MUSIC_VOL = 0.07;   // 배경음악 (아주 조용히)
+
+  var ctx = null, master = null, musicBus = null, noiseBuf = null;
+  var muted = false;
+  var lastTurn = 0;
+  var music = { on: false, timer: null, step: 0, nextTime: 0 };
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = muted ? 0 : MASTER_VOL;
+      master.connect(ctx.destination);
+      musicBus = ctx.createGain();
+      musicBus.gain.value = MUSIC_VOL;
+      musicBus.connect(master);
+      // 노이즈 버퍼 (0.5초)
+      var len = Math.floor(ctx.sampleRate * 0.5);
+      noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function ready() {
+    return ctx && ctx.state === 'running' && !muted;
+  }
+
+  // 기본 음: 파형, 주파수(시작→끝), 시작시각, 길이, 피크 볼륨, 어택
+  function tone(type, f0, f1, t, dur, vol, attack, dest) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      var a = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || master);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+
+  function noise(t, dur, vol, filterType, freq, freqEnd) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = filterType; f.frequency.setValueAtTime(freq, t);
+      if (freqEnd) f.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(master);
+      s.start(t); s.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+
+  var N = { C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.0, A4: 440.0,
+            C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.0, C6: 1046.5, E6: 1318.5 };
+
+  var sfx = {
+    // 게임 시작: 상승 3음 아르페지오 (C5-E5-G5)
+    start: function (t) {
+      tone('triangle', N.C5, 0, t, 0.12, 0.30);
+      tone('triangle', N.E5, 0, t + 0.08, 0.12, 0.30);
+      tone('triangle', N.G5, 0, t + 0.16, 0.22, 0.30);
+    },
+    // 방향 전환: 아주 작은 틱 (60ms 이내 연속 호출은 무시)
+    turn: function (t) {
+      if (t - lastTurn < 0.06) return;
+      lastTurn = t;
+      tone('sine', 1400, 1100, t, 0.03, 0.04, 0.002);
+    },
+    // 일반 열매: 짧은 '뽁' — 상승 스윕
+    eat: function (t) {
+      tone('square', 520, 1040, t, 0.08, 0.12, 0.003);
+      tone('sine', 1040, 0, t + 0.04, 0.06, 0.08);
+    },
+    // 보너스 열매 등장: 반짝 2음 + 고음 쉬머
+    bonusSpawn: function (t) {
+      tone('sine', N.E6, 0, t, 0.10, 0.12);
+      tone('sine', N.C6, 0, t + 0.07, 0.14, 0.10);
+      noise(t, 0.18, 0.04, 'highpass', 6000);
+    },
+    // 보너스 열매 사라짐(시간 초과): 하강 2음, 작게
+    bonusExpire: function (t) {
+      tone('sine', N.G5, 0, t, 0.08, 0.07);
+      tone('sine', N.D5, 0, t + 0.07, 0.12, 0.06);
+    },
+    // 보너스 열매 먹기: 빠른 상승 4음 아르페지오 + 반짝임
+    bonusEat: function (t) {
+      var notes = [N.C5, N.E5, N.G5, N.C6];
+      for (var i = 0; i < notes.length; i++) tone('triangle', notes[i], 0, t + i * 0.05, 0.12, 0.25);
+      tone('sine', N.E6, 0, t + 0.2, 0.25, 0.08);
+    },
+    // 최고 점수 갱신: 짧은 팡파르 (G4-C5-E5 → G5 길게)
+    highScore: function (t) {
+      tone('square', N.G4, 0, t, 0.10, 0.10);
+      tone('square', N.C5, 0, t + 0.10, 0.10, 0.10);
+      tone('square', N.E5, 0, t + 0.20, 0.10, 0.10);
+      tone('triangle', N.G5, 0, t + 0.30, 0.45, 0.28, 0.01);
+      tone('triangle', N.C6, 0, t + 0.30, 0.45, 0.12, 0.01);
+    },
+    // 게임 오버: 쿵(노이즈) + 하강 톱니파
+    gameOver: function (t) {
+      noise(t, 0.25, 0.25, 'lowpass', 1200, 150);
+      tone('sawtooth', 330, 82, t + 0.05, 0.6, 0.15, 0.01);
+      tone('triangle', N.E4, 0, t + 0.25, 0.25, 0.12);
+      tone('triangle', N.C4, 0, t + 0.45, 0.45, 0.12);
+    },
+    // 일시정지/재개: 부드러운 단음
+    pause: function (t) { tone('sine', N.A4, N.E4, t, 0.12, 0.12); },
+    resume: function (t) { tone('sine', N.E4, N.A4, t, 0.12, 0.12); }
+  };
+
+  // ---- 배경음악: 오리지널 8마디 펜타토닉 루프, 100 BPM, 8분음표 그리드 ----
+  var BPM = 100, STEP = 60 / BPM / 2; // 8분음표 = 0.3초
+  // 멜로디 (0 = 쉼표). C 메이저 펜타토닉, 오리지널 패턴, 32스텝 = 9.6초
+  var MEL = [
+    N.E5, 0, N.G5, 0, N.A5, N.G5, N.E5, 0,
+    N.D5, 0, N.E5, 0, N.G5, 0, 0, 0,
+    N.E5, 0, N.D5, 0, N.C5, N.D5, N.E5, 0,
+    N.G4, 0, N.A4, 0, N.C5, 0, 0, 0
+  ];
+  // 베이스: 마디(8스텝)마다 C3, A2, D3, G2
+  var BASS = [130.81, 110.0, 146.83, 98.0];
+
+  function scheduleMusic() {
+    if (!music.on || !ctx) return;
+    try {
+      while (music.nextTime < ctx.currentTime + 0.25) {
+        var s = music.step % 32, t = music.nextTime;
+        if (MEL[s]) tone('triangle', MEL[s], 0, t, STEP * 0.9, 0.5, 0.01, musicBus);
+        if (s % 8 === 0) tone('sine', BASS[s / 8], 0, t, STEP * 7.5, 0.6, 0.03, musicBus);
+        if (s % 4 === 2) tone('sine', BASS[Math.floor(s / 8)] * 2, 0, t, STEP * 1.5, 0.25, 0.01, musicBus);
+        music.nextTime += STEP;
+        music.step++;
+      }
+    } catch (e) {}
+    music.timer = setTimeout(scheduleMusic, 100);
+  }
+
+  // 탭 전환 시 오디오 일시정지 / 복귀 시 재개
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx) return;
+      try {
+        if (document.hidden) ctx.suspend();
+        else ctx.resume();
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  return {
+    // 반드시 사용자 제스처(touchend/pointerdown/click/keydown) 핸들러 안에서 호출
+    unlock: function () {
+      if (!ensureCtx()) return;
+      try {
+        if (ctx.state !== 'running') {
+          var p = ctx.resume();
+          if (p && p.catch) p.catch(function () {});
+        }
+        // iOS: 무음 1샘플 버퍼 재생으로 출력 경로 활성화
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+    },
+    play: function (name) {
+      try {
+        if (!ready() || !sfx[name]) return;
+        sfx[name](ctx.currentTime + 0.01);
+      } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try {
+        if (master) {
+          var t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, t, 0.02);
+        }
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    startMusic: function () {
+      if (music.on || !ctx) return;
+      music.on = true;
+      music.step = 0;
+      try { music.nextTime = ctx.currentTime + 0.05; } catch (e) { music.on = false; return; }
+      scheduleMusic();
+    },
+    stopMusic: function () {
+      music.on = false;
+      if (music.timer) { clearTimeout(music.timer); music.timer = null; }
+    }
+  };
+})();
+
+/* ===== 뱀 정원 게임 ===== */
+(function () {
+  'use strict';
+  var N = 15;
+  var START_MS = 170, STEP_MS = 4, MIN_MS = 75;
+  var GOLD_MS = 6000, GOLD_EVERY = 5, LOCK_MS = 500, DIE_MS = 500, SWIPE_PX = 30;
+  var BEST_KEY = 'snake-garden-best';
+  var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  var OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  var KEYMAP = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right',
+    KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right'
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var root = document.documentElement;
+  var stage = $('stage'), board = $('board'), cv = $('cv'), g = cv.getContext('2d');
+  var ovStart = $('ovStart'), ovPause = $('ovPause'), ovOver = $('ovOver');
+  var elScore = $('score'), elLen = $('len'), elBest = $('best');
+  var pauseBtn = $('pauseBtn'), muteBtn = $('muteBtn'), againBtn = $('againBtn');
+  var mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+  var mqFine = window.matchMedia('(pointer: fine)');
+  var mqCoarse = window.matchMedia('(pointer: coarse)');
+  var mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // ---------- 저장소 ----------
+  function loadBest() {
+    try { var v = parseInt(localStorage.getItem(BEST_KEY), 10); return v > 0 ? v : 0; } catch (e) { return 0; }
+  }
+  function saveBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {} }
+
+  // ---------- 상태 ----------
+  var mode = 'start';           // start | playing | paused | dying | over | clear
+  var snake, dir, queue, berry, gold, score, eaten, best = loadBest(), prevBest, hsPlayed, newRecord;
+  var acc = 0, gt = 0, lastTs = 0, dieAt = 0, lockUntil = 0;
+  var effects = [], bulges = [];
+
+  function emptyCells() {
+    var occ = {};
+    for (var i = 0; i < snake.length; i++) occ[snake[i].x + ',' + snake[i].y] = 1;
+    if (berry) occ[berry.x + ',' + berry.y] = 1;
+    if (gold) occ[gold.x + ',' + gold.y] = 1;
+    var out = [];
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) if (!occ[x + ',' + y]) out.push({ x: x, y: y });
+    return out;
+  }
+  function randomEmpty() {
+    var e = emptyCells();
+    return e.length ? e[Math.floor(Math.random() * e.length)] : null;
+  }
+  function tickMs() { return Math.max(MIN_MS, START_MS - STEP_MS * eaten); }
+
+  function reset() {
+    snake = [{ x: 7, y: 7 }, { x: 6, y: 7 }, { x: 5, y: 7 }];
+    dir = 'right'; queue = [];
+    berry = null; gold = null;
+    score = 0; eaten = 0; acc = 0;
+    prevBest = best; hsPlayed = false; newRecord = false;
+    effects = []; bulges = [];
+    var c = randomEmpty();
+    berry = c ? { x: c.x, y: c.y, born: gt } : null;
+    elBest.classList.remove('rec');
+    updateHud(false);
+  }
+
+  // ---------- HUD ----------
+  function bump(el) {
+    if (mqReduce.matches) return;
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  }
+  function updateHud(anim) {
+    var shownBest = Math.max(best, score);
+    if (elScore.textContent !== String(score)) { elScore.textContent = score; if (anim) bump(elScore); }
+    elLen.textContent = snake.length;
+    if (elBest.textContent !== String(shownBest)) { elBest.textContent = shownBest; if (anim) bump(elBest); }
+    $('startBest').textContent = best;
+  }
+
+  // ---------- 흐름 ----------
+  function showOnly(ov) {
+    [ovStart, ovPause, ovOver].forEach(function (o) { o.hidden = (o !== ov); });
+  }
+  function blurActive() { try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {} }
+
+  function startGame() {
+    if (mode === 'playing' || mode === 'dying') return;
+    reset();
+    mode = 'playing';
+    showOnly(null);
+    blurActive();
+    setPauseIcon();
+    Sound.play('start'); Sound.startMusic();
+  }
+  function canRestart() { return (mode === 'over' || mode === 'clear') && performance.now() >= lockUntil; }
+
+  function pause() {
+    if (mode !== 'playing') return;
+    mode = 'paused'; queue = [];
+    showOnly(ovPause); setPauseIcon();
+    $('resumeBtn').focus();
+    Sound.stopMusic(); Sound.play('pause');
+  }
+  function resume() {
+    if (mode !== 'paused') return;
+    mode = 'playing';
+    showOnly(null); setPauseIcon(); blurActive();
+    Sound.play('resume'); Sound.startMusic();
+  }
+  function setPauseIcon() {
+    var p = mode === 'paused';
+    pauseBtn.textContent = p ? '▶' : 'Ⅱ';
+    pauseBtn.setAttribute('aria-label', p ? '계속하기' : '일시정지');
+  }
+
+  function finishRecord() {
+    if (score > best) { best = score; newRecord = true; saveBest(best); }
+  }
+  function die() {
+    mode = 'dying'; dieAt = gt; queue = [];
+    finishRecord();
+    if (!mqReduce.matches) { board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
+    Sound.stopMusic(); Sound.play('gameOver');
+  }
+  function showOver(clear) {
+    mode = clear ? 'clear' : 'over';
+    $('overTitle').textContent = clear ? '정원 완성!' : '게임 끝';
+    $('overScore').textContent = score;
+    $('overInfo').textContent = '길이 ' + snake.length + '칸 · 최고 ' + best + '점';
+    $('newRec').hidden = !newRecord;
+    updateHud(false);
+    showOnly(ovOver);
+    againBtn.disabled = true;
+    lockUntil = performance.now() + LOCK_MS;
+    setTimeout(function () {
+      againBtn.disabled = false;
+      if (mode === 'over' || mode === 'clear') againBtn.focus();
+    }, LOCK_MS);
+    $('live').textContent = (clear ? '정원 완성! ' : '게임 끝. ') + '점수 ' + score + '점, 길이 ' + snake.length + '칸' + (newRecord ? ', 새 기록' : '');
+  }
+  function win() {
+    queue = [];
+    finishRecord();
+    Sound.stopMusic(); Sound.play('highScore');
+    showOver(true);
+  }
+
+  // ---------- 입력 ----------
+  function enqueue(d) {
+    var ref = queue.length ? queue[queue.length - 1] : dir;
+    if (d === ref || d === OPP[ref] || queue.length >= 2) return false;
+    queue.push(d);
+    Sound.play('turn');
+    return true;
+  }
+  function inputDir(d) {
+    if (mode === 'start') { startGame(); enqueue(d); return; }
+    if (mode === 'playing') enqueue(d);
+  }
+  function primaryAction() { // Enter
+    if (mode === 'start') startGame();
+    else if (mode === 'paused') resume();
+    else if (canRestart()) startGame();
+  }
+
+  document.addEventListener('keydown', function (e) {
+    Sound.unlock();
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var d = KEYMAP[e.key] || KEYMAP[e.code];
+    if (d) { e.preventDefault(); if (!e.repeat || mode === 'playing') inputDir(d); return; }
+    var k = e.key;
+    if (k === ' ' || k === 'Spacebar') {
+      e.preventDefault();
+      if (e.repeat) return;
+      if (mode === 'playing') pause(); else primaryAction();
+    } else if (k === 'Enter') {
+      e.preventDefault();
+      if (!e.repeat) primaryAction();
+    } else if (k === 'p' || k === 'P' || e.code === 'KeyP' || k === 'Escape') {
+      e.preventDefault();
+      if (mode === 'playing') pause(); else if (mode === 'paused') resume();
+    }
+  });
+  document.addEventListener('keyup', function (e) {
+    if (e.key === ' ' || e.key === 'Enter') e.preventDefault();
+  });
+
+  // 오디오 잠금 해제: 모든 사용자 입력 맨 앞
+  ['pointerdown', 'pointerup', 'touchend', 'click'].forEach(function (t) {
+    document.addEventListener(t, function () { Sound.unlock(); }, { capture: true, passive: true });
+  });
+  // 확대 방지
+  document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+
+  $('startBtn').addEventListener('click', function () { if (mode === 'start') startGame(); });
+  $('resumeBtn').addEventListener('click', resume);
+  $('restartBtn').addEventListener('click', function () { if (mode === 'paused') { mode = 'start'; startGame(); } });
+  againBtn.addEventListener('click', function () { if (canRestart()) startGame(); });
+  pauseBtn.addEventListener('click', function () { if (mode === 'playing') pause(); else if (mode === 'paused') resume(); });
+  // 일시정지 중 덮개 빈 곳 탭 → 재개
+  ovPause.addEventListener('click', function (e) { if (e.target === ovPause) resume(); });
+
+  // 음소거
+  function setMuteIcon() {
+    var m = Sound.isMuted();
+    $('icoOn').hidden = m; $('icoOff').hidden = !m;
+    muteBtn.setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
+    muteBtn.setAttribute('aria-pressed', m ? 'true' : 'false');
+  }
+  muteBtn.addEventListener('click', function () {
+    Sound.unlock(); Sound.setMuted(!Sound.isMuted()); setMuteIcon(); muteBtn.blur();
+  });
+  setMuteIcon();
+
+  // D-pad: pointerdown 즉시, 반복 없음
+  Array.prototype.forEach.call(document.querySelectorAll('#dpad button'), function (b) {
+    b.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      Sound.unlock();
+      b.classList.add('is-pressed');
+      inputDir(b.getAttribute('data-dir'));
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+      b.addEventListener(t, function () { b.classList.remove('is-pressed'); });
+    });
+    b.addEventListener('click', function (e) { e.preventDefault(); });
+    b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  });
+
+  // 스와이프: 보드 위, 30px 이상 → 큰 축 방향 1회 (손 떼기 전 1회만)
+  var sw = null;
+  board.addEventListener('pointerdown', function (e) {
+    if (e.target.closest && e.target.closest('button, a')) return;
+    sw = { id: e.pointerId, x: e.clientX, y: e.clientY, used: false };
+  });
+  board.addEventListener('pointermove', function (e) {
+    if (!sw || sw.used || e.pointerId !== sw.id) return;
+    var dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_PX) return;
+    sw.used = true;
+    var d = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    if (mode === 'playing') enqueue(d);
+  });
+  ['pointerup', 'pointercancel'].forEach(function (t) {
+    board.addEventListener(t, function (e) { if (sw && e.pointerId === sw.id) sw = null; });
+  });
+  board.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  $('dpad').addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+
+  // 탭 숨김/포커스 잃음 → 자동 일시정지
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pause(); });
+  window.addEventListener('blur', pause);
+
+  // ---------- 틱 ----------
+  function addFx(f) { f.t0 = gt; effects.push(f); }
+  function spawnGold() {
+    if (gold) return;
+    var c = randomEmpty();
+    if (!c) return;
+    gold = { x: c.x, y: c.y, left: GOLD_MS, born: gt };
+    if (!mqReduce.matches) addFx({ type: 'ring', x: c.x, y: c.y, dur: 260 });
+    Sound.play('bonusSpawn');
+  }
+  function checkHigh() {
+    if (!hsPlayed && prevBest > 0 && score > prevBest) {
+      hsPlayed = true;
+      elBest.classList.add('rec');
+      Sound.play('highScore');
+    } else if (score > prevBest && score > 0) {
+      elBest.classList.add('rec');
+    }
+  }
+  function tick() {
+    if (queue.length) dir = queue.shift();
+    var v = DIRS[dir], h = snake[0];
+    var nx = h.x + v[0], ny = h.y + v[1];
+    if (nx < 0 || ny < 0 || nx >= N || ny >= N) { die(); return; }
+    var eatB = berry && berry.x === nx && berry.y === ny;
+    var eatG = gold && gold.x === nx && gold.y === ny;
+    var grow = eatB || eatG;
+    var limit = grow ? snake.length : snake.length - 1;
+    for (var i = 0; i < limit; i++) if (snake[i].x === nx && snake[i].y === ny) { die(); return; }
+    snake.unshift({ x: nx, y: ny });
+    if (!grow) snake.pop();
+    bulges = bulges.map(function (b) { return b + 1; }).filter(function (b) { return b < snake.length - 1; });
+    if (eatB) {
+      score += 10; eaten++;
+      bulges.push(1);
+      if (!mqReduce.matches) {
+        addFx({ type: 'parts', x: nx, y: ny, dur: 320, n: 8, color: 'berry', dist: .9 });
+        addFx({ type: 'pop', x: nx, y: ny, dur: 600, text: '+10', color: 'ink', size: 14 });
+      }
+      Sound.play('eat');
+      berry = null;
+      if (snake.length >= N * N) { updateHud(true); win(); return; }
+      var c = randomEmpty();
+      berry = c ? { x: c.x, y: c.y, born: gt } : null;
+      if (eaten % GOLD_EVERY === 0) spawnGold();
+    }
+    if (eatG) {
+      score += 50;
+      gold = null;
+      bulges.push(1);
+      if (!mqReduce.matches) {
+        addFx({ type: 'parts', x: nx, y: ny, dur: 420, n: 12, color: 'gold', dist: 1.2 });
+        addFx({ type: 'pop', x: nx, y: ny, dur: 600, text: '+50', color: 'gold-edge', size: 16 });
+      }
+      board.classList.add('flash');
+      setTimeout(function () { board.classList.remove('flash'); }, 300);
+      Sound.play('bonusEat');
+      if (snake.length >= N * N) { updateHud(true); win(); return; }
+    }
+    if (grow) checkHigh();
+    updateHud(grow);
+  }
+
+  // ---------- 그리기 ----------
+  var P = {};
+  var PAL = ['bg', 'panel', 'ink', 'muted', 'well', 'accent', 'fence', 'tile-a', 'tile-b', 'snake', 'snake-head',
+    'snake-spot', 'eye', 'pupil', 'berry', 'berry-seed', 'leaf', 'gold', 'gold-edge'];
+  var bgCanvas = document.createElement('canvas');
+  var size = 300, dpr = 1, c = 20;
+
+  function readPalette() {
+    var cs = getComputedStyle(root);
+    PAL.forEach(function (k) { P[k] = cs.getPropertyValue('--' + k).trim(); });
+    buildBg(); drawMinis();
+  }
+  function buildBg() {
+    bgCanvas.width = cv.width; bgCanvas.height = cv.height;
+    var b = bgCanvas.getContext('2d');
+    var cp = cv.width / N;
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      b.fillStyle = (x + y) % 2 === 0 ? P['tile-a'] : P['tile-b'];
+      b.fillRect(Math.floor(x * cp), Math.floor(y * cp), Math.ceil(cp) + 1, Math.ceil(cp) + 1);
+    }
+  }
+  function hexToRgb(h) {
+    h = h.replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function mix(a, b, t) {
+    try {
+      var x = hexToRgb(a), y = hexToRgb(b);
+      return 'rgb(' + x.map(function (v, i) { return Math.round(v + (y[i] - v) * t); }).join(',') + ')';
+    } catch (e) { return a; }
+  }
+  var easeOutBack = function (t) { return 1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2); };
+  var easeOut = function (t) { return 1 - Math.pow(1 - t, 3); };
+  function clamp01(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
+  function cx(x) { return (x + .5) * c; }
+
+  function drawBerryAt(ctx, x, y, cc, s) {
+    if (s <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = P.leaf;
+    ctx.beginPath(); ctx.ellipse(-.12 * cc, -.40 * cc, .14 * cc, .07 * cc, -25 * Math.PI / 180, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(.12 * cc, -.40 * cc, .14 * cc, .07 * cc, 25 * Math.PI / 180, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = P.berry;
+    ctx.beginPath(); ctx.arc(0, 0, .36 * cc, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = P['berry-seed'];
+    [[-.12, 0], [.12, .02], [0, .14]].forEach(function (p) {
+      ctx.beginPath(); ctx.arc(p[0] * cc, p[1] * cc, .04 * cc, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.fillStyle = 'rgba(255,255,255,.45)';
+    ctx.beginPath(); ctx.arc(-.14 * cc, -.14 * cc, .08 * cc, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function starPath(ctx, ro, ri) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) {
+      var r = i % 2 ? ri : ro, a = -Math.PI / 2 + i * Math.PI / 5;
+      if (i) ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); else ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
+  }
+  function drawGoldAt(ctx, x, y, cc, s, rot, alpha, ringFrac, ringColor) {
+    if (s <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.globalAlpha = alpha;
+    if (ringFrac > 0) {
+      ctx.strokeStyle = ringColor || P['gold-edge']; ctx.lineWidth = .06 * cc; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(0, 0, .48 * cc, -Math.PI / 2, -Math.PI / 2 + ringFrac * Math.PI * 2); ctx.stroke();
+    }
+    ctx.rotate(rot); ctx.scale(s, s);
+    starPath(ctx, .42 * cc, .20 * cc);
+    ctx.fillStyle = P.gold; ctx.fill();
+    ctx.lineWidth = .05 * cc; ctx.lineJoin = 'round'; ctx.strokeStyle = P['gold-edge']; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.beginPath(); ctx.arc(-.08 * cc, -.08 * cc, .06 * cc, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function drawMinis() {
+    Array.prototype.forEach.call(document.querySelectorAll('canvas.mini'), function (m) {
+      var mc = m.getContext('2d');
+      mc.clearRect(0, 0, m.width, m.height);
+      if (m.getAttribute('data-kind') === 'berry') drawBerryAt(mc, 20, 22, 40, 1);
+      else drawGoldAt(mc, 20, 20, 40, 1, 0, 1, 0);
+    });
+  }
+
+  function drawSnake() {
+    var dying = mode === 'dying' || mode === 'over';
+    var deadT = dying ? clamp01((gt - dieAt) / 400) : 0;
+    var body = dying ? mix(P.snake, P.muted, deadT) : P.snake;
+    var head = dying ? mix(P['snake-head'], P.muted, deadT * .6) : P['snake-head'];
+    var L = snake.length;
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    // 몸 (머리 ~ 꼬리 직전)
+    if (L >= 2) {
+      var pts = snake.slice(0, Math.max(1, L - 1));
+      if (pts.length >= 2) {
+        g.strokeStyle = body; g.lineWidth = .76 * c;
+        g.beginPath(); g.moveTo(cx(pts[0].x), cx(pts[0].y));
+        for (var i = 1; i < pts.length; i++) g.lineTo(cx(pts[i].x), cx(pts[i].y));
+        g.stroke();
+      }
+      // 꼬리 사다리꼴
+      var p = snake[L - 2], t = snake[L - 1];
+      var ux = t.x - p.x, uy = t.y - p.y, nx = -uy, ny = ux;
+      g.fillStyle = body;
+      g.beginPath();
+      g.moveTo(cx(p.x) + nx * .38 * c, cx(p.y) + ny * .38 * c);
+      g.lineTo(cx(t.x) + nx * .15 * c, cx(t.y) + ny * .15 * c);
+      g.lineTo(cx(t.x) - nx * .15 * c, cx(t.y) - ny * .15 * c);
+      g.lineTo(cx(p.x) - nx * .38 * c, cx(p.y) - ny * .38 * c);
+      g.closePath(); g.fill();
+      g.beginPath(); g.arc(cx(t.x), cx(t.y), .15 * c, 0, Math.PI * 2); g.fill();
+      if (L === 2) { g.beginPath(); g.arc(cx(p.x), cx(p.y), .38 * c, 0, Math.PI * 2); g.fill(); }
+    }
+    // 삼킴 볼록
+    g.fillStyle = body;
+    bulges.forEach(function (b) {
+      var s = snake[b]; if (!s) return;
+      g.beginPath(); g.arc(cx(s.x), cx(s.y), .46 * c, 0, Math.PI * 2); g.fill();
+    });
+    // 무늬
+    g.fillStyle = dying ? mix(P['snake-spot'], P.muted, deadT * .5) : P['snake-spot'];
+    for (var j = 2; j < L - 1; j += 2) {
+      g.beginPath(); g.arc(cx(snake[j].x), cx(snake[j].y), .12 * c, 0, Math.PI * 2); g.fill();
+    }
+    // 머리
+    var h = snake[0], ang;
+    if (L >= 2) ang = Math.atan2(h.y - snake[1].y, h.x - snake[1].x); else ang = 0;
+    var alpha = 1;
+    if (mode === 'dying' && gt - dieAt < DIE_MS) {
+      var phase = Math.floor((gt - dieAt) / 62.5) % 2;
+      alpha = phase ? .3 : 1;
+    }
+    g.save();
+    g.globalAlpha = alpha;
+    g.translate(cx(h.x), cx(h.y)); g.rotate(ang);
+    g.fillStyle = head;
+    g.beginPath(); g.arc(.06 * c, 0, .46 * c, 0, Math.PI * 2); g.fill();
+    var dead = mode === 'dying' || mode === 'over';
+    [-1, 1].forEach(function (sd) {
+      var ex = .12 * c, ey = sd * .20 * c;
+      g.fillStyle = P.eye;
+      g.beginPath(); g.arc(ex, ey, .15 * c, 0, Math.PI * 2); g.fill();
+      if (dead) {
+        var k = .07 * c;
+        g.strokeStyle = P.pupil; g.lineWidth = .05 * c;
+        g.beginPath(); g.moveTo(ex - k, ey - k); g.lineTo(ex + k, ey + k); g.moveTo(ex + k, ey - k); g.lineTo(ex - k, ey + k); g.stroke();
+      } else {
+        g.fillStyle = P.pupil;
+        g.beginPath(); g.arc(ex + .04 * c, ey, .08 * c, 0, Math.PI * 2); g.fill();
+      }
+    });
+    // 혀: 2초마다 150ms
+    if (mode === 'playing' && (gt % 2000) < 150) {
+      var x0 = .52 * c, x1 = x0 + .28 * c, f = .10 * c, a = 35 * Math.PI / 180;
+      g.strokeStyle = P.accent; g.lineWidth = .06 * c;
+      g.beginPath(); g.moveTo(x0, 0); g.lineTo(x1, 0);
+      g.moveTo(x1, 0); g.lineTo(x1 + Math.cos(a) * f, -Math.sin(a) * f);
+      g.moveTo(x1, 0); g.lineTo(x1 + Math.cos(a) * f, Math.sin(a) * f);
+      g.stroke();
+    }
+    g.restore();
+  }
+
+  function drawFx() {
+    effects = effects.filter(function (f) { return gt - f.t0 < f.dur; });
+    effects.forEach(function (f) {
+      var t = clamp01((gt - f.t0) / f.dur), x = cx(f.x), y = cx(f.y);
+      g.save();
+      if (f.type === 'parts') {
+        var e = easeOut(t);
+        g.globalAlpha = 1 - t; g.fillStyle = P[f.color];
+        for (var i = 0; i < f.n; i++) {
+          var a = i / f.n * Math.PI * 2, r = f.dist * c * e;
+          var px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+          if (f.color === 'gold' && i % 2) {
+            g.save(); g.translate(px, py); starPath(g, .12 * c, .055 * c); g.fill(); g.restore();
+          } else { g.beginPath(); g.arc(px, py, .08 * c, 0, Math.PI * 2); g.fill(); }
+        }
+      } else if (f.type === 'pop') {
+        g.globalAlpha = 1 - t; g.fillStyle = P[f.color];
+        g.font = '800 ' + f.size + 'px system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+        g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(f.text, x, y - .4 * c - .8 * c * easeOut(t));
+      } else if (f.type === 'ring') {
+        g.globalAlpha = .6 * (1 - easeOut(t)); g.strokeStyle = P['gold-edge']; g.lineWidth = .06 * c;
+        g.beginPath(); g.arc(x, y, (.5 + .4 * easeOut(t)) * c, 0, Math.PI * 2); g.stroke();
+      } else if (f.type === 'goldOut') {
+        var s = 1 - t * t;
+        drawGoldAt(g, x, y, c, s, 0, 1 - t, 0);
+      }
+      g.restore();
+    });
+  }
+
+  function draw() {
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, size, size);
+    g.drawImage(bgCanvas, 0, 0, size, size);
+    var reduce = mqReduce.matches;
+    if (berry) {
+      var s = easeOutBack(clamp01((gt - berry.born) / 180));
+      if (!reduce) s *= 1 + .03 * (1 + Math.sin(gt / 1200 * Math.PI * 2));
+      drawBerryAt(g, cx(berry.x), cx(berry.y), c, s);
+    }
+    if (gold) {
+      var gs = easeOutBack(clamp01((gt - gold.born) / 260));
+      var rot = reduce ? 0 : Math.sin(gt / 1600 * Math.PI * 2) * 8 * Math.PI / 180;
+      var alpha = 1, ringColor = null;
+      if (gold.left <= 2000) {
+        var blink = Math.floor(gold.left / 125) % 2 === 1;
+        if (reduce) ringColor = blink ? P.accent : null; else alpha = blink ? .3 : 1;
+      }
+      drawGoldAt(g, cx(gold.x), cx(gold.y), c, gs, rot, alpha, Math.max(0, gold.left / GOLD_MS), ringColor);
+    }
+    drawSnake();
+    drawFx();
+  }
+
+  // ---------- 루프 ----------
+  function frame(ts) {
+    var dt = lastTs ? Math.min(100, ts - lastTs) : 16;
+    lastTs = ts;
+    if (mode !== 'paused') gt += dt;
+    if (mode === 'playing') {
+      if (gold) {
+        gold.left -= dt;
+        if (gold.left <= 0) {
+          if (!mqReduce.matches) addFx({ type: 'goldOut', x: gold.x, y: gold.y, dur: 200 });
+          gold = null;
+          Sound.play('bonusExpire');
+        }
+      }
+      acc += dt;
+      while (mode === 'playing' && acc >= tickMs()) { acc -= tickMs(); tick(); }
+    }
+    if (mode === 'dying' && gt - dieAt >= DIE_MS) showOver(false);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- 레이아웃 ----------
+  function fit() {
+    var r = stage.getBoundingClientRect();
+    var s = Math.floor(Math.min(r.width, r.height));
+    if (mqFine.matches) s = Math.min(s, 560);
+    s = Math.max(s, 120);
+    board.style.width = s + 'px'; board.style.height = s + 'px';
+    root.style.setProperty('--board', s + 'px');
+    size = s - 8;
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    var px = Math.round(size * dpr);
+    if (cv.width !== px) { cv.width = px; cv.height = px; buildBg(); }
+    c = size / N;
+  }
+  function setAppH() {
+    var h = window.innerHeight;
+    root.style.setProperty('--app-h', h + 'px');
+    fit();
+  }
+  window.addEventListener('resize', setAppH);
+  window.addEventListener('orientationchange', function () { setTimeout(setAppH, 50); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', setAppH);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
+  function onTheme() { readPalette(); }
+  if (mqDark.addEventListener) mqDark.addEventListener('change', onTheme); else if (mqDark.addListener) mqDark.addListener(onTheme);
+
+  $('ctrlHint').textContent = mqCoarse.matches ? (window.matchMedia('(orientation: landscape)').matches ? '보드를 밀거나 오른쪽 버튼으로 이동' : '보드를 밀거나 아래 버튼으로 이동') : '방향키/WASD 이동 · Space 일시정지';
+
+  // 테스트용 읽기 전용 상태 조회 (게임플레이에 영향 없음)
+  window.__snake = {
+    state: function () {
+      return {
+        mode: mode, dir: dir, queue: queue.slice(), score: score, length: snake.length, best: best,
+        snake: snake.map(function (p) { return { x: p.x, y: p.y }; }),
+        berry: berry ? { x: berry.x, y: berry.y } : null,
+        gold: gold ? { x: gold.x, y: gold.y, left: gold.left } : null,
+        tickMs: tickMs(), locked: performance.now() < lockUntil
+      };
+    }
+  };
+
+  setAppH();
+  readPalette();
+  reset();
+  showOnly(ovStart);
+  requestAnimationFrame(function () { setAppH(); requestAnimationFrame(frame); });
+  try { $('startBtn').focus({ preventScroll: true }); } catch (e) {}
+})();
+</script>
+</body>
+</html>
