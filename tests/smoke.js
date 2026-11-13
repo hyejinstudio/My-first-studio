@@ -16,7 +16,7 @@ const only = args.filter((a, i) => outIdx < 0 || (i !== outIdx && i !== outIdx +
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg',
-  '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.webp': 'image/webp' };
+  '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.webp': 'image/webp', '.woff2': 'font/woff2' };
 
 // GitHub Pages와 같은 경로(/My-first-studio/...)로 서비스해 상대 경로 문제를 잡아냅니다.
 const BASE = '/My-first-studio/';

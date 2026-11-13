@@ -10,13 +10,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#e4572e">
 <style>
+  /* 토끼 숫자 전용 글꼴: Pretendard ExtraBold(SIL OFL 1.1)의 숫자 0~9 서브셋. 수정본이라 내부 이름은 BunnyDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "BunnyDigits"; src: url("fonts/bunny-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+0030-0039; }
   :root {
     --app-h: 100vh;
     --app-h: 100dvh;
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --grid: #e7e2d8; --well: #fbfaf7; --accent: #e4572e; --gold: #f2b134;
     --meadow: #e6f0d8; --meadow-edge: #c9dcae; --burrow: #d3e3bd;
-    --fur: #ffffff; --fur-edge: #d8cdbd; --ear-in: #f6b8c4; --blush: #f7a8b8; --num: #1f2430;
+    --fur: #fbf0c8; --belly: #fff8e4; --fur-edge: #6b4a33; --ear-in: #f5b5c0; --num: #3b2416; --dust: #c8b278;
     --sel-under: #3b82c4; --sel-ok: #2f9e57; --sel-over: #d64545; --sel-on: #ffffff;
     --time: #3f9d5a; --danger: #d64545;
   }
@@ -25,7 +28,7 @@
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --grid: #262a35; --well: #161921; --accent: #ff7a50; --gold: #ffc94d;
       --meadow: #17211a; --meadow-edge: #2b3a2d; --burrow: #223024;
-      --fur: #ebe5da; --fur-edge: #a89c88; --ear-in: #e39aab; --blush: #e894a6; --num: #1f2430;
+      --fur: #eadfb4; --belly: #f6edcf; --fur-edge: #6b4a33; --ear-in: #e39aab; --num: #3b2416; --dust: #8a7d5c;
       --sel-under: #6aa8e8; --sel-ok: #4cc27a; --sel-over: #ff6b6b; --sel-on: #12141a;
       --time: #5cc27a; --danger: #ff6b6b;
     }
@@ -34,7 +37,7 @@
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --grid: #262a35; --well: #161921; --accent: #ff7a50; --gold: #ffc94d;
     --meadow: #17211a; --meadow-edge: #2b3a2d; --burrow: #223024;
-    --fur: #ebe5da; --fur-edge: #a89c88; --ear-in: #e39aab; --blush: #e894a6; --num: #1f2430;
+    --fur: #eadfb4; --belly: #f6edcf; --fur-edge: #6b4a33; --ear-in: #e39aab; --num: #3b2416; --dust: #8a7d5c;
     --sel-under: #6aa8e8; --sel-ok: #4cc27a; --sel-over: #ff6b6b; --sel-on: #12141a;
     --time: #5cc27a; --danger: #ff6b6b;
   }
@@ -690,7 +693,7 @@ const Sound = (function () {
 
   /* ================= 팔레트·스프라이트 ================= */
   var pal = {};
-  var PAL_KEYS = ['meadow', 'burrow', 'fur', 'fur-edge', 'ear-in', 'blush', 'num', 'sel-under', 'sel-ok', 'sel-over', 'danger'];
+  var PAL_KEYS = ['meadow', 'burrow', 'fur', 'belly', 'fur-edge', 'ear-in', 'num', 'dust', 'sel-under', 'sel-ok', 'sel-over', 'danger'];
   function readPalette() {
     var cs = getComputedStyle(document.documentElement);
     for (var i = 0; i < PAL_KEYS.length; i++) pal[PAL_KEYS[i]] = cs.getPropertyValue('--' + PAL_KEYS[i]).trim() || '#888';
@@ -707,54 +710,66 @@ const Sound = (function () {
   }
   function rgba(hex, a) { var x = hexRgb(hex); return 'rgba(' + x[0] + ',' + x[1] + ',' + x[2] + ',' + a + ')'; }
 
-  var NUM_FONT = 'ui-rounded, "SF Pro Rounded", system-ui, sans-serif';
-  function drawBunny(g, c, d, fur) {
-    var lw = Math.max(1, 0.03 * c);
-    g.lineWidth = lw;
-    g.strokeStyle = pal['fur-edge'];
+  var NUM_FONT = '"BunnyDigits", "Pretendard", ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif';
+  var UI_FONT = 'system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  // v2 토끼: 크림 찹쌀떡 몸통 + 긴 귀 2개 + 배 무늬 + 숫자. 얼굴 요소 없음.
+  // st: 0 보통, 1 합<10, 2 합=10, 3 합>10 (선택 중이면 털 틴트 + 외곽선 상태색)
+  function drawBunny(g, c, d, st) {
+    var tint = st === 1 ? pal['sel-under'] : st === 2 ? pal['sel-ok'] : st === 3 ? pal['sel-over'] : null;
+    var fur = tint ? mix(pal.fur, tint, 0.2) : pal.fur;
+    var belly = tint ? mix(pal.belly, tint, 0.12) : pal.belly;
+    g.lineWidth = Math.max(1.5, 0.045 * c);
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = tint || pal['fur-edge'];
+    // 1. 귀 (몸통보다 먼저)
     for (var s = -1; s <= 1; s += 2) {
       g.save();
-      g.translate(0.5 * c + s * 0.15 * c, 0.25 * c);
-      g.rotate(s * 12 * Math.PI / 180);
-      g.beginPath(); g.ellipse(0, 0, 0.085 * c, 0.19 * c, 0, 0, Math.PI * 2);
+      g.translate(0.5 * c + s * 0.13 * c, 0.22 * c);
+      g.rotate(s * 6 * Math.PI / 180);
+      g.beginPath(); g.ellipse(0, 0, 0.075 * c, 0.20 * c, 0, 0, Math.PI * 2);
       g.fillStyle = fur; g.fill(); g.stroke();
-      g.beginPath(); g.ellipse(0, 0.02 * c, 0.04 * c, 0.12 * c, 0, 0, Math.PI * 2);
+      g.beginPath(); g.ellipse(0, 0.03 * c, 0.035 * c, 0.125 * c, 0, 0, Math.PI * 2);
       g.fillStyle = pal['ear-in']; g.fill();
       g.restore();
     }
-    g.beginPath(); g.arc(0.5 * c, 0.6 * c, 0.36 * c, 0, Math.PI * 2);
+    // 2. 몸통 (찹쌀떡)
+    g.beginPath();
+    g.moveTo(0.5 * c, 0.34 * c);
+    g.bezierCurveTo(0.71 * c, 0.34 * c, 0.89 * c, 0.48 * c, 0.89 * c, 0.67 * c);
+    g.bezierCurveTo(0.89 * c, 0.88 * c, 0.73 * c, 0.96 * c, 0.5 * c, 0.96 * c);
+    g.bezierCurveTo(0.27 * c, 0.96 * c, 0.11 * c, 0.88 * c, 0.11 * c, 0.67 * c);
+    g.bezierCurveTo(0.11 * c, 0.48 * c, 0.29 * c, 0.34 * c, 0.5 * c, 0.34 * c);
+    g.closePath();
     g.fillStyle = fur; g.fill(); g.stroke();
-    if (c >= 36) {
-      g.fillStyle = pal.num;
-      g.beginPath(); g.arc(0.5 * c - 0.21 * c, 0.5 * c, 0.035 * c, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.arc(0.5 * c + 0.21 * c, 0.5 * c, 0.035 * c, 0, Math.PI * 2); g.fill();
-      g.globalAlpha = 0.55; g.fillStyle = pal.blush;
-      g.beginPath(); g.ellipse(0.5 * c - 0.24 * c, 0.72 * c, 0.055 * c, 0.032 * c, 0, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.ellipse(0.5 * c + 0.24 * c, 0.72 * c, 0.055 * c, 0.032 * c, 0, 0, Math.PI * 2); g.fill();
-      g.globalAlpha = 1;
-    }
+    // 3. 배 무늬
+    g.beginPath(); g.ellipse(0.5 * c, 0.67 * c, 0.26 * c, 0.21 * c, 0, 0, Math.PI * 2);
+    g.fillStyle = belly; g.fill();
+    // 4. 숫자 — 글꼴과 무관하게 '8'의 실제 잉크 높이로 세로 가운데 맞춤
     g.fillStyle = pal.num;
-    g.font = '800 ' + Math.max(13, Math.round(0.42 * c)) + 'px ' + NUM_FONT;
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(String(d), 0.5 * c, 0.64 * c);
+    g.font = '800 ' + Math.max(14, Math.round(0.5 * c)) + 'px ' + NUM_FONT;
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    var m = g.measureText('8');
+    var asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
+    var by = (asc === undefined || isNaN(asc)) ? 0.66 * c + 0.18 * c : 0.66 * c + (asc - (desc || 0)) / 2;
+    g.fillText(String(d), 0.5 * c, by);
+    // 5. 6·9 밑줄
     if (d === 6 || d === 9) {
-      g.fillRect(0.5 * c - 0.07 * c, 0.84 * c - Math.max(1.5, 0.025 * c) / 2, 0.14 * c, Math.max(1.5, 0.025 * c));
+      g.strokeStyle = pal.num; g.lineWidth = Math.max(1.5, 0.03 * c); g.lineCap = 'round';
+      g.beginPath(); g.moveTo(0.42 * c, 0.89 * c); g.lineTo(0.58 * c, 0.89 * c); g.stroke();
     }
   }
   // sprites[state][digit]  state: 0 보통, 1 합<10, 2 합=10, 3 합>10
   var sprites = [];
   function buildSprites() {
     readPalette();
-    var tints = [null, pal['sel-under'], pal['sel-ok'], pal['sel-over']];
     sprites = [];
     var px = Math.max(1, Math.round(C * dpr));
     for (var st = 0; st < 4; st++) {
       sprites.push([null]);
-      var fur = st === 0 ? pal.fur : mix(pal.fur, tints[st], 0.2);
       for (var d = 1; d <= 9; d++) {
         var sc = document.createElement('canvas'); sc.width = px; sc.height = px;
         var sg = sc.getContext('2d'); sg.scale(px / C, px / C);
-        drawBunny(sg, C, d, fur);
+        drawBunny(sg, C, d, st);
         sprites[st].push(sc);
       }
     }
@@ -770,9 +785,24 @@ const Sound = (function () {
     g.fillStyle = rgba(pal['sel-ok'], 0.22);
     roundRect(g, x0 - 4, y0 - 4, c * 3 + 8, c + 8, 8); g.fill();
     var ds = [2, 3, 5];
-    for (var i = 0; i < 3; i++) { g.save(); g.translate(x0 + i * c, y0); drawBunny(g, c, ds[i], mix(pal.fur, pal['sel-ok'], 0.2)); g.restore(); }
+    for (var i = 0; i < 3; i++) { g.save(); g.translate(x0 + i * c, y0); drawBunny(g, c, ds[i], 2); g.restore(); }
     g.strokeStyle = pal['sel-ok']; g.lineWidth = 3; g.setLineDash([]);
     roundRect(g, x0 - 4, y0 - 4, c * 3 + 8, c + 8, 8); g.stroke();
+  }
+  // 숫자 글꼴: 캔버스는 웹 폰트를 기다리지 않으므로 로드되면 스프라이트를 다시 만든다.
+  // 1.5초 안에 못 오면 대체 글꼴로 그대로 진행하고, 늦게 도착하면 판 도중 글꼴이 바뀌지 않게 다음 판 시작 때 교체한다.
+  var numFontLate = false, numFontPending = false;
+  function loadNumFont() {
+    try {
+      if (!document.fonts || !document.fonts.load) return;
+      var timer = setTimeout(function () { numFontLate = true; }, 1500);
+      document.fonts.load('800 32px "BunnyDigits"', '0123456789').then(function () {
+        clearTimeout(timer);
+        if (!document.fonts.check('800 32px "BunnyDigits"', '8')) return;
+        if (numFontLate && state === 'play') numFontPending = true;
+        else buildSprites();
+      }, function () { clearTimeout(timer); });
+    } catch (e) {}
   }
   function roundRect(g, x, y, w, h, r) {
     r = Math.min(r, w / 2, h / 2);
@@ -825,7 +855,8 @@ const Sound = (function () {
     var wrapRect = wrap.getBoundingClientRect();
     left = Math.max(-wrapRect.left + 4, Math.min(left, window.innerWidth - wrapRect.left - bwid - 4));
     var above = off + ry - 8 - bht, below = off + ry + rh + 8;
-    var pointerLower = drag.y > ry + rh / 2;
+    // 터치(손가락·펜)는 손이 아래에서 오므로 항상 사각형 위가 기본. 마우스는 포인터 반대쪽.
+    var pointerLower = drag.touch ? true : drag.y > ry + rh / 2;
     var top = pointerLower ? above : below;
     var minTop = -wrapRect.top + 2, maxTop = window.innerHeight - wrapRect.top - bht - 2;
     if (top < minTop || top > maxTop) top = pointerLower ? below : above;
@@ -869,6 +900,7 @@ const Sound = (function () {
     var res = generate(sd);
     seed = sd; grid = res.grid; solution = res.solution;
     remaining = TOTAL;
+    if (numFontPending) { numFontPending = false; buildSprites(); }
     removedAt.fill(-1e9);
     effects = []; endHopT0 = -1e9;
     if (drag) cancelDrag();
@@ -1000,7 +1032,7 @@ const Sound = (function () {
     if (e.target.closest && e.target.closest('button, a')) return;
     e.preventDefault();
     var p = localPt(e);
-    drag = { id: e.pointerId, sx: p[0], sy: p[1], x: p[0], y: p[1], cx: e.clientX, cy: e.clientY, moved: false, sel: null, lastSum: -1 };
+    drag = { id: e.pointerId, touch: e.pointerType !== 'mouse', sx: p[0], sy: p[1], x: p[0], y: p[1], cx: e.clientX, cy: e.clientY, moved: false, sel: null, lastSum: -1 };
     try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
     drag.sel = computeSel(drag);
     drag.lastSum = drag.sel.sum;
@@ -1056,7 +1088,8 @@ const Sound = (function () {
   });
   function updateMuteIcon() {
     var m = Sound.isMuted();
-    $('icoOn').hidden = m; $('icoOff').hidden = !m;
+    // <svg>는 HTMLElement가 아니라 .hidden 프로퍼티가 없다 → 특성(attribute)으로 토글
+    $('icoOn').toggleAttribute('hidden', m); $('icoOff').toggleAttribute('hidden', !m);
     muteBtn.setAttribute('aria-pressed', m ? 'true' : 'false');
     muteBtn.setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
   }
@@ -1081,7 +1114,10 @@ const Sound = (function () {
       }
     }
   });
-  document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame(); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseGame();
+    lastFrame = performance.now(); // 숨겨진 동안의 시간은 세지 않음
+  });
   window.addEventListener('blur', function () { pauseGame(); });
 
   var relayoutPending = false;
@@ -1105,11 +1141,11 @@ const Sound = (function () {
   function clamp01(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
 
   function drawSprite(sp, x, y, opt) {
-    // opt: { ty, sx, sy, rot, alpha } — 바닥 가운데 기준 변형
+    // opt: { tx, ty, sx, sy, rot, alpha } — 바닥 가운데 (.5c, .96c) 기준 변형
     if (!opt) { g2.drawImage(sp, x, y, C, C); return; }
     g2.save();
     if (opt.alpha !== undefined) g2.globalAlpha = opt.alpha;
-    g2.translate(x + C / 2, y + C * 0.96 + (opt.ty || 0));
+    g2.translate(x + C / 2 + (opt.tx || 0), y + C * 0.96 + (opt.ty || 0));
     if (opt.rot) g2.rotate(opt.rot);
     g2.scale(opt.sx || 1, opt.sy || 1);
     g2.drawImage(sp, -C / 2, -C * 0.96, C, C);
@@ -1150,8 +1186,9 @@ const Sound = (function () {
         var p = clamp01((gt - ef.t0) / 220);
         if (p < 1) {
           shakeRot = shakeRot || {};
-          var rot = Math.sin(p * Math.PI * 4) * 10 * Math.PI / 180 * (1 - p * 0.3);
-          for (var j = 0; j < ef.cells.length; j++) shakeRot[ef.cells[j]] = rot;
+          var sw = Math.sin(p * Math.PI * 4) * (1 - 0.5 * p); // 2회 왕복, 끝으로 갈수록 작게
+          var shk = { rot: sw * 8 * Math.PI / 180, tx: sw * 0.03 * C };
+          for (var j = 0; j < ef.cells.length; j++) shakeRot[ef.cells[j]] = shk;
         }
       }
     }
@@ -1185,10 +1222,12 @@ const Sound = (function () {
         }
         if (st === 2 && !reduced) {
           opt = opt || {};
+          var aw = Math.abs(wig);
           opt.rot = wig * 4 * Math.PI / 180;
-          opt.ty = (opt.ty || 0) - Math.abs(wig) * 0.04 * C;
+          opt.sx = 1 - 0.02 * aw; opt.sy = 1 + 0.05 * aw;   // 위로 늘어나 귀가 쫑긋
+          opt.ty = (opt.ty || 0) - aw * 0.03 * C;
         }
-        if (shakeRot && shakeRot[r * COLS + c] !== undefined) { opt = opt || {}; opt.rot = shakeRot[r * COLS + c]; }
+        if (shakeRot && shakeRot[r * COLS + c] !== undefined) { var sk = shakeRot[r * COLS + c]; opt = opt || {}; opt.rot = sk.rot; opt.tx = sk.tx; }
         if (endHop) { opt = opt || {}; opt.ty = (opt.ty || 0) + endHop; }
         drawSprite(sp, x, y, opt);
       }
@@ -1213,8 +1252,8 @@ const Sound = (function () {
         // 먼지
         if (e >= 90 && e < 390) {
           var dp = easeOut((e - 90) / 300);
-          g2.fillStyle = rgba(pal['fur-edge'].charAt(0) === '#' ? pal['fur-edge'] : '#d8cdbd', 0.6 * (1 - dp));
-          var fx = hx + 0.5 * C, fy = hy + 0.92 * C, rr = (0.06 + 0.08 * dp) * C, sp3 = 0.2 * C * dp;
+          g2.fillStyle = rgba(pal.dust.charAt(0) === '#' ? pal.dust : '#c8b278', 0.6 * (1 - dp));
+          var fx = hx + 0.5 * C, fy = hy + 0.94 * C, rr = (0.06 + 0.08 * dp) * C, sp3 = 0.2 * C * dp;
           g2.beginPath(); g2.arc(fx - sp3, fy, rr, 0, Math.PI * 2); g2.fill();
           g2.beginPath(); g2.arc(fx + sp3, fy, rr, 0, Math.PI * 2); g2.fill();
           g2.beginPath(); g2.arc(fx, fy + sp3 * 0.5, rr, 0, Math.PI * 2); g2.fill();
@@ -1233,7 +1272,7 @@ const Sound = (function () {
         var pp = easeOut(e / ef.dur);
         g2.save();
         g2.globalAlpha = 1 - pp;
-        g2.font = '800 20px ' + NUM_FONT; g2.textAlign = 'center'; g2.textBaseline = 'middle';
+        g2.font = '800 20px ' + UI_FONT; g2.textAlign = 'center'; g2.textBaseline = 'middle';
         g2.lineWidth = 4; g2.strokeStyle = '#ffffff'; g2.lineJoin = 'round';
         var py = Math.max(14, ef.y - 28 * pp);
         g2.strokeText('+' + ef.n, ef.x, py);
@@ -1247,11 +1286,14 @@ const Sound = (function () {
   /* ================= 루프 ================= */
   var lastFrame = performance.now();
   function frame(now) {
-    var dt = now - lastFrame; lastFrame = now;
-    if (dt < 0) dt = 0; if (dt > 100) dt = 100;
+    var raw = now - lastFrame; lastFrame = now;
+    if (raw < 0) raw = 0;
+    // 애니메이션 시계만 100ms로 자른다(버벅임 뒤 효과가 건너뛰지 않게).
+    // 제한 시간은 실제 경과 시간 그대로 — 일시정지·탭 숨김 구간은 재개 때 lastFrame을 다시 잡아 제외된다.
+    var dt = raw > 100 ? 100 : raw;
     if (state !== 'paused') gt += dt;
-    if (state === 'play') {
-      timeLeft -= dt;
+    if (state === 'play' && !document.hidden) {
+      timeLeft -= raw;
       if (timeLeft <= 0) { timeLeft = 0; setTimeUI(); endGame('time'); }
       else setTimeUI();
     }
@@ -1273,6 +1315,7 @@ const Sound = (function () {
 
   /* ================= 초기화 ================= */
   layout();
+  loadNumFont();
   $('startBest').textContent = best;
   setScore(0, false);
   resetTimeUI();
