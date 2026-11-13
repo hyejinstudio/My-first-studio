@@ -674,18 +674,20 @@ const Sound = (function () {
   /* ================= 상수 (docs/games/mole-pop/design.md) ================= */
   var GAME_MS = 40000;
   var RISE = 110, SINK = 120, SINK_OK = 60;      // 올라옴 / 내려감 / 내려감 중 판정 가능 구간
+  var G_RISE = 70, G_SINK = 80, G_SINK_OK = 40;   // 황금: 더 빨리 들어왔다 나감 (v3)
   var HIT_MS = 300, BOMB_HIT_MS = 420;            // 잡힘 연출 (폭탄은 연기 고리 420ms까지)
   var REST = 300;                                 // 구멍 쉬는 시간
   var LEAVE_MS = 160;                             // 시간 종료 때 내려가기
   var FIRST_SPAWN = 400, RETRY = 100;
   var OVER_DELAY = 500, OVER_LOCK = 700, RESUME_IGNORE = 300;
   var GOLD_GAP = 3000, SAFE_START = 3000;
-  var P_GOLD = 0.10, P_BOMB = 0.12;
+  var P_GOLD = 0.10, P_BOMB = 0.20;
+  // iv 등장 간격, stay 일반·폭탄 머묾, max 동시 최대, gold 황금 머묾, bombs 동시 폭탄 최대 (v3)
   var STAGES = [
-    { iv: 720, stay: 1000, max: 2 },
-    { iv: 580, stay: 680, max: 2 },
-    { iv: 500, stay: 575, max: 3 },
-    { iv: 420, stay: 560, max: 3 }
+    { iv: 720, stay: 1000, max: 2, gold: 420, bombs: 1 },
+    { iv: 540, stay: 620, max: 2, gold: 360, bombs: 2 },
+    { iv: 400, stay: 500, max: 3, gold: 330, bombs: 2 },
+    { iv: 360, stay: 480, max: 3, gold: 310, bombs: 2 }
   ];
   var BEST_KEY = 'mole-pop-best';
   var HIDE_Y = 70;
@@ -761,7 +763,7 @@ const Sound = (function () {
 
   // 범례
   (function () {
-    var items = [['normal', '+10', 'n', '두더지'], ['gold', '+50', 'g', '황금 두더지'], ['bomb', '−30', 'b', '폭탄']];
+    var items = [['normal', '+10', 'n', '두더지'], ['gold', '+60', 'g', '황금 두더지'], ['bomb', '−30', 'b', '폭탄']];
     var h = '';
     for (var i = 0; i < items.length; i++) {
       h += '<div class="it"><div class="ic">' + holeSVG('lc' + i, items[i][0], 0) + '</div>' +
@@ -789,7 +791,7 @@ const Sound = (function () {
         sq: [svg.querySelector('.k-mole .sq'), svg.querySelector('.k-gold .sq')],
         shk: svg.querySelector('.k-bomb .shk'),
         dust: svg.querySelector('.dust'), smoke: svg.querySelector('.smoke'), stars: svg.querySelector('.stars'),
-        st: 'empty', type: null, t0: 0, stay: 0, y0: 0, dur: 0, restUntil: 0,
+        st: 'empty', type: null, t0: 0, stay: 0, rise: RISE, sink: SINK, sinkOk: SINK_OK, y0: 0, dur: 0, restUntil: 0,
         dustT0: -1e9, smokeT0: -1e9, shownKind: null, lastY: null, lastSq: '', lastShk: ''
       });
     }
@@ -910,9 +912,10 @@ const Sound = (function () {
   }
   function doSpawn(i, type) {
     var h = holes[i];
-    var base = STAGES[stageIdx()].stay;
+    var st = STAGES[stageIdx()], g = type === 'gold';
     h.st = 'rising'; h.type = type; h.t0 = gt;
-    h.stay = type === 'gold' ? Math.max(500, base * 0.6) : base;
+    h.stay = g ? st.gold : st.stay;
+    h.rise = g ? G_RISE : RISE; h.sink = g ? G_SINK : SINK; h.sinkOk = g ? G_SINK_OK : SINK_OK;
     h.actor.classList.remove('hit');
     showKind(h, type);
     lastHole = i; lastType = type;
@@ -928,7 +931,7 @@ const Sound = (function () {
     if (GAME_MS - timeLeft < SAFE_START) return 'normal';
     var r = Math.random();
     if (r < P_GOLD) return (activeCount('gold') === 0 && gt - lastGoldAt >= GOLD_GAP) ? 'gold' : 'normal';
-    if (r < P_GOLD + P_BOMB) return (activeCount('bomb') === 0 && lastType !== 'bomb') ? 'bomb' : 'normal';
+    if (r < P_GOLD + P_BOMB) return (activeCount('bomb') < STAGES[stageIdx()].bombs && lastType !== 'bomb') ? 'bomb' : 'normal';
     return 'normal';
   }
   function trySpawn() {
@@ -947,11 +950,11 @@ const Sound = (function () {
     switch (h.st) {
       case 'rising':
         if (reduced) return HIDE_Y * (1 - clamp01(t / 90));
-        return HIDE_Y * (1 - easeOutBack(clamp01(t / RISE)));
+        return HIDE_Y * (1 - easeOutBack(clamp01(t / h.rise)));
       case 'up': return 0;
       case 'sinking':
         if (reduced) return HIDE_Y * clamp01(t / 90);
-        return HIDE_Y * easeInCubic(clamp01(t / SINK));
+        return HIDE_Y * easeInCubic(clamp01(t / h.sink));
       case 'leave':
         return h.y0 + (HIDE_Y - h.y0) * (reduced ? clamp01(t / 90) : easeInCubic(clamp01(t / LEAVE_MS)));
       case 'hit':
@@ -968,11 +971,11 @@ const Sound = (function () {
   function updateHoles() {
     for (var i = 0; i < 9; i++) {
       var h = holes[i];
-      if (h.st === 'rising' && gt - h.t0 >= RISE) { h.t0 += RISE; h.st = 'up'; }
+      if (h.st === 'rising' && gt - h.t0 >= h.rise) { h.t0 += h.rise; h.st = 'up'; }
       if (h.st === 'up' && gt - h.t0 >= h.stay) { h.t0 += h.stay; h.st = 'sinking'; }
-      if (h.st === 'sinking' && gt - h.t0 >= SINK) {
+      if (h.st === 'sinking' && gt - h.t0 >= h.sink) {
         // 도망감
-        var end = h.t0 + SINK, type = h.type;
+        var end = h.t0 + h.sink, type = h.type;
         clearHole(h);
         h.restUntil = end + REST;
         if (type === 'normal' && phase === 'play') breakCombo();
@@ -1109,7 +1112,7 @@ const Sound = (function () {
     var h = holes[i];
     var r = boardEl.getBoundingClientRect();
     if (clientX !== undefined) tapMark(clientX - r.left - 4, clientY - r.top - 4);
-    var ok = h.st === 'rising' || h.st === 'up' || (h.st === 'sinking' && gt - h.t0 < SINK_OK);
+    var ok = h.st === 'rising' || h.st === 'up' || (h.st === 'sinking' && gt - h.t0 < h.sinkOk);
     if (!ok) {
       if (h.st === 'empty' || h.st === 'sinking') h.dustT0 = reduced ? -1e9 : gt; // 헛손질: 점수·콤보 영향 없음
       return;
@@ -1133,7 +1136,7 @@ const Sound = (function () {
     var tier = tierFor(combo);
     if (gold) Sound.play('gold'); else Sound.play('hit', { combo: combo });
     if (tier > prevTier) Sound.play('combo', { level: tier + 1 });
-    var pts = Math.round((gold ? 50 : 10) * multFor(combo));
+    var pts = Math.round((gold ? 60 : 10) * multFor(combo));
     h.st = 'hit'; h.y0 = y; h.t0 = gt; h.dur = HIT_MS; h.restUntil = gt + HIT_MS + REST;
     h.actor.classList.add('hit');
     if (gold) caughtG++; else caughtN++;
