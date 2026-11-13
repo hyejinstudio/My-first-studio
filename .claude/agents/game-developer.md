@@ -25,6 +25,7 @@ tools: Read, Grep, Glob, Write, Edit, Bash
 - localStorage는 항상 try/catch로 감싼다. 키 이름은 `<slug>-` 접두사.
 - 기존 게임을 수정할 때 요청 범위 밖의 정상 기능을 바꾸지 않는다.
 - 다른 게임 폴더를 삭제·이동하지 않는다.
+- **SVG 요소 표시/숨김은 `.hidden = ` 대입을 쓰지 않는다.** `<svg>`는 HTMLElement가 아니라서 `.hidden` 프로퍼티가 없다(뱀 정원·토끼 텐에서 음소거 아이콘 버그로 2번 재발). `el.toggleAttribute('hidden', bool)`을 쓰고, 토글 UI는 실제 표시 상태(getComputedStyle/스크린샷)로 확인한다.
 
 ## 완료 전 자체 확인 (필수)
 1. `node tests/smoke.js <slug>` 통과
