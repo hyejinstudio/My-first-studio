@@ -682,10 +682,10 @@ const Sound = (function () {
   var GOLD_GAP = 3000, SAFE_START = 3000;
   var P_GOLD = 0.10, P_BOMB = 0.12;
   var STAGES = [
-    { iv: 800, stay: 1050, max: 2 },
-    { iv: 650, stay: 900, max: 2 },
-    { iv: 520, stay: 750, max: 3 },
-    { iv: 420, stay: 620, max: 3 }
+    { iv: 720, stay: 1000, max: 2 },
+    { iv: 580, stay: 680, max: 2 },
+    { iv: 500, stay: 575, max: 3 },
+    { iv: 420, stay: 560, max: 3 }
   ];
   var BEST_KEY = 'mole-pop-best';
   var HIDE_Y = 70;
@@ -824,8 +824,10 @@ const Sound = (function () {
   function easeOutBack(t) { var s = 1.2; return 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2); }
   function easeInCubic(t) { return t * t * t; }
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-  function multFor(c) { return c >= 20 ? 3 : c >= 15 ? 2.5 : c >= 10 ? 2 : c >= 5 ? 1.5 : 1; }
-  function tierFor(c) { return c >= 20 ? 4 : c >= 15 ? 3 : c >= 10 ? 2 : c >= 5 ? 1 : 0; }
+  // 콤보 10마다 +0.5배 (10→×1.5, 20→×2, 30→×2.5, 40→×3)
+  var COMBO_STEP = 10;
+  function tierFor(c) { return Math.min(4, Math.floor(c / COMBO_STEP)); }
+  function multFor(c) { return 1 + 0.5 * tierFor(c); }
   function stageIdx() { var e = GAME_MS - timeLeft; return e < 10000 ? 0 : e < 20000 ? 1 : e < 30000 ? 2 : 3; }
   function isActive(h) { return h.st === 'rising' || h.st === 'up' || h.st === 'sinking'; }
   function restartClass(el, cls) { el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); }
