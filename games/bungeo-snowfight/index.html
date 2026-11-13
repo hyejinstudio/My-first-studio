@@ -2372,6 +2372,8 @@ const Sound = (function () {
   // 데모 시계 tip.t만 쓰고 S(보드·점수·시간)는 건드리지 않는다. 소리 없음.
   var KEY_TIP = 'bungeo-snowfight-tip', tipSeenMem = false;
   var TIP_L = 3400, TIP_DONE = 3200, TIP_COLS = 8, TIP_ROWS = 3, TL = { x: -0.75, y: 1.5 };
+  // 왼쪽 기지 띠 2.25m: 최대 당김(손가락 원·주머니 붕어빵 왼쪽 끝 ≈ −2.05칸)까지 미니 필드 안에 여백 0.2m로 보이게
+  var TIP_BAND = 2.25, TIP_W = TIP_BAND + TIP_COLS + 0.5;
   el.ovTip = $('ovTip'); el.tipSkip = $('tipSkip'); el.tipProg = $('tipProg'); el.tipBox = $('tipBox'); el.tipCards = $('tipCards');
   var tipCv = { pat: $('tipCvPat'), shu: $('tipCvShu') };
   var tipCtx = { pat: tipCv.pat.getContext('2d'), shu: tipCv.shu.getContext('2d') };
@@ -2442,7 +2444,7 @@ const Sound = (function () {
     });
   }
   function tipBg(g) {
-    paintField(g, 10 * C, 3 * C, TIP_COLS, TIP_ROWS, function (i) { return i % TIP_COLS === TIP_COLS - 1 ? 2 : 0; });
+    paintField(g, TIP_W * C, 3 * C, TIP_COLS, TIP_ROWS, function (i) { return i % TIP_COLS === TIP_COLS - 1 ? 2 : 0; });
   }
   // 팥붕 반쪽 (t ms, 루프 안 시각)
   function tipScenePat(g, t) {
@@ -2548,12 +2550,12 @@ const Sound = (function () {
     var ms = Math.min(tip.t, tip.total) * 1000;
     var lt = ms >= tip.total * 1000 - 1e-6 ? TIP_DONE : ms % TIP_L;
     ['pat', 'shu'].forEach(function (kind) {
-      var g = tipCtx[kind], m = tip.m, W = 10 * m, H = 3 * m;
+      var g = tipCtx[kind], m = tip.m, W = TIP_W * m, H = 3 * m;
       g.setTransform(DPR, 0, 0, DPR, 0, 0);
       g.clearRect(0, 0, W, H);
       g.save();
       g.beginPath(); if (g.roundRect) g.roundRect(0, 0, W, H, 8); else g.rect(0, 0, W, H); g.clip();
-      withView(m, 1.5 * m, tip.tiles, function () {
+      withView(m, TIP_BAND * m, tip.tiles, function () {
         if (reduced) tipStatic(g, kind);
         else if (kind === 'pat') tipScenePat(g, lt);
         else tipSceneShu(g, lt);
@@ -2569,17 +2571,17 @@ const Sound = (function () {
     var phone = Math.min(window.innerWidth, window.innerHeight) < 600;
     var gap = phone ? 12 : 16, g2 = window.innerHeight <= 520 ? 8 : 12, head = 44 + 4 + 3 + g2;
     // 카드 = 미니 캔버스 + 패딩 24 + 테두리 2 (가로) / + 라벨 28 + 간격 6 + 패딩 24 + 테두리 2 (세로)
-    var mRow = Math.floor(Math.min(56, ((AW - gap) / 2 - 26) / 10, (AH - head - 60) / 3));
-    var mCol = Math.floor(Math.min(56, (AW - 26) / 10, (AH - head - gap - 120) / 6));
-    // 좌우 반반(나란히 비교)을 우선하고, 위아래가 15% 넘게 크게 그려질 때만 위아래 (art-ui.md 크기표 6개 화면과 일치)
-    var col = mCol > mRow * 1.15, m = Math.max(12, col ? mCol : mRow);
+    var mRow = Math.floor(Math.min(56, ((AW - gap) / 2 - 26) / TIP_W, (AH - head - 60) / 3));
+    var mCol = Math.floor(Math.min(56, (AW - 26) / TIP_W, (AH - head - gap - 120) / 6));
+    // 좌우 반반(나란히 비교)을 우선하고, 위아래가 1/3 넘게 크게 그려질 때만 위아래 (art-ui.md 크기표 6개 화면 배치와 일치)
+    var col = mCol > mRow * 4 / 3, m = Math.max(12, col ? mCol : mRow);
     tip.side = col ? 'col' : 'row';
-    var bs = el.tipBox.style, cardW = 10 * m + 26;
-    bs.setProperty('--tmw', 10 * m + 'px'); bs.setProperty('--tmh', 3 * m + 'px');
+    var bs = el.tipBox.style, cw = Math.round(TIP_W * m), cardW = cw + 26;
+    bs.setProperty('--tmw', cw + 'px'); bs.setProperty('--tmh', 3 * m + 'px');
     bs.setProperty('--tgap', gap + 'px'); bs.setProperty('--tgap2', g2 + 'px');
     bs.setProperty('--tbw', (col ? cardW : 2 * cardW + gap) + 'px');
     el.tipCards.classList.toggle('col', col);
-    var w = Math.round(10 * m * DPR), h = Math.round(3 * m * DPR);
+    var w = Math.round(cw * DPR), h = Math.round(3 * m * DPR);
     if (tip.m !== m || tipCv.pat.width !== w || tipCv.pat.height !== h) {
       tip.m = m;
       ['pat', 'shu'].forEach(function (k) { tipCv[k].width = w; tipCv[k].height = h; });
