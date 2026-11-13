@@ -874,7 +874,7 @@ const Sound = (function () {
   var CD_START = 3, CD_RESUME = 2, END_WAIT = 0.5, RESULT_LOCK = 800;
   var AI = {
     easy: { think: [1.0, 1.6], sigma: 1.2 },
-    normal: { think: [0.45, 0.8], sigma: 0.6 },
+    normal: { think: [0.6, 0.95], sigma: 0.7 },
     hard: { think: [0.2, 0.4], sigma: 0.3 }
   };
   var DIFFS = ['easy', 'normal', 'hard'];
@@ -1152,6 +1152,12 @@ const Sound = (function () {
     return { x: clamp(hit.obs.x - HIT_BACK * hit.dir.x, X0, X1), y: clampY(hit.obs.y - HIT_BACK * hit.dir.y) };
   }
   function clampY(y) { return clamp(y, Y0, Y1); }
+  function cellOf(x, y) { return idx(clamp(Math.floor(x), 0, N - 1), clamp(Math.floor(y), 0, M - 1)); }
+  function oppObsAt(owner, x, y, list) {
+    var i = cellOf(x, y), L = list || S.obstacles;
+    for (var k = 0; k < L.length; k++) if (L[k].owner !== owner && L[k].i === i) return L[k];
+    return null;
+  }
   function oppObstacles(owner) { return S.obstacles.filter(function (o) { return o.owner !== owner; }); }
 
   // 결과 미리 계산 (미리보기·AI 공용)
@@ -1168,8 +1174,11 @@ const Sound = (function () {
       }
       return { ops: ops, hit: hit, hops: hops, pt: pt };
     }
-    if (type === 'pat') ops.push({ x: land.x, y: land.y, r: KIND.pat.r, kind: 'pat' });
-    else for (k = 0; k < hops.length; k++) { e = hops[k].pts[hops[k].pts.length - 1]; ops.push({ x: e.x, y: e.y, r: KIND.shu.r, kind: 'shu' }); }
+    if (type === 'pat') {
+      var under = oppObsAt(owner, land.x, land.y, list);
+      if (under) ops.push({ x: land.x, y: land.y, r: R_PAT_HIT, kind: 'pat', broke: under });
+      else ops.push({ x: land.x, y: land.y, r: KIND.pat.r, kind: 'pat' });
+    } else for (k = 0; k < hops.length; k++) { e = hops[k].pts[hops[k].pts.length - 1]; ops.push({ x: e.x, y: e.y, r: KIND.shu.r, kind: 'shu' }); }
     return { ops: ops, hit: null, hops: hops };
   }
 
@@ -1250,6 +1259,19 @@ const Sound = (function () {
     var h = p.hops[p.hop], e = h.pts[h.pts.length - 1];
     p.x = e.x; p.y = e.y;
     if (p.type === 'pat') {
+      var under = oppObsAt(p.owner, e.x, e.y);
+      if (under) {
+        // 상대 장애물 칸에 착지 = 부딪힘과 같은 규칙: 둘 다 부서지고 반경 1.0 영구 칠하기, 새 장애물 없음
+        under.shakeAt = S.clock;
+        Sound.play('block', { side: SIDE[p.owner] });
+        puffRing(e.x, e.y);
+        removeObstacle(under, false);
+        goneObs.push({ x: e.x, y: e.y, ang: Math.atan2(p.dir.y, p.dir.x), owner: p.owner, start: S.clock });
+        crumbs(e.x, e.y, 4, 'pat', 0.35);
+        paintArea(e.x, e.y, R_PAT_HIT, p.owner, 'pat');
+        p.done = true;
+        return;
+      }
       Sound.play('land', { side: SIDE[p.owner] });
       paintArea(e.x, e.y, KIND.pat.r, p.owner, 'pat');
       addObstacle(p.owner, e.x, e.y, Math.atan2(p.dir.y, p.dir.x));
@@ -1565,7 +1587,8 @@ const Sound = (function () {
     var L = Math.min(len, PULL_MAX), power = (L - PULL_MIN) / (PULL_MAX - PULL_MIN);
     var dx = -vx, dy = -vy;
     var ang = Math.atan2(dy, dx * FWD[owner]) * 180 / Math.PI;
-    if (Math.abs(ang) > 179.999) ang = ANG_MAX;
+    // 정면에서 90°보다 많이 벗어난 당김(앞쪽으로 당김) = 취소
+    if (Math.abs(ang) > 90) return { valid: false, cancel: true, len: len, ux: vx / len, uy: vy / len };
     ang = clamp(ang, -ANG_MAX, ANG_MAX);
     return { valid: true, len: len, power: power, ang: ang, ux: vx / len, uy: vy / len };
   }
@@ -1912,6 +1935,13 @@ const Sound = (function () {
       g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('장전 중', tx, ty);
       g.fillStyle = PAL.ink; g.fillText('장전 중', tx, ty);
       g.restore();
+    } else if (info && info.cancel) {
+      g.save();
+      g.font = '700 13px system-ui, -apple-system, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      var cx2 = clamp(x, 34, CW - 34), cy2 = y - 0.95 * C;
+      g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('취소', cx2, cy2);
+      g.fillStyle = PAL.muted; g.fillText('취소', cx2, cy2);
+      g.restore();
     }
   }
   function previewFor(owner) {
@@ -2020,6 +2050,23 @@ const Sound = (function () {
     }
     particles = keep;
   }
+  // 마지막 3초 큰 숫자 (막판 조준을 가리지 않게 반투명)
+  function drawFinalCount(g) {
+    if (S.phase !== 'playing' || S.timeLeft > 3 || S.timeLeft <= 0) return;
+    var n = Math.ceil(S.timeLeft - 1e-9), u = clamp(1 - (S.timeLeft - (n - 1)), 0, 1);
+    var big = 0.42 * CH;
+    var sc = reduced ? 1 : 1.15 - 0.15 * easeOutCubic(u / 0.25);
+    var a = reduced ? 1 : (u < 0.12 ? u / 0.12 : u > 0.85 ? (1 - u) / 0.15 : 1);
+    g.save();
+    g.globalAlpha = 0.3 * clamp(a, 0, 1);
+    g.translate(CW / 2, CH / 2); g.scale(sc, sc);
+    g.font = '800 ' + Math.round(big) + 'px BungeoDigits, system-ui, sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = Math.max(4, big / 12); g.strokeStyle = PAL.panel; g.lineJoin = 'round';
+    g.strokeText(String(n), 0, 0);
+    g.fillStyle = PAL.danger || PAL.ink; g.fillText(String(n), 0, 0);
+    g.restore();
+  }
   function drawCountdown(g) {
     var txt = null, u = 0, big = 0.32 * CH;
     if (S.phase === 'countdown') {
@@ -2060,6 +2107,7 @@ const Sound = (function () {
     if (S.phase === 'playing') { drawPreview(g, 1); drawPreview(g, 2); }
     drawProjectiles(g);
     drawParticles(g);
+    drawFinalCount(g);
     drawCountdown(g);
     g.restore();
   }
