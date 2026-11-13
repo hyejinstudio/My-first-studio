@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -92,6 +92,30 @@
 
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
+    <a class="game" href="games/bungeo-snowfight/" aria-label="붕어빵 눈싸움 — 팥붕은 묵직하게, 슈붕은 통통 멀리! 붕어빵을 던져 눈밭을 내 색으로 칠하는 땅따먹기">
+      <div class="art" style="--tile: var(--tile-bungeo)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><path id="bungeoFish" d="M48 0C48-17 33-27 12-27C-8-27-22-19-30-8Q-38-16-45-20Q-50-21-48-15Q-42 0-48 15Q-50 21-45 20Q-38 16-30 8C-22 19-8 27 12 27C33 27 48 17 48 0Z"/></defs>
+          <rect x="6" y="36" width="26" height="22" rx="5" fill="#6f96c9"/>
+          <rect x="32" y="36" width="26" height="22" rx="5" fill="#ebb2c0"/>
+          <rect x="27" y="36" width="10" height="22" fill="#eef2f6"/>
+          <path d="M10 54 L19 40 M17.5 54 L26 40" stroke="#5f86ba" stroke-width="1.6" stroke-linecap="round"/>
+          <g fill="#d495a6"><circle cx="41" cy="41" r="1.5"/><circle cx="54" cy="41" r="1.5"/><circle cx="41" cy="53.5" r="1.5"/><circle cx="54" cy="53.5" r="1.5"/></g>
+          <path d="M13 32 Q22 8 37 13" fill="none" stroke="#8a93a3" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5"/>
+          <g transform="translate(46 17) rotate(22)">
+            <use href="#bungeoFish" transform="scale(.28)" fill="#9a6442" stroke="#5e3a24" stroke-width="4"/>
+            <ellipse cx="-1" cy="0" rx="4.2" ry="2.3" fill="#5a2b2b" opacity=".55"/>
+          </g>
+          <g transform="translate(46 47.5) rotate(-12)">
+            <use href="#bungeoFish" transform="scale(.2)" fill="#e6bd68" stroke="#9c7425" stroke-width="5.2"/>
+            <ellipse cx="-.5" cy="0" rx="2.7" ry="1.4" fill="#fff4d2"/>
+          </g>
+        </svg>
+      </div>
+      <h2>붕어빵 눈싸움</h2>
+      <p>팥붕은 묵직하게, 슈붕은 통통 멀리! 붕어빵을 던져 눈밭을 내 색으로 칠하는 땅따먹기</p>
+    </a>
+
     <a class="game" href="games/mole-pop/" aria-label="두더지 뿅뿅 — 구멍에서 쏙 올라오는 두더지를 톡! 황금 두더지는 크게, 폭탄은 피하는 순발력 게임">
       <div class="art" style="--tile: var(--tile-mole)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
