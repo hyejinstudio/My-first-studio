@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -92,6 +92,27 @@
 
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
+    <a class="game" href="games/mole-pop/" aria-label="두더지 뿅뿅 — 구멍에서 쏙 올라오는 두더지를 톡! 황금 두더지는 크게, 폭탄은 피하는 순발력 게임">
+      <div class="art" style="--tile: var(--tile-mole)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><clipPath id="molePopClip"><rect x="0" y="0" width="64" height="47"/><ellipse cx="32" cy="47" rx="17" ry="5"/></clipPath></defs>
+          <ellipse cx="32" cy="50" rx="27" ry="9" fill="#e3d3bb" stroke="#bfa98b" stroke-width="1.4"/>
+          <ellipse cx="32" cy="47" rx="17" ry="5" fill="#9c8670"/>
+          <g clip-path="url(#molePopClip)">
+            <rect x="19" y="14" width="26" height="40" rx="13" fill="#c4ab93" stroke="#8f765f" stroke-width="1.4"/>
+            <circle cx="27.5" cy="27" r="1.9" fill="#3a2f28"/><circle cx="36.5" cy="27" r="1.9" fill="#3a2f28"/>
+            <ellipse cx="32" cy="32.5" rx="2.8" ry="2" fill="#c98a83"/>
+            <ellipse cx="24.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+            <ellipse cx="39.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+          </g>
+          <path d="M51 7 L52.6 11.9 L57.5 13.5 L52.6 15.1 L51 20 L49.4 15.1 L44.5 13.5 L49.4 11.9 Z" fill="#f2c75c"/>
+          <path d="M10 18 L10.9 20.6 L13.5 21.5 L10.9 22.4 L10 25 L9.1 22.4 L6.5 21.5 L9.1 20.6 Z" fill="#f2c75c" opacity=".7"/>
+        </svg>
+      </div>
+      <h2>두더지 뿅뿅</h2>
+      <p>구멍에서 쏙 올라오는 두더지를 톡! 황금 두더지는 크게, 폭탄은 피하는 순발력 게임</p>
+    </a>
+
     <a class="game" href="games/bunny-ten/" aria-label="개구리 텐 — 숫자를 든 개구리들을 네모로 감싸 합이 10이 되면 퐁당 뛰어드는 숫자 퍼즐">
       <div class="art" style="--tile: var(--tile-bunny)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
