@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>하늘다람쥐 텐</title>
+<title>개구리 텐</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="하늘다람쥐 텐">
+<meta name="apple-mobile-web-app-title" content="개구리 텐">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#e4572e">
 <style>
@@ -18,30 +18,31 @@
     --app-h: 100dvh;
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --grid: #e7e2d8; --well: #fbfaf7; --accent: #e4572e; --gold: #f2b134;
-    --meadow: #d4dce5; --meadow-edge: #b9c6d4; --burrow: #c6d1dd;
-    --fur: #f7f9fb; --tail: #dbe9f6; --fur-edge: #9aaabd; --ear-in: #dde9f5; --num: #1d2a3f; --dust: #ffffff;
-    --sel-under: #6b4fc8; --sel-ok: #1f8a4c; --sel-over: #c93b3b; --sel-on: #ffffff;
-    --sel-under-edge: #6b4fc8; --sel-ok-edge: #1f8a4c; --sel-over-edge: #c93b3b;
+    /* v4 개구리: 이름은 레거시, 의미 — meadow=연못 판, burrow=빈 물자리, fur=개구리 몸, fur-edge=개구리 외곽선, dust=퐁당 물결 고리 */
+    --meadow: #d3e0de; --meadow-edge: #b4c8c5; --burrow: #c2d3d0;
+    --fur: #d4e7bb; --fur-edge: #8aa395; --num: #1b2e26; --dust: #f4faf9;
+    --sel-under: #6b4fc8; --sel-ok: #1f6fc4; --sel-over: #c93b3b; --sel-on: #ffffff;
+    --sel-under-edge: #5f44b8; --sel-ok-edge: #1a5ea8; --sel-over-edge: #ad3030;
     --time: #3f9d5a; --danger: #d64545;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --grid: #262a35; --well: #161921; --accent: #ff7a50; --gold: #ffc94d;
-      --meadow: #1b2330; --meadow-edge: #2c3747; --burrow: #283344;
-      --fur: #c9d3de; --tail: #8fa8c0; --fur-edge: #71839a; --ear-in: #b3c6d9; --num: #1a2433; --dust: #9fb1c4;
-      --sel-under: #a58cff; --sel-ok: #4cc27a; --sel-over: #ff6b6b; --sel-on: #12141a;
-      --sel-under-edge: #5b43b8; --sel-ok-edge: #1d7342; --sel-over-edge: #b0303a;
+      --meadow: #16242a; --meadow-edge: #26393f; --burrow: #21333a;
+      --fur: #a3bb96; --fur-edge: #62786c; --num: #14211b; --dust: #7fa1a3;
+      --sel-under: #a58cff; --sel-ok: #5aa2f0; --sel-over: #ff6b6b; --sel-on: #12141a;
+      --sel-under-edge: #5b43b8; --sel-ok-edge: #1a5296; --sel-over-edge: #9c2a34;
       --time: #5cc27a; --danger: #ff6b6b;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --grid: #262a35; --well: #161921; --accent: #ff7a50; --gold: #ffc94d;
-    --meadow: #1b2330; --meadow-edge: #2c3747; --burrow: #283344;
-    --fur: #c9d3de; --tail: #8fa8c0; --fur-edge: #71839a; --ear-in: #b3c6d9; --num: #1a2433; --dust: #9fb1c4;
-    --sel-under: #a58cff; --sel-ok: #4cc27a; --sel-over: #ff6b6b; --sel-on: #12141a;
-    --sel-under-edge: #5b43b8; --sel-ok-edge: #1d7342; --sel-over-edge: #b0303a;
+    --meadow: #16242a; --meadow-edge: #26393f; --burrow: #21333a;
+    --fur: #a3bb96; --fur-edge: #62786c; --num: #14211b; --dust: #7fa1a3;
+    --sel-under: #a58cff; --sel-ok: #5aa2f0; --sel-over: #ff6b6b; --sel-on: #12141a;
+    --sel-under-edge: #5b43b8; --sel-ok-edge: #1a5296; --sel-over-edge: #9c2a34;
     --time: #5cc27a; --danger: #ff6b6b;
   }
   * { box-sizing: border-box; }
@@ -183,7 +184,7 @@
 <div class="app" id="app">
   <header class="top">
     <a class="home" href="../../"><span class="full">← 게임 목록</span><span class="short">← 목록</span></a>
-    <h1 class="title">하늘다람쥐 텐</h1>
+    <h1 class="title">개구리 텐</h1>
     <div class="spacer"></div>
     <div class="hud">
       <div class="card"><span class="lab">점수</span><b id="score">0</b></div>
@@ -205,11 +206,11 @@
 
   <div class="board-wrap" id="wrap">
     <div class="board" id="board">
-      <canvas id="cv" role="img" aria-label="하늘다람쥐 텐 게임 판"></canvas>
+      <canvas id="cv" role="img" aria-label="개구리 텐 게임 판"></canvas>
 
       <div class="overlay" id="ovStart">
-        <h2>하늘다람쥐 텐</h2>
-        <p>하늘다람쥐들을 네모로 감싸 합이 10이 되게 하세요!</p>
+        <h2>개구리 텐</h2>
+        <p>개구리들을 네모로 감싸 합이 10이 되게 하세요!</p>
         <div class="example">
           <canvas id="exCv" width="136" height="56" aria-hidden="true"></canvas>
           <span>2 + 3 + 5 = 10</span>
@@ -247,7 +248,7 @@
 <div class="sr" aria-live="polite" id="live"></div>
 
 <script>
-/* ===== 하늘다람쥐 텐 (bunny-ten) Sound module =====
+/* ===== 개구리 텐 (bunny-ten) Sound module =====
  * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
  * AudioContext 미지원·실패 시 모든 호출은 조용히 무시된다.
  * 사용법: 첫 터치/클릭/키 입력 핸들러 안에서 Sound.unlock() 호출 → 이후 Sound.play('clear', { count: 3 }) 등.
@@ -325,7 +326,7 @@ const Sound = (function () {
     } catch (e) {}
   }
 
-  // '깡충' — 짧은 상승 피치 블립 (토끼 한 마리 점프)
+  // '폴짝' — 짧은 상승 피치 블립 (개구리 한 마리 점프)
   function hop(t, base, vol) {
     tone('sine', base, base * 2.2, t, 0.07, vol, 0.004);
   }
@@ -335,7 +336,7 @@ const Sound = (function () {
             C6: 1046.5, D6: 1174.66, F6: 1396.91, A6: 1760.0 };
 
   var sfx = {
-    // 게임 시작: 통통 튀는 상승 3음 (F5-A5-C6) + 마지막 깡충
+    // 게임 시작: 통통 튀는 상승 3음 (F5-A5-C6) + 마지막 폴짝
     start: function (t) {
       tone('triangle', N.F5, 0, t, 0.10, 0.25);
       tone('triangle', N.A5, 0, t + 0.09, 0.10, 0.25);
@@ -353,10 +354,10 @@ const Sound = (function () {
       tone('sine', N.C6, 0, t, 0.07, 0.07);
       tone('sine', N.F6, 0, t + 0.05, 0.10, 0.06);
     },
-    // 지우기 성공: count(지운 토끼 수)에 따라 2 / 3 / 4+ 단계
+    // 지우기 성공: count(지운 개구리 수)에 따라 2 / 3 / 4+ 단계
     clear: function (t, opts) {
       var count = (opts && +opts.count) || 2;
-      // 1) 토끼마다 깡충 블립 (최대 6번, 45ms 간격, 점점 높게)
+      // 1) 개구리마다 폴짝 블립 (최대 6번, 45ms 간격, 점점 높게)
       var hops = Math.min(Math.max(count, 1), 6);
       for (var i = 0; i < hops; i++) hop(t + i * 0.045, 420 + i * 60, 0.09);
       var c = t + 0.04;
@@ -408,7 +409,7 @@ const Sound = (function () {
       tone('triangle', N.C5, 0, t + 0.59, 0.40, 0.18, 0.01);
       tone('sine', N.F3, 0, t + 0.59, 0.50, 0.12, 0.02);
     },
-    // 최고 점수 갱신: 깡충 3번 + 팡파르 (C5-F5-A5 → C6 화음)
+    // 최고 점수 갱신: 폴짝 3번 + 팡파르 (C5-F5-A5 → C6 화음)
     highScore: function (t) {
       hop(t, 450, 0.08); hop(t + 0.07, 520, 0.08); hop(t + 0.14, 600, 0.08);
       var f = t + 0.2;
@@ -660,7 +661,7 @@ const Sound = (function () {
   var score = 0, best = 0, timeLeft = GAME_MS, lastSec = 120, recordShown = false;
   var gt = 0;                  // 게임 애니메이션 시계(ms), 일시정지 중 정지
   var appearT0 = -1e9, endHopT0 = -1e9;
-  var removedAt = new Float64Array(TOTAL).fill(-1e9); // 굴 구멍 생기는 시각
+  var removedAt = new Float64Array(TOTAL).fill(-1e9); // 빈 물자리 생기는 시각
   var effects = [];
   var drag = null;             // { id, sx, sy, x, y, moved, sel, lastSum, py }
   var overLockUntil = 0, overTimer = 0;
@@ -699,7 +700,7 @@ const Sound = (function () {
 
   /* ================= 팔레트·스프라이트 ================= */
   var pal = {};
-  var PAL_KEYS = ['meadow', 'burrow', 'fur', 'tail', 'fur-edge', 'ear-in', 'num', 'dust', 'sel-under', 'sel-ok', 'sel-over',
+  var PAL_KEYS = ['meadow', 'burrow', 'fur', 'fur-edge', 'num', 'dust', 'sel-under', 'sel-ok', 'sel-over',
     'sel-under-edge', 'sel-ok-edge', 'sel-over-edge', 'danger', 'panel'];
   function readPalette() {
     var cs = getComputedStyle(document.documentElement);
@@ -719,41 +720,40 @@ const Sound = (function () {
 
   var NUM_FONT = '"BunnyDigits", "Pretendard", ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif';
   var UI_FONT = 'system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-  // v3 하늘다람쥐(오리지널): 흰 타원 몸 + 반쯤 묻힌 둥근 귀 2개 + 오른쪽 위 연하늘 큰 꼬리 + 숫자. 얼굴 없음.
-  // st: 0 보통, 1 합<10, 2 합=10, 3 합>10 (선택 중이면 털 틴트 + 상태별 진한 외곽선)
+  // v4 개구리(오리지널): 넓은 타원 몸 + 위 양 모서리 둥근 눈 혹 2 + 납작 앞발 2를 합친 하나의 실루엣 + 몸 가운데 숫자.
+  // 얼굴·눈동자·배 무늬·하이라이트 없음. 색: fur = 개구리 몸, fur-edge = 개구리 외곽선.
+  // st: 0 보통, 1 합<10, 2 합=10, 3 합>10 (선택 중이면 몸 틴트 + 상태별 진한 외곽선)
+  function frogShapes(c) {
+    var sh = [];
+    if (c >= 28) { // 앞발: c < 28이면 생략
+      sh.push([0.27, 0.905, 0.10, 0.045]);
+      sh.push([0.73, 0.905, 0.10, 0.045]);
+    }
+    sh.push([0.27, 0.38, 0.13, 0.13]);  // 눈 혹 왼쪽
+    sh.push([0.73, 0.38, 0.13, 0.13]);  // 눈 혹 오른쪽
+    sh.push([0.50, 0.64, 0.40, 0.28]);  // 몸
+    return sh;
+  }
   function drawBunny(g, c, d, st) {
     var tint = st === 1 ? pal['sel-under'] : st === 2 ? pal['sel-ok'] : st === 3 ? pal['sel-over'] : null;
     var edge = st === 1 ? pal['sel-under-edge'] : st === 2 ? pal['sel-ok-edge'] : st === 3 ? pal['sel-over-edge'] : pal['fur-edge'];
-    var fur = tint ? mix(pal.fur, tint, 0.22) : pal.fur;
-    var tail = tint ? mix(pal.tail, tint, 0.15) : pal.tail;
+    var body = tint ? mix(pal.fur, tint, 0.22) : pal.fur;
     var lw = Math.max(1, 0.028 * c);
-    g.lineWidth = tint ? Math.max(1.5, lw * 1.6) : lw;
-    g.lineJoin = 'round'; g.lineCap = 'round';
-    g.strokeStyle = edge;
-    // 1. 꼬리 (가장 뒤)
-    g.save(); g.translate(0.75 * c, 0.38 * c); g.rotate(22 * Math.PI / 180);
-    g.beginPath(); g.ellipse(0, 0, 0.15 * c, 0.27 * c, 0, 0, Math.PI * 2);
-    g.fillStyle = tail; g.fill(); g.stroke(); g.restore();
-    // 2. 귀 2개 (몸이 아래 절반을 덮음)
-    for (var s = 0; s < 2; s++) {
-      var ex = (s ? 0.67 : 0.33) * c, ey = 0.35 * c;
-      g.beginPath(); g.arc(ex, ey, 0.085 * c, 0, Math.PI * 2);
-      g.fillStyle = fur; g.fill(); g.stroke();
-      if (c >= 24) {
-        g.beginPath(); g.arc(ex, ey + 0.01 * c, 0.045 * c, 0, Math.PI * 2);
-        g.fillStyle = pal['ear-in']; g.fill();
-      }
-    }
-    // 3. 몸
-    g.beginPath(); g.ellipse(0.5 * c, 0.62 * c, 0.36 * c, 0.31 * c, 0, 0, Math.PI * 2);
-    g.fillStyle = fur; g.fill(); g.stroke();
-    // 4. 숫자 — 글꼴과 무관하게 '8'의 실제 잉크 높이로 세로 가운데 맞춤
+    var vis = tint ? Math.max(1.5, lw * 1.6) : lw;
+    var sh = frogShapes(c), i, s;
+    function path(s) { g.beginPath(); g.ellipse(s[0] * c, s[1] * c, s[2] * c, s[3] * c, 0, 0, Math.PI * 2); }
+    // 합쳐진 실루엣: ① 모든 도형을 2배 굵기로 stroke → ② 모든 도형을 fill (바깥쪽 절반만 남아 안쪽 선 없음)
+    g.lineWidth = vis * 2; g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = edge; g.fillStyle = body;
+    for (i = 0; i < sh.length; i++) { s = sh[i]; path(s); g.stroke(); }
+    for (i = 0; i < sh.length; i++) { s = sh[i]; path(s); g.fill(); }
+    // 숫자 — 글꼴과 무관하게 '8'의 실제 잉크 높이로 세로 가운데 맞춤 (중심 .65c)
     g.fillStyle = pal.num;
     g.font = '800 ' + Math.max(14, Math.round(0.5 * c)) + 'px ' + NUM_FONT;
     g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     var m = g.measureText('8');
     var asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
-    var by = (asc === undefined || isNaN(asc)) ? 0.63 * c + 0.18 * c : 0.63 * c + (asc - (desc || 0)) / 2;
+    var by = (asc === undefined || isNaN(asc)) ? 0.65 * c + 0.18 * c : 0.65 * c + (asc - (desc || 0)) / 2;
     g.fillText(String(d), 0.5 * c, by);
   }
   // sprites[state][digit]  state: 0 보통, 1 합<10, 2 합=10, 3 합>10
@@ -939,8 +939,8 @@ const Sound = (function () {
         grid[it[0]][it[1]] = 0;
         var delay = Math.min(200, i * 25);
         if (reduced) delay = 0;
-        effects.push({ type: 'glide', r: it[0], c: it[1], v: it[2], t0: gt + delay, dur: reduced ? 150 : 460 });
-        removedAt[it[0] * COLS + it[1]] = reduced ? gt : gt + delay + 70;
+        effects.push({ type: 'plop', r: it[0], c: it[1], v: it[2], t0: gt + delay, dur: reduced ? 150 : 460 });
+        removedAt[it[0] * COLS + it[1]] = reduced ? gt : gt + delay + 280; // 빈 자리 표시는 퐁당 순간(280ms)부터
       }
       remaining -= list.length;
       setScore(score + list.length, true);
@@ -977,7 +977,7 @@ const Sound = (function () {
     $('overTitle').textContent = title;
     var sub = $('overSub');
     sub.hidden = reason !== 'clear';
-    sub.textContent = reason === 'clear' ? '하늘이 텅 비었어요!' : '';
+    sub.textContent = reason === 'clear' ? '연못이 텅 비었어요!' : '';
     $('overScore').textContent = score;
     $('overBest').textContent = '최고 ' + best + '마리';
     $('newRec').hidden = !record;
@@ -1132,7 +1132,6 @@ const Sound = (function () {
   function easeOutBack(t) { return 1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2); }
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
   function clamp01(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
-  function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
 
   var PIV = 0.93; // 변형 기준점: 몸 바닥 가운데 (.5c, .93c)
   function drawSprite(sp, x, y, opt) {
@@ -1165,16 +1164,16 @@ const Sound = (function () {
     selRectPath(r, 2); g2.fill();
   }
 
-  // 성공 퇴장: 웅크림(0–70) → 펼침·도약(70–170) → 왼쪽 위로 활공(170–460)
-  function glideOpt(e) {
-    if (e < 70) { var q = easeOut(e / 70); return { sx: 1 + 0.08 * q, sy: 1 - 0.12 * q }; }
-    if (e < 170) { var q2 = easeOut((e - 70) / 100); return { sx: 1.08 + 0.20 * q2, sy: 0.88 - 0.10 * q2, ty: -0.30 * C * q2 }; }
-    var k = easeInOutSine(clamp01((e - 170) / 290));
+  function easeInQuad(t) { return t * t; }
+  // 성공 퇴장 '퐁당': 웅크림(0–70) → 제자리 수직 도약 −.42c(70–220) → 떨어지며 축소·사라짐(220–440). 가로 이동 없음.
+  function plopOpt(e) {
+    if (e < 70) { var q = easeOut(e / 70); return { sx: 1 + 0.10 * q, sy: 1 - 0.14 * q }; }
+    if (e < 220) { var q2 = easeOut((e - 70) / 150); return { sx: 1.10 - 0.20 * q2, sy: 0.86 + 0.26 * q2, ty: -0.42 * C * q2 }; }
+    var k = easeInQuad(clamp01((e - 220) / 220));
     return {
-      tx: -0.9 * C * k, ty: -0.30 * C - 0.75 * C * Math.pow(k, 1.4),
-      rot: -12 * Math.PI / 180 * k,
-      sx: 1.28 - 0.43 * k, sy: 0.78 - 0.23 * k,
-      alpha: e < 300 ? 1 : 1 - clamp01((e - 300) / 160)
+      ty: -0.42 * C + 0.44 * C * k,
+      sx: 0.90 - 0.40 * k, sy: 1.12 - 0.62 * k,
+      alpha: e < 300 ? 1 : 1 - clamp01((e - 300) / 140)
     };
   }
 
@@ -1186,7 +1185,7 @@ const Sound = (function () {
     var sel = drag ? drag.sel : null;
     if (sel) fillSel(sel, sel.st);
 
-    // 실패 흔들림 중인 하늘다람쥐
+    // 실패 흔들림 중인 개구리
     var shakeRot = null;
     for (var i = 0; i < effects.length; i++) {
       var ef = effects[i];
@@ -1200,7 +1199,7 @@ const Sound = (function () {
         }
       }
     }
-    var wig = Math.sin(gt / 440 * Math.PI * 2); // 몽실 주기 440ms
+    var wig = Math.sin(gt / 440 * Math.PI * 2); // 들썩 주기 440ms
     var endHop = 0;
     if (gt - endHopT0 < 200) endHop = -Math.sin(clamp01((gt - endHopT0) / 200) * Math.PI) * 0.12 * C;
 
@@ -1228,7 +1227,7 @@ const Sound = (function () {
           }
         }
         if (st === 2 && !reduced) {
-          // 몽실: 숨 쉬듯 살짝 부풀며 흔들림
+          // 들썩: 숨 쉬듯 살짝 부풀며 흔들림
           opt = opt || {};
           var aw = Math.abs(wig);
           opt.rot = wig * 3 * Math.PI / 180;
@@ -1242,26 +1241,30 @@ const Sound = (function () {
     }
     if (sel) strokeSel(sel, sel.st);
 
-    // 효과 (판 위 레이어 — 날아가는 하늘다람쥐는 다른 칸 위에 그림)
+    // 효과 (판 위 레이어 — 뛰어오른 개구리는 다른 칸 위에 그림)
     var keep = [];
     for (i = 0; i < effects.length; i++) {
       ef = effects[i];
       var e = gt - ef.t0;
       if (e > ef.dur) continue;
       keep.push(ef);
-      if (ef.type === 'glide') {
+      if (ef.type === 'plop') {
         var hx = ef.c * C, hy = ef.r * C, sp2 = sprites[0][ef.v];
         if (e < 0) { drawSprite(sp2, hx, hy, null); continue; }
         if (reduced) { drawSprite(sp2, hx, hy, { alpha: 1 - e / ef.dur }); continue; }
-        // 털 뭉치 2개 (펼침 시작 70ms부터 300ms)
-        if (e >= 70 && e < 370) {
-          var dp = easeOut((e - 70) / 300);
-          g2.fillStyle = rgba(pal.dust.charAt(0) === '#' ? pal.dust : '#ffffff', 0.5 * (1 - dp));
-          var fx = hx + 0.5 * C, fy = hy + 0.88 * C, rr = (0.04 + 0.04 * dp) * C, spr = 0.15 * C * dp;
-          g2.beginPath(); g2.arc(fx - spr, fy + spr * 0.6, rr, 0, Math.PI * 2); g2.fill();
-          g2.beginPath(); g2.arc(fx + spr, fy + spr * 0.6, rr, 0, Math.PI * 2); g2.fill();
+        if (e < 440) drawSprite(sp2, hx, hy, plopOpt(e));
+        // 물결 고리 1개 (t 280–460)
+        if (e >= 280) {
+          var wp = easeOut(clamp01((e - 280) / 180));
+          g2.save();
+          g2.globalAlpha = 0.6 * (1 - wp);
+          g2.strokeStyle = pal.dust.charAt(0) === '#' ? pal.dust : '#ffffff';
+          g2.lineWidth = Math.max(1, 0.03 * C);
+          g2.beginPath();
+          g2.ellipse(hx + 0.5 * C, hy + 0.80 * C, (0.10 + 0.26 * wp) * C, (0.03 + 0.07 * wp) * C, 0, 0, Math.PI * 2);
+          g2.stroke();
+          g2.restore();
         }
-        drawSprite(sp2, hx, hy, glideOpt(e));
       } else if (ef.type === 'fail') {
         g2.save();
         if (reduced) { if (e > 120) g2.globalAlpha = 0; }
