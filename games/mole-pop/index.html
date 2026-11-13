@@ -280,7 +280,7 @@
       <div class="card"><span class="lab">점수</span><b id="score" class="num">0</b></div>
       <div class="card"><span class="lab">콤보</span><b id="combo" class="num zero">×0</b></div>
       <div class="card best-card"><span class="lab">최고</span><b id="best" class="num">0</b></div>
-      <div class="card"><span class="lab">시간</span><b id="time" class="num">60</b></div>
+      <div class="card"><span class="lab">시간</span><b id="time" class="num">40</b></div>
     </div>
     <div class="btns">
       <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
@@ -291,7 +291,7 @@
     </div>
   </header>
 
-  <div class="timebar" id="timebar" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60">
+  <div class="timebar" id="timebar" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="40" aria-valuenow="40">
     <div class="fill" id="timeFill"></div>
   </div>
 
@@ -306,7 +306,7 @@
         <h2>두더지 뿅뿅</h2>
         <p>올라오는 두더지를 톡! 폭탄은 건드리지 마세요</p>
         <div class="legend" id="legend"></div>
-        <p>제한 시간 <span class="num">60</span>초 · 연속으로 맞히면 콤보</p>
+        <p>제한 시간 <span class="num">40</span>초 · 연속으로 맞히면 콤보</p>
         <p>최고 <b class="num" id="startBest">0</b>점</p>
         <button class="primary" id="startBtn" type="button">시작하기</button>
         <p class="small hint-key">마우스로 클릭 · P/Esc 일시정지 · M 소리</p>
@@ -672,20 +672,20 @@ const Sound = (function () {
 (function () {
   'use strict';
   /* ================= 상수 (docs/games/mole-pop/design.md) ================= */
-  var GAME_MS = 60000;
-  var RISE = 150, SINK = 150, SINK_OK = 80;      // 올라옴 / 내려감 / 내려감 중 판정 가능 구간
+  var GAME_MS = 40000;
+  var RISE = 110, SINK = 120, SINK_OK = 60;      // 올라옴 / 내려감 / 내려감 중 판정 가능 구간
   var HIT_MS = 300, BOMB_HIT_MS = 420;            // 잡힘 연출 (폭탄은 연기 고리 420ms까지)
-  var REST = 400;                                 // 구멍 쉬는 시간
+  var REST = 300;                                 // 구멍 쉬는 시간
   var LEAVE_MS = 160;                             // 시간 종료 때 내려가기
-  var FIRST_SPAWN = 600, RETRY = 100;
+  var FIRST_SPAWN = 400, RETRY = 100;
   var OVER_DELAY = 500, OVER_LOCK = 700, RESUME_IGNORE = 300;
-  var GOLD_GAP = 4000, SAFE_START = 5000;
-  var P_GOLD = 0.08, P_BOMB = 0.10;
+  var GOLD_GAP = 3000, SAFE_START = 3000;
+  var P_GOLD = 0.10, P_BOMB = 0.12;
   var STAGES = [
-    { iv: 1100, stay: 1400, max: 1 },
-    { iv: 900, stay: 1200, max: 2 },
-    { iv: 750, stay: 1000, max: 2 },
-    { iv: 620, stay: 850, max: 3 }
+    { iv: 800, stay: 1050, max: 2 },
+    { iv: 650, stay: 900, max: 2 },
+    { iv: 520, stay: 750, max: 3 },
+    { iv: 420, stay: 620, max: 3 }
   ];
   var BEST_KEY = 'mole-pop-best';
   var HIDE_Y = 70;
@@ -826,7 +826,7 @@ const Sound = (function () {
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
   function multFor(c) { return c >= 20 ? 3 : c >= 15 ? 2.5 : c >= 10 ? 2 : c >= 5 ? 1.5 : 1; }
   function tierFor(c) { return c >= 20 ? 4 : c >= 15 ? 3 : c >= 10 ? 2 : c >= 5 ? 1 : 0; }
-  function stageIdx() { var e = GAME_MS - timeLeft; return e < 15000 ? 0 : e < 30000 ? 1 : e < 45000 ? 2 : 3; }
+  function stageIdx() { var e = GAME_MS - timeLeft; return e < 10000 ? 0 : e < 20000 ? 1 : e < 30000 ? 2 : 3; }
   function isActive(h) { return h.st === 'rising' || h.st === 'up' || h.st === 'sinking'; }
   function restartClass(el, cls) { el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); }
   function track(a) {
@@ -910,7 +910,7 @@ const Sound = (function () {
     var h = holes[i];
     var base = STAGES[stageIdx()].stay;
     h.st = 'rising'; h.type = type; h.t0 = gt;
-    h.stay = type === 'gold' ? Math.max(550, base * 0.6) : base;
+    h.stay = type === 'gold' ? Math.max(500, base * 0.6) : base;
     h.actor.classList.remove('hit');
     showKind(h, type);
     lastHole = i; lastType = type;
