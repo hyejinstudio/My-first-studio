@@ -17,6 +17,7 @@
 | `--tile-mole` | #e3e9d9 | #18201b | 두더지 뿅뿅 아이콘 타일 배경 (옅은 세이지 잔디 — 게임 판 `--lawn` 계열, 라이트는 한 톤 밝게) |
 | `--tile-bunny` | #dbe6e3 | #16242a | 개구리 텐 아이콘 타일 배경 (v4: 옅은 청록 회색 연못 — 게임 판 `--meadow` 계열, 라이트는 한 톤 밝게. 이름은 레거시) |
 | `--tile-bungeo` | #e4ebf1 | #1a2129 | 붕어빵 눈싸움 아이콘 타일 배경 (옅은 회청 눈밭 — 게임 `--snow` 계열, 다크는 밤 눈밭) |
+| `--tile-poop` | #efe8dc | #221e1a | 똥비 피하기 아이콘 타일 배경 (옅은 귀리색 — 회청 계열 타일이 많아 따뜻한 쪽으로 구분, 다크는 어두운 흙색) |
 
 - 아이콘 안의 도형 색은 라이트/다크 공통(게임 속 색과 동일)으로 두되, 다크에서 너무 어두운 테두리가 없도록 아래 지정 색만 사용.
 
@@ -44,7 +45,7 @@
 
 - `grid-template-columns: repeat(N, minmax(0, 1fr))`. 게임이 2개뿐이라 3열에서 칸 하나가 비어도 왼쪽 정렬로 둔다(가운데 정렬·늘이기 금지 — 게임이 늘어도 모양 유지).
 - 가로 스크롤 없음. 제목 28px(폰 < 360px은 24px).
-- 새 게임은 그리드 **맨 앞**에 추가(최신 순). 현재 순서: 붕어빵 눈싸움, 두더지 뿅뿅, 개구리 텐, 뱀 정원, 블록 스택.
+- 새 게임은 그리드 **맨 앞**에 추가(최신 순). 현재 순서: 똥비 피하기, 붕어빵 눈싸움, 두더지 뿅뿅, 개구리 텐, 뱀 정원, 블록 스택.
 
 ## 카드 구조 (카드 전체가 링크)
 ```html
@@ -100,6 +101,38 @@
 - 눈: 흰자 `<circle r="2.2" fill="#fff">` at (44.5,10.5)와 (50,12); 눈동자 `<circle r="1.1" fill="#1f2430">` at (45,10) (50.6,11.6)
 - 혀: `<path d="M53 8 l3 -2 m-3 2 l3.4 0.6" stroke="#e4572e" stroke-width="1.4" stroke-linecap="round"/>` (머리 오른쪽 위로 갈래)
 - 산딸기 (오른쪽 아래): `<circle cx="50" cy="46" r="6" fill="#e0374f"/>`, 씨 점 r=0.9 `#ffd6dc` at (48,46) (52,46.5) (50,49), 하이라이트 r=1.5 `#fff` opacity .5 at (47.6,43.6), 잎 `<ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f9d5a"/>`와 `<ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f9d5a"/>`
+
+### 똥비 피하기 — 떨어지는 소프트아이스크림 똥 2개 + 땅 그림자 + 옆으로 피하는 콩이
+게임 속 색 그대로(라이트 기준: 똥 #a87a55·선 #8a6244, 땅 #dbe3d1, 그림자 #5c4a38, 콩이 얼굴 #f3d9c1·선 #c7a283·앞머리 #6b5444·상의 #86c3b0·눈 #3a2f28, 땀 #8fbfe0). 똥 모양은 게임 `art-ui.md`의 `poopPath`를 s=20으로 옮긴 좌표. 그대로 붙여 넣으면 됨:
+```html
+<svg viewBox="0 0 64 64" aria-hidden="true">
+  <defs><g id="poopRainShape"><ellipse cx="0" cy="-3.4" rx="10" ry="3.4"/><ellipse cx="0" cy="-8.4" rx="7.6" ry="3"/><ellipse cx="0" cy="-12.6" rx="5" ry="2.6"/><path d="M-2.6 -14 Q-2 -17.2 0.8 -18.2 Q2.6 -18.6 1.8 -16.8 Q1.4 -15.4 2.8 -14 Z"/></g></defs>
+  <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dbe3d1"/>
+  <ellipse cx="17" cy="52.4" rx="7" ry="1.9" fill="#5c4a38" opacity=".2"/>
+  <ellipse cx="47" cy="52.4" rx="4.6" ry="1.4" fill="#5c4a38" opacity=".14"/>
+  <g transform="translate(17 30)">
+    <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="2.4" stroke-linejoin="round"/>
+    <use href="#poopRainShape" fill="#a87a55"/>
+    <path d="M-6.8 -6 Q0 -4.8 6.8 -6 M-4.4 -10.6 Q0 -9.6 4.4 -10.6" fill="none" stroke="#8a6244" stroke-width="1" opacity=".5"/>
+    <ellipse cx="-3.4" cy="-9" rx="1.4" ry=".7" transform="rotate(-17 -3.4 -9)" fill="#fff" opacity=".35"/>
+  </g>
+  <g transform="translate(47 21) scale(.68)">
+    <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="3" stroke-linejoin="round"/>
+    <use href="#poopRainShape" fill="#a87a55"/>
+  </g>
+  <rect x="27" y="40" width="11" height="10.5" rx="4.4" fill="#86c3b0" stroke="#c7a283" stroke-width="1.2"/>
+  <circle cx="32.5" cy="34.6" r="6.4" fill="#f3d9c1" stroke="#c7a283" stroke-width="1.2"/>
+  <path d="M26 34.6 A6.5 6.5 0 0 1 39 34.6 Q35 32.8 32 33.2 Q28.6 33.8 26 34.6 Z" fill="#6b5444"/>
+  <circle cx="30.4" cy="36" r=".9" fill="#3a2f28"/><circle cx="34.6" cy="36" r=".9" fill="#3a2f28"/>
+  <path d="M41 41.5 h4.5 M42 45.5 h3" stroke="#9aa3ad" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M24.6 27.6 q1.8 2.6 0 3.6 q-1.8 -1 0 -3.6 Z" fill="#8fbfe0"/>
+</svg>
+```
+- 구성: 위 = 큰 똥(왼쪽)과 작은 똥(오른쪽, 0.68배) 낙하 중, 아래 = 땅 띠 위 **각 똥의 예고 그림자**(큰 것이 더 진함 — 게임 핵심 규칙), 가운데 = 콩이가 왼쪽으로 피하는 중(오른쪽 속도선 2줄, 머리 뒤 땀방울).
+- 똥은 **얼굴 없음**(게임과 동일). 실루엣은 같은 도형을 2.4~3 굵기 stroke 한 번 + fill 한 번 덮어 **바깥 외곽선만** 남긴다. 두 `<use>`는 같은 id를 가리켜야 함.
+- `<g id="poopRainShape">` 안 도형에는 fill/stroke를 넣지 않는다(`<use>`에서 상속). id는 목록 페이지 안에서 유일.
+- 아이콘 색은 라이트/다크 공통. 다크 타일(#221e1a)에서는 밝은 땅 띠·콩이 얼굴·갈색 똥이 실루엣을 만든다(시안 렌더 확인: 309px·171px 카드 모두 형태 유지).
+- 카드: `href="games/poop-rain/"`, `--tile: var(--tile-poop)`, h2 **"똥비 피하기"**, p **"하늘에서 떨어지는 똥을 좌우로 피해 오래 버티기! 땅의 그림자를 보고 미리 피해요"**, `aria-label="똥비 피하기 — 하늘에서 떨어지는 똥을 좌우로 피해 오래 버티기! 땅의 그림자를 보고 미리 피해요"`. **그리드 맨 앞**(붕어빵 눈싸움 카드 위). 문구는 design.md 확정 내용(우산 등)에 맞춰 개발자가 다듬어도 됨(2줄 이내).
 
 ### 붕어빵 눈싸움 — 포물선으로 날아가는 팥붕 + 두 진영 눈밭 위 슈붕
 게임 속 색 그대로(진영 파랑 #6f96c9 줄무늬 #5f86ba / 분홍 #ebb2c0 물방울 #d495a6 / 빈 눈 #eef2f6, 팥붕 #9a6442·#5e3a24·팥 #5a2b2b, 슈붕 #e6bd68·#9c7425·크림 #fff4d2). 붕어빵 path는 게임 `art-ui.md`의 실루엣과 같은 좌표. 그대로 붙여 넣으면 됨:
@@ -207,3 +240,4 @@
 | 2026-11-13 | 개구리 텐 아이콘 v4: 게임 이름 "하늘다람쥐 텐" → "개구리 텐". 아이콘을 얼굴 없는 개구리 실루엣(몸·눈 혹 2·앞발 2를 합친 실루엣, 몸 #d4e7bb, 외곽선 #7f9a8b)으로 교체, 선택 사각형 초록 #1f8a4c → 파랑 #1f6fc4, 숫자 "10" 색 #1b2e26. `--tile-bunny` #dde5ee/#1b2330 → #dbe6e3/#16242a. 카드 제목·설명·aria-label 갱신. |
 | 2026-11-13 | 두더지 뿅뿅 카드 추가: `--tile-mole` #e3e9d9/#18201b, 둔덕 구멍에서 솟은 두더지(점 눈·코·앞발, clipPath `molePopClip`) + 반짝이 2 아이콘. 그리드 맨 앞. |
 | 2026-11-13 | 붕어빵 눈싸움 카드 추가: `--tile-bungeo` #e4ebf1/#1a2129, 파랑 줄무늬·분홍 물방울 눈밭 띠 + 포물선 팥붕 + 슈붕 아이콘(path id `bungeoFish`). 그리드 맨 앞. |
+| 2026-11-13 | 똥비 피하기 카드 추가: `--tile-poop` #efe8dc/#221e1a, 낙하 중인 소프트아이스크림 똥 2개(얼굴 없음, `<g id="poopRainShape">`) + 땅 예고 그림자 + 피하는 콩이 아이콘. 그리드 맨 앞. |
