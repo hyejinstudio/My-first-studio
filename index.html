@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #fbe9ee;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dde5ee;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #2a1d23;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #1b2330;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #2a1d23;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #1b2330;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -92,22 +92,22 @@
 
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
-    <a class="game" href="games/bunny-ten/" aria-label="토끼 텐 — 숫자를 든 토끼들을 네모로 감싸 합이 10이 되면 깡충 뛰어 사라지는 숫자 퍼즐">
+    <a class="game" href="games/bunny-ten/" aria-label="하늘다람쥐 텐 — 숫자를 품은 하늘다람쥐들을 네모로 감싸 합이 10이 되면 휘익 날아가는 숫자 퍼즐">
       <div class="art" style="--tile: var(--tile-bunny)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
-          <rect x="7" y="6" width="50" height="52" rx="9" fill="#2f9e57" fill-opacity=".12" stroke="#2f9e57" stroke-width="2.5"/>
-          <ellipse cx="25.5" cy="19" rx="4.6" ry="10.5" transform="rotate(-6 25.5 19)" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5"/>
-          <ellipse cx="38.5" cy="19" rx="4.6" ry="10.5" transform="rotate(6 38.5 19)" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5"/>
-          <ellipse cx="25.5" cy="20.5" rx="2.1" ry="6.5" transform="rotate(-6 25.5 20.5)" fill="#f5b5c0"/>
-          <ellipse cx="38.5" cy="20.5" rx="2.1" ry="6.5" transform="rotate(6 38.5 20.5)" fill="#f5b5c0"/>
-          <path d="M32 25 C45 25 52 34 52 43 C52 51.5 44 55 32 55 C20 55 12 51.5 12 43 C12 34 19 25 32 25 Z" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5" stroke-linejoin="round"/>
-          <ellipse cx="32" cy="42.5" rx="13" ry="10" fill="#fff8e4"/>
-          <path d="M25.5 39 L28 37 L28 48" fill="none" stroke="#3b2416" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <ellipse cx="36" cy="42.5" rx="3.8" ry="5.5" fill="none" stroke="#3b2416" stroke-width="3.4"/>
+          <rect x="7" y="6" width="50" height="52" rx="9" fill="#1f8a4c" fill-opacity=".12" stroke="#1f8a4c" stroke-width="2.5"/>
+          <ellipse cx="44.5" cy="24" rx="7.5" ry="13.5" transform="rotate(22 44.5 24)" fill="#dbe9f6" stroke="#8a9bb0" stroke-width="1.6"/>
+          <circle cx="23.5" cy="22.5" r="4.25" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>
+          <circle cx="40.5" cy="22.5" r="4.25" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>
+          <circle cx="23.5" cy="23" r="2.25" fill="#cfe0f0"/>
+          <circle cx="40.5" cy="23" r="2.25" fill="#cfe0f0"/>
+          <ellipse cx="32" cy="36" rx="18" ry="15.5" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>
+          <path d="M24.5 32 L27 30 L27 42" fill="none" stroke="#1d2a3f" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <ellipse cx="35.5" cy="36" rx="3.8" ry="5.6" fill="none" stroke="#1d2a3f" stroke-width="3.4"/>
         </svg>
       </div>
-      <h2>토끼 텐</h2>
-      <p>숫자를 든 토끼들을 네모로 감싸 합이 10이 되면 깡충 뛰어 사라지는 숫자 퍼즐</p>
+      <h2>하늘다람쥐 텐</h2>
+      <p>숫자를 품은 하늘다람쥐들을 네모로 감싸 합이 10이 되면 휘익 날아가는 숫자 퍼즐</p>
     </a>
 
     <a class="game" href="games/snake-garden/" aria-label="뱀 정원 — 정원을 기어 다니며 열매를 먹고 몸이 길어지는 뱀 게임">
