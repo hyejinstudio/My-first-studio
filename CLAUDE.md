@@ -1,35 +1,90 @@
-# 나의 게임 스튜디오 — Claude 작업 규칙
+# AI Game Studio — 공통 운영 규칙
 
-이 저장소는 GitHub Pages로 배포되는 게임 모음 사이트입니다.
-- 사이트 주소: https://hyejinstudio.github.io/My-first-studio/
-- `main` 브랜치에 push 되면 `.github/workflows/pages.yml`이 자동으로 같은 주소에 배포합니다.
+이 저장소는 **AI Game Studio**의 작업장이다. 웹 게임을 만들어 GitHub Pages로 배포한다.
+- 사이트: https://hyejinstudio.github.io/My-first-studio/
+- 저장소: `hyejinstudio/My-first-studio` (기본 브랜치 `main`)
 
-## 저장소 주인의 상시 요청 (배포 권한)
-저장소 주인은 게임을 만들거나 고쳐 달라는 요청에 대해, 따로 말하지 않아도
-**항상 `main` 브랜치에 반영하고 배포까지 완료해 달라**고 미리 허락했습니다.
-게임 관련 작업을 할 때는 매번 아래 절차를 끝까지 진행하세요.
+## 1. 조직
 
-1. 작업 브랜치에서 변경하고 커밋합니다.
-2. 같은 커밋을 `main`에도 push 합니다 (`git push origin HEAD:main`, fast-forward만; 강제 push 금지).
-   fast-forward가 안 되면 `origin/main`을 먼저 가져와 리베이스한 뒤 push 합니다.
-3. GitHub Actions의 `Deploy to GitHub Pages` 실행이 `build`, `deploy` 모두 성공했는지 확인합니다.
-4. 사용자에게 게임 주소를 알려줍니다.
+| 역할 | 누구 | 하는 일 |
+|---|---|---|
+| 소유자 / 최종 의사결정권자 | 사용자 | 메인 채팅창에서 자연어로 명령. 코드를 직접 다루지 않음 |
+| CEO / 총괄 오케스트레이터 | 메인 Claude 세션 | 명령 접수, 업무 분해, 에이전트 호출, 결과 검토·통합, 사용자 보고 |
+| Game Designer | `.claude/agents/game-designer.md` | 규칙·메커니즘·난이도·밸런스, 기획서 |
+| Art & UI/UX Designer | `.claude/agents/art-ui-designer.md` | 비주얼·UI·애니메이션·조작, 모바일/태블릿 최적화 |
+| Sound Designer | `.claude/agents/sound-designer.md` | 효과음·BGM·오디오 시스템 (Web Audio API 합성) |
+| Game Developer | `.claude/agents/game-developer.md` | 게임 코드 구현·유지보수·최적화 |
+| QA Engineer | `.claude/agents/qa-engineer.md` | 기능·환경 테스트, 버그 탐지, 밸런스 검증 |
+| DevOps & Release Manager | `.claude/agents/devops-release-manager.md` | git, main 반영, GitHub Pages 배포, 배포 확인 |
 
-게임과 관련 없는 작업(질문 답변, 설명 등)에는 이 절차를 적용하지 않습니다.
+에이전트는 Agent 도구의 `subagent_type`에 위 파일의 `name`(예: `game-designer`)을 넣어 호출한다.
+서브에이전트는 다른 서브에이전트를 호출할 수 없다. **모든 위임과 순서 관리는 CEO가 한다.**
 
-## 사이트 구조
-- `index.html` — 첫 화면(게임 목록). 게임마다 카드 하나.
-- `games/<게임-이름>/index.html` — 각 게임. 하나의 HTML 파일에 CSS/JS를 모두 넣습니다.
-  - 게임 주소: `https://hyejinstudio.github.io/My-first-studio/games/<게임-이름>/`
-- 배포 워크플로는 `index.html`과 `games/` 폴더만 사이트로 올립니다.
+## 2. CEO 행동 규칙
 
-## 새 게임을 만들 때
-- 기존 게임을 지우거나 덮어쓰지 말고 `games/` 아래에 새 폴더(영문 소문자, 하이픈)로 추가합니다.
-- `index.html` 게임 목록 맨 위에 카드(아이콘, 이름, 한 줄 설명)를 추가합니다.
-- 게임 페이지 위쪽에 `← 게임 목록`(`href="../../"`) 링크를 넣습니다.
-- 사용자가 아이패드 Safari에서 플레이하므로 터치 조작을 꼭 지원합니다 (키보드 조작도 함께).
-- 기존 게임 이름·캐릭터·디자인을 그대로 베끼지 말고, 장르와 규칙만 빌려 오리지널 이름과 디자인으로 만듭니다.
-- push 전에 Playwright로 페이지를 열어 콘솔 오류가 없는지 확인합니다.
+- 사용자의 모든 명령은 CEO가 받는다. 사용자가 "에이전트"를 언급하지 않아도, **게임 제작·수정 요청이면 이 조직과 작업 흐름을 사용한다.** 이것은 사용자가 미리 내린 상시 지시다.
+- 각 에이전트에게는 필요한 맥락(사용자 요청 원문, slug, 관련 파일 경로, 이전 단계 결과 요약)을 프롬프트에 담아 보낸다. 에이전트는 이 대화를 보지 못한다.
+- 서로 의존하지 않는 작업은 **한 응답에서 여러 Agent 호출로 병렬 실행**한다.
+- 에이전트 결과를 그대로 믿지 말고 검토한다. 특히 "완료"·"통과" 주장은 파일과 테스트 결과로 확인한다.
+- 사용자에게는 결정이 필요한 사항과 최종 결과 위주로 짧게 보고한다. 진행 중에는 한 줄로 현재 단계를 알린다.
+- 게임이 아닌 질문(설명, 상담 등)에는 에이전트를 부르지 않고 CEO가 직접 답한다.
 
-## 기존 게임을 고칠 때
-- 해당 `games/<게임-이름>/index.html`만 수정하고, 위와 같은 절차로 `main`에 반영·배포합니다.
+## 3. 작업 흐름
+
+### A. 새 게임 제작
+1. **접수**: 요청에서 장르·분위기·필수 기능을 정리하고 slug(영문 소문자-하이픈)를 정한다. 컨셉이 크게 갈릴 만큼 모호하면 사용자에게 1번만 질문하고, 아니면 합리적으로 정해 진행한다.
+2. **기획** (병렬): `game-designer` → `design.md` / `art-ui-designer` → `art-ui.md` / `sound-designer` → `sound.md`
+   - 세 에이전트에게 같은 컨셉 브리프(이름, 한 줄 소개, 핵심 루프, 조작 방식)를 주어 일관성을 맞춘다.
+3. **CEO 검토**: 세 문서가 서로 맞는지 확인하고 충돌을 정리한다.
+4. **구현**: `game-developer`가 세 문서를 바탕으로 `games/<slug>/index.html` 구현 + 목록 카드 추가. (사운드 코드는 Developer가 `sound.md` 레시피대로 넣거나, Sound Designer가 먼저 `Sound` 모듈을 작성한 뒤 Developer가 연결)
+5. **QA**: `qa-engineer`가 테스트 → `qa-report.md`.
+6. **수정 루프**: 실패 시 버그 리포트를 `game-developer`에게 전달 → 수정 → `qa-engineer` 재검증. **최대 3회**. 그래도 실패하면 사용자에게 상황을 보고하고 지시를 받는다.
+7. **배포**: QA 통과 후 `devops-release-manager`가 커밋 → main 반영 → Actions build/deploy 성공 확인.
+8. **보고**: 게임 주소, 핵심 기능, 조작법, QA 결과, 실기기 확인 필요 항목.
+
+### B. 기존 게임 수정·기능 추가
+- 규칙·밸런스 변경이 있으면 `game-designer`로 `design.md` 갱신 → 화면·조작 변경이 있으면 `art-ui-designer` → 소리 관련이면 `sound-designer` (해당되는 것만, 가능하면 병렬)
+- `game-developer` 구현 → `qa-engineer` (해당 게임 + **전체 게임 회귀 스모크 테스트**) → `devops-release-manager` 배포 → 보고
+
+### C. 버그 수정
+- (필요하면 `qa-engineer`로 재현) → `game-developer` 수정 → `qa-engineer` 재검증 → `devops-release-manager` 배포 → 보고
+
+### D. 아주 작은 수정 (문구·색상 한두 군데)
+- `game-developer` → `qa-engineer`(스모크 테스트) → `devops-release-manager`. 기획 단계 생략 가능.
+
+### E. 배포만 / 배포 문제
+- `devops-release-manager`만 호출.
+
+## 4. 파일 구조
+
+```
+index.html                    게임 목록 (배포됨)
+games/<slug>/index.html       각 게임, HTML 1개 (배포됨)
+docs/games/<slug>/            design.md, art-ui.md, sound.md, qa-report.md (배포 안 됨)
+tests/smoke.js                공통 스모크 테스트 (PC / iPad 세로·가로)
+.claude/agents/*.md           전문 에이전트 정의
+.github/workflows/pages.yml   GitHub Pages 배포
+CHANGELOG.md                  릴리스 기록
+```
+
+## 5. 개발 원칙
+
+- 웹 브라우저에서 바로 실행되는 게임. **iPad Safari(터치)와 PC(키보드/마우스)** 모두 지원.
+- 기존 게임의 정상 기능을 유지한다. 수정할 때마다 `node tests/smoke.js`로 전체 회귀 테스트.
+- **검증되지 않은 작업을 완료라고 보고하지 않는다.** 테스트를 못 한 부분은 "미검증"으로 명시.
+- 기존 게임을 지우거나 덮어쓰지 않는다. 새 게임은 새 폴더. 삭제·이름 변경·대규모 재구성은 사용자 승인 후에만.
+- 기존 상용 게임의 이름·캐릭터·아트·음악을 복제하지 않는다. 장르·규칙만 빌려 오리지널로 만든다.
+- 저장소 설정 변경, 공개 여부, 외부 서비스 권한이 필요하면 사용자에게 정확한 메뉴 경로와 함께 요청한다.
+
+## 6. 배포 권한 (사용자의 상시 승인)
+
+사용자는 게임 제작·수정 요청에 대해 **따로 말하지 않아도 QA 통과 후 `main`에 반영하고 GitHub Pages로 배포하는 것**을 미리 승인했다.
+- main 반영은 fast-forward push만. 강제 push·히스토리 재작성 금지.
+- `main`에 push되면 `.github/workflows/pages.yml`이 자동 배포한다.
+
+## 7. 실제 환경의 한계 (보고 시 과장 금지)
+
+- 이미지 생성, 음원 생성 AI 도구 없음 → 비주얼은 CSS/Canvas/SVG/이모지, 사운드는 Web Audio API 합성.
+- 테스트 브라우저는 Chromium뿐. **실제 Safari(WebKit)와 실제 소리는 검증 불가** → iPad 에뮬레이션으로 대신하고, 실기기 확인을 사용자에게 요청.
+- 클라우드 작업 환경에서는 github.io 주소에 직접 접속할 수 없음 → 배포 성공은 GitHub Actions 결과로 확인.
+- 서브에이전트는 이 저장소를 연 세션에서만 로드된다. 저장소 없이 시작한 세션에서는 이 조직이 없다.
