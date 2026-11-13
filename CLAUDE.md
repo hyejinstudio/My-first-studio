@@ -55,6 +55,34 @@
 ### E. 배포만 / 배포 문제
 - `devops-release-manager`만 호출.
 
+## 3-1. 실행 모드: 서브에이전트 vs 독립 에이전트 세션
+
+| | 서브에이전트 모드 (기본) | 독립 세션 모드 |
+|---|---|---|
+| 방법 | Agent 도구 + `.claude/agents/*` | `mcp__claude-code-remote__create_session`으로 에이전트마다 클라우드 세션 생성 |
+| 컨텍스트 | 각자 별도, 결과만 CEO에게 반환 | 각자 별도 세션·컨테이너, 계속 살아 있음 |
+| 에이전트끼리 대화 | 불가 (CEO 경유) | 가능 — `mcp__claude-code-remote__send_message`로 세션 ID 지정 |
+| 사용자가 개별 확인 | 불가 (CEO 요약만) | 가능 — Claude 앱/웹의 세션 목록에서 `[Studio] <역할>` 세션을 열어 대화·진행 상황 확인, 직접 메시지도 가능 |
+| 비용·속도 | 저렴, 빠름 | 세션마다 컨테이너·전체 모델 비용, 느림 |
+
+**선택 기준**: 사용자가 "에이전트 세션으로", "개별 창으로", "팀으로" 등을 요청했거나, 여러 전문가가 오래 주고받아야 하는 큰 작업(새 게임 제작 등)이면 독립 세션 모드. 작은 수정·버그 수정은 서브에이전트 모드.
+
+### 독립 세션 모드 규칙
+- **생성**: `create_session`에 `source_url: https://github.com/hyejinstudio/My-first-studio`, `source_revision: main`, `title: "[Studio] <역할> — <작업>"`, `tags: ["ai-game-studio", "studio:<역할 name>"]`.
+- **첫 프롬프트에 반드시 포함**: "너는 <역할> 에이전트다. CEO가 아니다. CLAUDE.md의 CEO 규칙·배포 절차는 적용되지 않는다. `.claude/agents/<name>.md`를 따른다", CEO 세션 ID, 협업 상대 세션 ID, 작업 내용, 금지 사항, "기다릴 때 sleep·폴링하지 말고 턴을 끝내라".
+- **CEO 세션 ID**는 `get_session`(인자 없음)으로 확인해 전달한다.
+- **메시지 형식**: `[보낸역할→받는역할] 내용`. 결과 보고는 CEO에게 `send_message`.
+- **파일 주고받기**: 세션마다 컨테이너가 따로라 파일이 공유되지 않는다. 산출물은 각 세션이 자기 작업 브랜치에 커밋·push하고, 브랜치 이름을 메시지로 알린다. 다른 세션은 `git fetch origin <브랜치>`로 가져온다.
+- **main 반영·배포는 DevOps 역할(또는 CEO)만** 한다. 다른 에이전트 세션은 main에 push하지 않는다.
+- **같은 파일 동시 수정 금지**: `games/<slug>/index.html`은 Developer 세션만 수정한다.
+- **확인**: CEO는 `list_events`, `get_session`으로 진행 상황을 보고, 에이전트의 "완료" 주장은 브랜치의 파일과 테스트로 검증한다.
+- **정리**: 작업이 끝나고 사용자가 확인했다고 하면 `archive_session`으로 보관한다.
+
+### Agent Teams (Claude Code 실험 기능) — 현재 미사용
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`로 켜는 실험 기능. 팀원끼리 직접 메시지와 공유 작업 목록을 쓴다.
+- **대화형 터미널 세션에서만** 팀원을 만든다. 팀원 화면은 터미널 안(in-process 목록 또는 tmux/iTerm2 분할 창)에서만 보인다.
+- 따라서 Claude 앱(iPad/iPhone)·웹에서 쓰는 이 스튜디오에서는 위 독립 세션 모드를 쓴다. PC 터미널에서 Claude Code CLI를 직접 실행할 때만 Agent Teams를 고려한다.
+
 ## 4. 파일 구조
 
 ```
