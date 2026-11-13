@@ -779,6 +779,16 @@ const Sound = (function () {
   // ===== 레이아웃 =====
   var L = { fw: 450, fh: 600, k: 0.75, dpr: 1, sc: 0.75 };
   var LW = 1;   // CSS 1px = 몇 u
+  // 상단 바가 담아야 할 최대 폭(시간·최고 기록이 최대 폭 '9:59.9', 우산 알약 표시 상태)을 미리 재서
+  // 바 폭에 반영 → 플레이 중 우산 획득·시간 증가로 음소거/Ⅱ 버튼이 밀리지 않는다.
+  function topNeed() {
+    var t = el.top, tt = el.time.textContent, bt = el.best.textContent, uh = el.upTop.hidden, w0 = t.style.width;
+    el.time.textContent = '9:59.9'; el.best.textContent = '9:59.9'; el.upTop.hidden = false;
+    t.style.width = 'max-content';
+    var need = Math.ceil(t.getBoundingClientRect().width) + 2;
+    t.style.width = w0; el.time.textContent = tt; el.best.textContent = bt; el.upTop.hidden = uh;
+    return need;
+  }
   function layout() {
     var ih = window.innerHeight, iw = window.innerWidth;
     document.documentElement.style.setProperty('--app-h', ih + 'px');
@@ -793,7 +803,7 @@ const Sound = (function () {
     if (fh > A) { fh = Math.max(120, A); fw = Math.floor(fh * 0.75); }
     var rs = document.documentElement.style;
     rs.setProperty('--fw', fw + 'px'); rs.setProperty('--fh', fh + 'px'); rs.setProperty('--tb', TB + 'px');
-    rs.setProperty('--topw', Math.min(W, Math.max(fw, 560)) + 'px');
+    rs.setProperty('--topw', Math.min(W, Math.max(fw, 560, topNeed())) + 'px');
     document.body.classList.toggle('tb44', TB === 44);
     document.body.classList.toggle('ov-full', fh < 460 || fw < 420);
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1260,13 +1270,15 @@ const Sound = (function () {
     for (var s = 0; s < n; s++) {
       for (i = G.poops.length - 1; i >= 0; i--) {
         p = G.poops[i];
-        p.age += h; p.y += p.vy * h;
+        var ly = landY(p), hs = h;
+        // 착지하는 하위 스텝은 착지 시각까지만 진행(흔들 똥의 x도 그 시각 값으로 판정)
+        if (p.vy > 0 && p.y + p.vy * h > ly) hs = Math.max(0, (ly - p.y) / p.vy);
+        p.age += hs; p.y += p.vy * hs;
         if (p.type === 'wobble') {
           var w = 2 * Math.PI / WOB_PER;
           p.x = p.baseX + WOB_AMP * Math.sin(w * p.age + p.ph);
           p.tilt = RM ? 0 : Math.cos(w * p.age + p.ph) * 10 * Math.PI / 180;
         }
-        var ly = landY(p);
         if (p.y > ly) p.y = ly;
         var hb = circleBox(p.x, p.y, p.r, px);
         if (hb || (G.inv > 0 && hitsCanopy(p, px))) {
@@ -1752,7 +1764,7 @@ const Sound = (function () {
     var onTheme = function () { buildAssets(); };
     if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme);
   } catch (e) {}
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { updateHud(true); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); updateHud(true); });
 
   // ===== 테스트 훅 (QA 전용) =====
   function snapshot() {
