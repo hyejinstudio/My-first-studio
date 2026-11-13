@@ -14,7 +14,7 @@
 |---|---|---|---|
 | `--tile-block` | #fdebe3 | #2a1f1b | 블록 스택 아이콘 타일 배경 (주황 기운) |
 | `--tile-snake` | #e4f0d6 | #18241c | 뱀 정원 아이콘 타일 배경 (풀색, 게임 `--tile-a` 계열) |
-| `--tile-bunny` | #fbe9ee | #2a1d23 | 토끼 텐 아이콘 타일 배경 (연분홍, 토끼 귀 안쪽 계열) — v2 크림 토끼에도 그대로 사용 |
+| `--tile-bunny` | #dde5ee | #1b2330 | 토끼 텐 아이콘 타일 배경 (v3: 은은한 회청색 — 게임 판 `--meadow` 계열. 이름은 레거시) |
 
 - 아이콘 안의 도형 색은 라이트/다크 공통(게임 속 색과 동일)으로 두되, 다크에서 너무 어두운 테두리가 없도록 아래 지정 색만 사용.
 
@@ -99,19 +99,20 @@
 - 혀: `<path d="M53 8 l3 -2 m-3 2 l3.4 0.6" stroke="#e4572e" stroke-width="1.4" stroke-linecap="round"/>` (머리 오른쪽 위로 갈래)
 - 산딸기 (오른쪽 아래): `<circle cx="50" cy="46" r="6" fill="#e0374f"/>`, 씨 점 r=0.9 `#ffd6dc` at (48,46) (52,46.5) (50,49), 하이라이트 r=1.5 `#fff` opacity .5 at (47.6,43.6), 잎 `<ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f9d5a"/>`와 `<ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f9d5a"/>`
 
-### 토끼 텐 — 배에 숫자 "10"을 단 크림색 토끼 + 초록 선택 사각형 (v2)
-게임 속 v2 토끼와 같은 모양·색(`#fbf0c8` 털, `#6b4a33` 외곽선, `#f5b5c0` 귀 안쪽, `#fff8e4` 배 무늬, `#3b2416` 숫자, `#2f9e57` 합=10 선택). **눈·볼 없음.** 그리는 순서대로:
-- 선택 사각형(뒤): `<rect x="7" y="6" width="50" height="52" rx="9" fill="#2f9e57" fill-opacity=".12" stroke="#2f9e57" stroke-width="2.5"/>`
-- 귀: `<ellipse cx="25.5" cy="19" rx="4.6" ry="10.5" transform="rotate(-6 25.5 19)" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5"/>`, `<ellipse cx="38.5" cy="19" rx="4.6" ry="10.5" transform="rotate(6 38.5 19)" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5"/>`
-- 귀 안쪽: `<ellipse cx="25.5" cy="20.5" rx="2.1" ry="6.5" transform="rotate(-6 25.5 20.5)" fill="#f5b5c0"/>`, `<ellipse cx="38.5" cy="20.5" rx="2.1" ry="6.5" transform="rotate(6 38.5 20.5)" fill="#f5b5c0"/>`
-- 몸통(찹쌀떡): `<path d="M32 25 C45 25 52 34 52 43 C52 51.5 44 55 32 55 C20 55 12 51.5 12 43 C12 34 19 25 32 25 Z" fill="#fbf0c8" stroke="#6b4a33" stroke-width="2.5" stroke-linejoin="round"/>`
-- 배 무늬: `<ellipse cx="32" cy="42.5" rx="13" ry="10" fill="#fff8e4"/>`
-- 숫자 "10"(글자 대신 도형 — 폰트 의존 없음, 선 굵기 3.4):
-  - "1": `<path d="M25.5 39 L28 37 L28 48" fill="none" stroke="#3b2416" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`
-  - "0": `<ellipse cx="36" cy="42.5" rx="3.8" ry="5.5" fill="none" stroke="#3b2416" stroke-width="3.4"/>`
-- 타일 배경 `--tile-bunny`(#fbe9ee / #2a1d23)는 그대로. 라이트 타일에서는 갈색 외곽선(6.8:1)이, 다크 타일에서는 크림 몸(14:1)이 실루엣을 만든다. 아이콘 색은 라이트/다크 공통.
-- (v1 아이콘의 흰 토끼·점눈·볼 요소는 모두 삭제.)
-- 카드: `href="games/bunny-ten/"`, `--tile: var(--tile-bunny)`, h2 "토끼 텐", p "숫자를 든 토끼들을 네모로 감싸 합이 10이 되면 깡충 뛰어 사라지는 숫자 퍼즐", `aria-label="토끼 텐 — 숫자를 든 토끼들을 네모로 감싸 합이 10이 되면 깡충 뛰어 사라지는 숫자 퍼즐"`.
+### 토끼 텐 — 몸에 숫자 "10"을 품은 하늘다람쥐 + 초록 선택 사각형 (v3)
+게임 속 v3 하늘다람쥐와 같은 모양(흰 타원 몸·반쯤 묻힌 둥근 귀·오른쪽 위 연하늘 꼬리)과 색. **얼굴 없음.** 게임 스프라이트 좌표를 c=50, 원점 (7,5)로 옮긴 값. 그리는 순서대로:
+- 선택 사각형(뒤): `<rect x="7" y="6" width="50" height="52" rx="9" fill="#1f8a4c" fill-opacity=".12" stroke="#1f8a4c" stroke-width="2.5"/>`
+- 꼬리: `<ellipse cx="44.5" cy="24" rx="7.5" ry="13.5" transform="rotate(22 44.5 24)" fill="#dbe9f6" stroke="#8a9bb0" stroke-width="1.6"/>`
+- 귀: `<circle cx="23.5" cy="22.5" r="4.25" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>`, `<circle cx="40.5" cy="22.5" r="4.25" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>`
+- 귀 안쪽: `<circle cx="23.5" cy="23" r="2.25" fill="#cfe0f0"/>`, `<circle cx="40.5" cy="23" r="2.25" fill="#cfe0f0"/>` (게임 #dde9f5보다 한 톤 진함 — 작은 크기에서 보이게)
+- 몸: `<ellipse cx="32" cy="36" rx="18" ry="15.5" fill="#f7f9fb" stroke="#8a9bb0" stroke-width="1.6"/>`
+- 숫자 "10" (도형 유지 — 폰트 의존 없음, 선 굵기 3.4, 색 #1d2a3f, 몸 가운데 x≈32):
+  - "1": `<path d="M24.5 32 L27 30 L27 42" fill="none" stroke="#1d2a3f" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`
+  - "0": `<ellipse cx="35.5" cy="36" rx="3.8" ry="5.6" fill="none" stroke="#1d2a3f" stroke-width="3.4"/>`
+- 외곽선 #8a9bb0은 게임(#9aaabd)보다 한 톤 진하게 — 아이콘은 작게 보이므로 실루엣 유지용(타일 대비 2.2:1). 굵은 진한 선은 쓰지 않는다(v3 눈 피로 원칙).
+- 아이콘 색은 라이트/다크 공통. 라이트 타일(#dde5ee)에서는 얇은 회청 외곽선 + 초록 사각형이, 다크 타일(#1b2330)에서는 흰 몸이 실루엣을 만든다. 숫자 대 몸 13.7:1.
+- (v2 크림 토끼·긴 귀·갈색 외곽선·배 무늬 요소는 모두 삭제.)
+- 카드: `href="games/bunny-ten/"`, `--tile: var(--tile-bunny)`, h2 "토끼 텐"(이름 변경 대기 — 바뀌면 h2·aria-label만 교체), p "숫자를 품은 하늘다람쥐들을 네모로 감싸 합이 10이 되면 휘익 날아가는 숫자 퍼즐", `aria-label="토끼 텐 — 숫자를 품은 하늘다람쥐들을 네모로 감싸 합이 10이 되면 휘익 날아가는 숫자 퍼즐"`.
 
 > 새 게임 아이콘 규칙: viewBox 64×64, 바깥 6px 여백, 게임 속 실제 색 2~4가지, 선 굵기 ≥ 4(작게 보여도 형태 유지), 글자 넣지 않기(숫자가 게임의 핵심이면 토끼 텐처럼 `<text>` 대신 선·타원 도형으로 그린다).
 
@@ -132,9 +133,10 @@
 ## 접근성 (대비, 색 외 구분 수단)
 - 아이콘 SVG는 `aria-hidden="true"`, 카드 `<a>`에 게임 이름이 `h2`로 들어 있어 링크 이름이 됨(필요 시 위 예시처럼 `aria-label`로 이름+설명).
 - 포커스 링: `outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 16px`.
-- `--muted` 설명 글자 대 `--panel` 대비 4.5:1 이상(기존 토큰 유지). 게임 구분은 색이 아닌 **아이콘 모양(블록 vs 뱀 vs 토끼) + 이름 글자**로.
+- `--muted` 설명 글자 대 `--panel` 대비 4.5:1 이상(기존 토큰 유지). 게임 구분은 색이 아닌 **아이콘 모양(블록 vs 뱀 vs 하늘다람쥐) + 이름 글자**로.
 
 ## 변경 이력
 | 날짜 | 내용 |
 |---|---|
 | 2026-11-13 | 토끼 텐 아이콘 v2: 게임 속 새 토끼(크림 찹쌀떡 몸통·긴 귀·갈색 외곽선·배 무늬, 얼굴 없음)에 맞춰 SVG 교체. 눈·볼 삭제, 숫자 "10" 색 #3b2416. |
+| 2026-11-13 | 토끼 텐 아이콘 v3: 캐릭터를 하늘다람쥐(흰 타원 몸·둥근 귀·연하늘 꼬리, 얼굴 없음, 얇은 회청 외곽선 #8a9bb0)로 교체. 숫자 "10" 도형 유지(색 #1d2a3f), 선택 사각형 #1f8a4c. `--tile-bunny` #fbe9ee/#2a1d23 → #dde5ee/#1b2330. 카드 설명 문구 갱신. |
