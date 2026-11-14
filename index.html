@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -97,6 +97,29 @@
 
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
+    <a class="game" href="games/parrot-beat/" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!">
+      <div class="art" style="--tile: var(--tile-parrot)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dfe6d8"/>
+          <path d="M16 46 Q9 52 8 57 Q12 56 18 50 Z" fill="#5d9170"/>
+          <path d="M26 21 C33 21 39 30 39 37 C39 45 33 51 26 51 C19 51 13 45 13 37 C13 30 19 21 26 21 Z" fill="#93c19f" stroke="#5d9170" stroke-width="1.6"/>
+          <ellipse cx="26" cy="42" rx="8" ry="7" fill="#e9f3e9"/>
+          <path d="M26 21 q-1 -5 3 -5 q3 .5 1 3" fill="none" stroke="#5d9170" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="22" cy="32" r="1.4" fill="#2a2d36"/><circle cx="30" cy="32" r="1.4" fill="#2a2d36"/>
+          <circle cx="19" cy="36" r="2" fill="#f0b4a8" opacity=".55"/><circle cx="33" cy="36" r="2" fill="#f0b4a8" opacity=".55"/>
+          <path d="M23.6 34 Q26 32 28.4 34 Q28 38 25.2 38.6 Q26.2 36.2 23.6 34 Z" fill="#e8bf73"/>
+          <rect x="29" y="45" width="18" height="6" rx="2" fill="#c98d68" stroke="#9a6647" stroke-width="1"/>
+          <ellipse cx="38" cy="45" rx="9" ry="2.6" fill="#f6efe2" stroke="#9a6647" stroke-width="1"/>
+          <path d="M48.5 37.5 A5 5 0 0 1 48.5 44.5 M51.5 34.5 A9 9 0 0 1 51.5 47.5" fill="none" stroke="#3f7752" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+          <circle cx="44" cy="18" r="4" fill="#c9694a"/>
+          <rect x="49.9" y="12.9" width="4.2" height="4.2" rx=".8" transform="rotate(45 52 15)" fill="#4b958f"/>
+          <circle cx="58" cy="18" r="4" fill="#c9694a"/>
+        </svg>
+      </div>
+      <h2>박자 앵무새</h2>
+      <p>듣고 똑같이 톡톡!</p>
+    </a>
+
     <a class="game" href="games/poop-rain/" aria-label="똥비 피하기 — 똥은 피하고 별사탕은 줍기!">
       <div class="art" style="--tile: var(--tile-poop)">
         <svg viewBox="0 0 64 64" aria-hidden="true">

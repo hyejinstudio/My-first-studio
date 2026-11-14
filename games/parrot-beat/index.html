@@ -1,0 +1,2148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>박자 앵무새</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="박자 앵무새">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  /* 숫자 전용 글꼴: Pretendard ExtraBold(SIL OFL 1.1)의 0-9,+ 서브셋. 수정본이라 내부 이름은 BeatDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "BeatDigits"; src: url("fonts/beat-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+0030-0039, U+002B; }
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --num-font: "BeatDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --grid: #e7e2d8; --well: #fbfaf7;
+    --accent: #e4572e; --gold: #f2b134; --danger: #d64545;
+    --teacher: #8fa0c6; --teacher-belly: #e7ebf4; --teacher-edge: #5f7099; --teacher-ink: #4a5c88; --teacher-tint: #eef1f8;
+    --parrot: #93c19f; --parrot-belly: #e9f3e9; --parrot-edge: #5d9170; --parrot-ink: #3f7752; --parrot-tint: #edf5ee;
+    --cheek: #f0b4a8; --beak: #e8bf73; --eye: #2a2d36;
+    --drum-head: #f6efe2; --drum-side: #c98d68; --drum-edge: #9a6647;
+    --beat: #c9694a; --off: #4b958f; --early: #6b8fc4; --late: #c58a3c; --good: #5f9b6c;
+    --shadow: rgba(40,50,70,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+      --accent: #ff7a50; --gold: #ffc94d; --danger: #ff6b6b;
+      --teacher: #5d6f99; --teacher-belly: #3a4560; --teacher-edge: #b4c2e2; --teacher-ink: #a9b9e0; --teacher-tint: #1f2433;
+      --parrot: #5b8f6a; --parrot-belly: #33493a; --parrot-edge: #b3d8bd; --parrot-ink: #a3d3b0; --parrot-tint: #1b2a21;
+      --cheek: #c98a80; --beak: #d4a95c; --eye: #1a1c22;
+      --drum-head: #d9cfbd; --drum-side: #9c6b4f; --drum-edge: #e0b896;
+      --beat: #e48a6a; --off: #6cbcb5; --early: #8eaee0; --late: #e2ae62; --good: #85c493;
+      --shadow: rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+    --accent: #ff7a50; --gold: #ffc94d; --danger: #ff6b6b;
+    --teacher: #5d6f99; --teacher-belly: #3a4560; --teacher-edge: #b4c2e2; --teacher-ink: #a9b9e0; --teacher-tint: #1f2433;
+    --parrot: #5b8f6a; --parrot-belly: #33493a; --parrot-edge: #b3d8bd; --parrot-ink: #a3d3b0; --parrot-tint: #1b2a21;
+    --cheek: #c98a80; --beak: #d4a95c; --eye: #1a1c22;
+    --drum-head: #d9cfbd; --drum-side: #9c6b4f; --drum-edge: #e0b896;
+    --beat: #e48a6a; --off: #6cbcb5; --early: #8eaee0; --late: #e2ae62; --good: #85c493;
+    --shadow: rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  .num { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; }
+  svg [hidden] { display: none; }
+  /* .app·.stage와 조상에는 transform/filter 금지 (ov-full의 position:fixed가 깨짐) */
+  .app { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; touch-action: none; }
+
+  /* 상단 바 (붕어빵 눈싸움과 같은 구조) */
+  .top {
+    flex: none; height: var(--tb, 52px); width: var(--sw, 600px);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .home {
+    flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px; white-space: nowrap;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home .short { display: none; }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .title { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .spacer { flex: 1; min-width: 0; }
+  .stagepill {
+    flex: none; height: 32px; padding: 0 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .stagepill svg { width: 16px; height: 16px; flex: none; }
+  .stagepill .sn { font-size: 16px; min-width: 10px; text-align: center; }
+  .sdots { display: inline-flex; gap: 4px; }
+  .sdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--grid); transition: background-color 200ms ease-out; }
+  .sdots i.on { background: var(--parrot-ink); }
+  .scorev { flex: none; font-size: 20px; min-width: 4.2ch; text-align: right; color: var(--ink); }
+  .hearts { flex: none; display: inline-flex; gap: 2px; }
+  .hearts svg { width: 20px; height: 20px; display: block; }
+  .hearts svg { fill: var(--danger); stroke: var(--danger); stroke-width: 1.6; transition: fill 200ms ease-out, stroke 200ms ease-out; }
+  .hearts svg.lost { fill: none; stroke: var(--muted); }
+  .btns { display: flex; gap: 6px; flex: none; }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out;
+  }
+  button:active { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 20px; height: 20px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px; flex: none;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; text-decoration: none; flex: none;
+  }
+  button.small { height: 44px; padding: 0 14px; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+  button.small svg { width: 18px; height: 18px; flex: none; }
+  button.hl { border: 2px solid var(--gold); }
+
+  /* 무대 */
+  .stage { position: relative; flex: none; width: var(--sw, 600px); height: var(--sh, 400px); }
+  .birdbox { position: absolute; display: grid; place-items: center; }
+  .birdbox .base { position: absolute; left: 5%; top: 5%; width: 90%; height: 90%; border-radius: 50%; opacity: 0; transition: opacity 200ms ease-out; }
+  #tBox .base { background: var(--teacher-tint); }
+  #mBox .base { background: var(--parrot-tint); }
+  .birdbox.on .base { opacity: 1; }
+  .birdbox svg.bird { position: relative; width: 100%; height: 100%; display: block; overflow: visible; transition: opacity 200ms ease-out; opacity: .55; }
+  #mBox svg.bird { width: 90%; height: 90%; }
+  .birdbox.on svg.bird { opacity: 1; }
+  .hop, .breath, .head, .dhead { transform-box: fill-box; }
+  .breath { transform-origin: 50% 100%; animation: breathe 2400ms ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scaleY(1.02); } }
+  .head { transform-origin: 50% 85%; transition: transform 300ms ease-out; }
+  .teacher.listen .head { transform: rotate(6deg); }
+  .me.listen .head { transform: rotate(-6deg); }
+  .dhead { transform-origin: 50% 50%; }
+  .wing { transition: transform 200ms ease-out; }
+  .me.ready .wing { transform: rotate(-14deg); }
+  .arc { opacity: 0; }
+  .t-body { fill: var(--teacher); stroke: var(--teacher-edge); stroke-width: 2; }
+  .t-belly { fill: var(--teacher-belly); }
+  .t-edge { fill: var(--teacher-edge); }
+  .t-wing { fill: var(--teacher-edge); opacity: .85; }
+  .m-body { fill: var(--parrot); stroke: var(--parrot-edge); stroke-width: 2; }
+  .m-belly { fill: var(--parrot-belly); }
+  .m-edge { fill: var(--parrot-edge); }
+  .m-wing { fill: var(--parrot-edge); opacity: .85; }
+  .b-shadow { fill: var(--shadow); }
+  .b-eye { fill: var(--eye); }
+  .b-hl { fill: #fff; }
+  .b-line { fill: none; stroke: var(--eye); stroke-width: 2.4; stroke-linecap: round; }
+  .b-beak { fill: var(--beak); stroke: var(--beak); stroke-width: 2; stroke-linejoin: round; }
+  .m-beak { fill: var(--beak); stroke: var(--drum-edge); stroke-width: 1.2; stroke-opacity: .5; stroke-linejoin: round; }
+  .b-cheek { fill: var(--cheek); opacity: .55; }
+  .d-side { fill: var(--drum-side); stroke: var(--drum-edge); stroke-width: 1.5; }
+  .d-head { fill: var(--drum-head); stroke: var(--drum-edge); stroke-width: 1.5; }
+  .t-arc { fill: none; stroke: var(--teacher-ink); stroke-width: 2.4; stroke-linecap: round; }
+  .m-arc { fill: none; stroke: var(--parrot-ink); stroke-width: 2.4; stroke-linecap: round; }
+  .m-tuft { fill: none; stroke: var(--parrot-edge); stroke-width: 3; stroke-linecap: round; }
+
+  .tl {
+    position: absolute; border-radius: 14px; background: var(--panel); border: 1px solid var(--grid); opacity: .6;
+    transition: background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out, box-shadow 150ms ease-out;
+  }
+  #tlMe { opacity: .75; }
+  #tlT.on { background: var(--teacher-tint); border-color: var(--teacher-ink); box-shadow: inset 0 0 0 1px var(--teacher-ink); opacity: 1; }
+  #tlMe.on { background: var(--parrot-tint); border-color: var(--parrot-ink); box-shadow: inset 0 0 0 1px var(--parrot-ink); opacity: 1; }
+  .stage.idle .tl { opacity: 1; }
+  .tl canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .tl .ticon { position: absolute; left: 6px; top: 5px; width: 16px; height: 16px; opacity: .55; transition: opacity 150ms ease-out; }
+  .tl.on .ticon { opacity: 1; }
+  #tlT .ticon { color: var(--teacher-ink); }
+  #tlMe .ticon { color: var(--parrot-ink); }
+
+  .combo {
+    position: absolute; height: 30px; padding: 0 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; gap: 4px; visibility: hidden; white-space: nowrap; transition: border-color 200ms ease-out, opacity 200ms ease-out;
+  }
+  .combo.show { visibility: visible; }
+  .combo.gold { border-color: var(--gold); }
+  .combo b { font-size: 18px; }
+  .combo span { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+  .ripple { position: fixed; left: 0; top: 0; width: 72px; height: 72px; margin: -36px 0 0 -36px; border-radius: 50%;
+    border: 2px solid var(--parrot-ink); pointer-events: none; z-index: 30; opacity: 0; }
+  .fx { position: absolute; pointer-events: none; width: 12px; height: 12px; }
+
+  /* 오버레이 (붕어빵 눈싸움과 같은 CSS) */
+  .overlay {
+    position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: safe center; text-align: center;
+    background: color-mix(in srgb, var(--well) 94%, transparent); line-height: 1.4; z-index: 3;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; flex: none; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  #ovPause, #ovCal { background: color-mix(in srgb, var(--well) 97%, transparent); }
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .overlay .ov-home { display: none; }
+  body.ov-full .overlay .ov-home { display: inline-flex; position: absolute; margin: 0; animation: none;
+    top: max(4px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .small { font-size: 12px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay [hidden] { display: none !important; }
+  .minis { display: flex; gap: 10px; justify-content: center; }
+  .minis svg { width: 72px; height: 72px; }
+  .legend { display: flex; gap: 8px; justify-content: center; }
+  .lcard { width: 76px; height: 64px; background: var(--panel); border: 1px solid var(--grid); border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; font-weight: 700; }
+  .lcard canvas { width: 40px; height: 32px; display: block; }
+  .badge { background: var(--gold); color: #1f2430; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 3px 10px; }
+  .resbig { font-size: 40px; line-height: 1.05; }
+  .reslist { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .reslist span { background: var(--panel); border: 1px solid var(--grid); border-radius: 999px; padding: 2px 10px; font-size: 13px; color: var(--muted); }
+  .reslist b { color: var(--ink); margin-left: 4px; }
+  #resBird svg { width: 96px; height: 96px; }
+  .calbig { width: 120px; height: 120px; border-radius: 50%; background: var(--panel); border: 2px solid var(--grid); display: grid; place-items: center; }
+  .calbig i { width: 56px; height: 56px; border-radius: 50%; background: var(--beat); opacity: .35; }
+  .caldots { display: flex; gap: 6px; }
+  .caldots i { width: 10px; height: 10px; border-radius: 50%; background: var(--grid); }
+  .caldots i.warm { background: color-mix(in srgb, var(--muted) 45%, var(--grid)); }
+  .caldots i.on { background: var(--parrot-ink); }
+  .calval { font-size: 40px; }
+  .hint-touch { display: none; }
+  @media (pointer: coarse) { .overlay .hint-touch { display: block; } .overlay .hint-key { display: none; } }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 상단 바 너비 구간 (JS가 body 클래스로 지정) */
+  body.tb-760 .title { display: none; }
+  body.tb-640 .home .full { display: none; }
+  body.tb-640 .home .short { display: inline; }
+  body.tb-420 .stagepill svg, body.tb-420 .sdots { display: none; }
+  body.tb-420 .stagepill { padding: 0 8px; }
+  body.tb-420 .hearts svg { width: 16px; height: 16px; }
+  body.tb-420 .scorev { font-size: 17px; }
+  body.tb-420 .top { gap: 6px; }
+  @media (max-height: 520px) {
+    .overlay h2 { font-size: 20px; }
+    .overlay { gap: 6px; padding: 8px; }
+    .minis svg { width: 56px; height: 56px; }
+    .resbig { font-size: 32px; }
+    #resBird svg { width: 64px; height: 64px; }
+    .calbig { width: 84px; height: 84px; }
+    .calbig i { width: 40px; height: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .overlay > * { animation: none; }
+    .breath { animation: none; }
+    button:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="icHeart" viewBox="0 0 24 24"><path d="M12 20.5s-7.2-4.4-9.3-8.9C1.2 8.4 3.2 4.6 6.9 4.6c2.2 0 3.6 1.2 5.1 3.1 1.5-1.9 2.9-3.1 5.1-3.1 3.7 0 5.7 3.8 4.2 7-2.1 4.5-9.3 8.9-9.3 8.9z"/></symbol>
+    <symbol id="icStairs" viewBox="0 0 16 16"><g fill="var(--muted)"><rect x="1" y="10" width="4" height="5" rx="1"/><rect x="6" y="6" width="4" height="9" rx="1"/><rect x="11" y="2" width="4" height="13" rx="1"/></g></symbol>
+    <symbol id="icEar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="7" rx="1.5" fill="currentColor"/><rect x="17" y="14" width="4" height="7" rx="1.5" fill="currentColor"/></g></symbol>
+    <symbol id="icSound" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5a4 4 0 0 1 0 6"/><path d="M7.5 2.5a7.5 7.5 0 0 1 0 11"/><circle cx="1.8" cy="8" r="1.2" fill="currentColor" stroke="none"/></g></symbol>
+    <symbol id="icFinger" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="10" r="3.2" fill="currentColor" stroke="none"/><path d="M8 1.8v2.4M3 3.6l1.5 1.8M13 3.6l-1.5 1.8"/></g></symbol>
+    <symbol id="icNote" viewBox="0 0 12 12"><path d="M4.2 9.4a1.9 1.6 0 1 1-1.2-1.5V1.6h1.2c.6 1.4 2.4 1.8 3.6 1.9v1.3c-1.3 0-2.6-.5-3.6-1.2z" fill="currentColor"/></symbol>
+    <g id="teacherArt">
+      <ellipse class="b-shadow" cx="60" cy="113" rx="32" ry="4.5"/>
+      <g class="hop">
+        <g class="breath">
+          <path class="t-edge" d="M30 84 Q14 92 18 104 Q30 100 38 92 Z"/>
+          <ellipse class="t-body" cx="60" cy="68" rx="37" ry="36"/>
+          <ellipse class="t-belly" cx="60" cy="80" rx="23" ry="21"/>
+          <g class="head">
+            <ellipse class="t-edge" cx="52" cy="32" rx="3.5" ry="8" transform="rotate(-22 52 32)"/>
+            <ellipse class="t-edge" cx="60" cy="29" rx="3.5" ry="8"/>
+            <ellipse class="t-edge" cx="68" cy="32" rx="3.5" ry="8" transform="rotate(22 68 32)"/>
+            <g class="eyes"><circle class="b-eye" cx="49" cy="60" r="3.6"/><circle class="b-eye" cx="71" cy="60" r="3.6"/><circle class="b-hl" cx="50" cy="59" r="1.1"/><circle class="b-hl" cx="72" cy="59" r="1.1"/></g>
+            <g class="eyes-shut" hidden><path class="b-line" d="M45.5 59 Q49 62.5 52.5 59"/><path class="b-line" d="M67.5 59 Q71 62.5 74.5 59"/></g>
+            <path class="b-beak" d="M55.5 64.5 L64.5 64.5 L60 71.5 Z"/>
+          </g>
+          <g class="wing" style="transform-origin:84px 62px"><ellipse class="t-wing" cx="88" cy="74" rx="9" ry="15" transform="rotate(25 88 74)"/></g>
+        </g>
+        <rect class="d-side" x="38" y="92" width="44" height="14" rx="4"/>
+        <ellipse class="d-head dhead" cx="60" cy="92" rx="22" ry="6"/>
+        <path class="t-arc arc arc1" d="M96.1 80.9 A8 8 0 0 1 96.1 91.1"/>
+        <path class="t-arc arc arc2" d="M100.7 77 A14 14 0 0 1 100.7 95"/>
+      </g>
+    </g>
+    <g id="parrotArt">
+      <ellipse class="b-shadow" cx="60" cy="113" rx="28" ry="4"/>
+      <g class="hop">
+        <g class="breath">
+          <path class="m-edge" d="M38 88 Q26 100 23 109 Q27 111 31 107 Q38 99 42 92 Z"/>
+          <path class="m-edge" d="M42 92 Q33 106 33 113 Q37 114 40 110 Q44 101 46 95 Z"/>
+          <path class="m-body" d="M60 34 C78 34 91 56 91 76 C91 94 77 106 60 106 C43 106 29 94 29 76 C29 56 42 34 60 34 Z"/>
+          <ellipse class="m-belly" cx="60" cy="84" rx="19" ry="17"/>
+          <g class="head">
+            <path class="m-tuft" d="M60 36 q-2 -10 6 -10 q6 1 2 6"/>
+            <g class="eyes"><circle class="b-eye" cx="50" cy="58" r="3.4"/><circle class="b-eye" cx="70" cy="58" r="3.4"/><circle class="b-hl" cx="51" cy="57" r="1.1"/><circle class="b-hl" cx="71" cy="57" r="1.1"/></g>
+            <g class="eyes-shut" hidden><path class="b-line" d="M46.5 57.5 Q50 61 53.5 57.5"/><path class="b-line" d="M66.5 57.5 Q70 61 73.5 57.5"/></g>
+            <g class="eyes-oops" hidden><path class="b-line" d="M47 58 h6"/><path class="b-line" d="M67 58 h6"/></g>
+            <circle class="b-cheek" cx="44" cy="66" r="4.5"/><circle class="b-cheek" cx="76" cy="66" r="4.5"/>
+            <path class="m-beak" d="M56.5 70 Q60 74 63.5 70 Q60 68.6 56.5 70 Z"/>
+            <path class="m-beak" d="M55 63 Q60 59 65 63 Q64 71 58 72 Q60 67 55 63 Z"/>
+          </g>
+          <g class="wing" style="transform-origin:82px 64px"><ellipse class="m-wing" cx="86" cy="76" rx="8" ry="13" transform="rotate(25 86 76)"/></g>
+        </g>
+        <rect class="d-side" x="41" y="94" width="38" height="12" rx="4"/>
+        <ellipse class="d-head dhead" cx="60" cy="94" rx="19" ry="5"/>
+        <path class="m-arc arc arc1" d="M94.1 82.9 A8 8 0 0 1 94.1 93.1"/>
+        <path class="m-arc arc arc2" d="M98.7 79 A14 14 0 0 1 98.7 97"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <a class="home" href="../../"><span class="full">← 게임 목록</span><span class="short">← 목록</span></a>
+    <h1 class="title">박자 앵무새</h1>
+    <div class="spacer"></div>
+    <div class="stagepill" id="stagePill" role="img" aria-label="단계 1">
+      <svg aria-hidden="true"><use href="#icStairs"/></svg>
+      <b class="sn num" id="stageNum">1</b>
+      <span class="sdots" id="sdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    </div>
+    <b class="scorev num" id="score" aria-label="점수">0</b>
+    <div class="hearts" id="hearts" role="img" aria-label="하트 3개 남음">
+      <svg aria-hidden="true"><use href="#icHeart"/></svg><svg aria-hidden="true"><use href="#icHeart"/></svg><svg aria-hidden="true"><use href="#icHeart"/></svg>
+    </div>
+    <div class="btns">
+      <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
+        <svg id="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg id="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" type="button" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+
+  <div class="stage idle" id="stage">
+    <div class="birdbox" id="tBox"><div class="base"></div><svg class="bird teacher" id="tBird" viewBox="0 0 120 120" aria-hidden="true"><use href="#teacherArt"/></svg></div>
+    <div class="birdbox" id="mBox"><div class="base"></div><svg class="bird me" id="mBird" viewBox="0 0 120 120" aria-hidden="true"><use href="#parrotArt"/></svg></div>
+    <div class="tl" id="tlT"><canvas id="cvT" aria-hidden="true"></canvas><svg class="ticon" aria-hidden="true"><use href="#icSound"/></svg></div>
+    <div class="tl" id="tlMe"><canvas id="cvM" aria-hidden="true"></canvas><svg class="ticon" aria-hidden="true"><use href="#icFinger"/></svg></div>
+    <div class="combo" id="comboPill"><b class="num" id="comboNum">0</b><span>연속</span></div>
+
+    <div class="overlay" id="ovStart">
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2>박자 앵무새</h2>
+      <div class="minis" aria-hidden="true"><svg viewBox="0 0 120 120" class="bird teacher mini"><use href="#teacherArt"/></svg><svg viewBox="0 0 120 120" class="bird me mini"><use href="#parrotArt"/></svg></div>
+      <p>선생님이 치면, 똑같이 따라 쳐요</p>
+      <div class="legend" aria-hidden="true">
+        <div class="lcard"><canvas data-kind="beat"></canvas>정박</div>
+        <div class="lcard"><canvas data-kind="off"></canvas>엇박</div>
+        <div class="lcard"><canvas data-kind="rest"></canvas>쉼</div>
+      </div>
+      <p class="small hint-key">화면 아무 데나 톡 · 스페이스</p>
+      <p class="small hint-touch">화면 아무 데나 톡 · 소리를 켜 주세요</p>
+      <button class="primary" id="startBtn" type="button">시작하기</button>
+      <div class="row">
+        <p class="small" id="bestTxt" hidden></p>
+        <button class="small" id="calBtn" type="button"><svg aria-hidden="true"><use href="#icEar"/></svg>박자 맞추기</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovPause" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2>일시정지</h2>
+      <button class="primary" id="resumeBtn" type="button">계속하기</button>
+      <div class="row">
+        <button class="secondary" id="restartBtn" type="button">처음부터</button>
+        <a class="secondary" href="../../">← 게임 목록</a>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovResult" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div id="resBird" aria-hidden="true"><svg viewBox="0 0 120 120" class="bird me" id="resBirdSvg"><use href="#parrotArt"/></svg></div>
+      <h2 id="resTitle">클리어!</h2>
+      <b class="num resbig" id="resScore">0</b>
+      <span class="badge" id="newRec" hidden>새 최고 기록</span>
+      <p id="resLine"></p>
+      <div class="reslist" id="resList"></div>
+      <button class="small hl" id="calSuggest" type="button" hidden><svg aria-hidden="true"><use href="#icEar"/></svg>박자 맞추기</button>
+      <div class="row">
+        <button class="primary" id="againBtn" type="button">다시 하기</button>
+        <button class="secondary" id="menuBtn" type="button">처음으로</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovCal" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2><svg width="22" height="22" aria-hidden="true"><use href="#icEar"/></svg>박자 맞추기</h2>
+      <div id="calRun">
+        <div class="row" style="flex-direction:column;gap:12px">
+          <div class="calbig" aria-hidden="true"><i id="calDot"></i></div>
+          <div class="caldots" id="calDots" aria-hidden="true"></div>
+          <p class="small">딱 소리에 맞춰 톡</p>
+        </div>
+      </div>
+      <div id="calDone" hidden>
+        <div class="row" style="flex-direction:column;gap:8px">
+          <b class="num calval" id="calVal">0</b>
+          <p class="small" id="calMsg"></p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="secondary" id="calAgain" type="button" hidden>다시</button>
+        <button class="primary" id="calOk" type="button" hidden>확인</button>
+        <button class="secondary" id="calZero" type="button">0으로</button>
+        <button class="secondary" id="calBack" type="button">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+/* ===== 박자 앵무새 (parrot-beat) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음. 오리지널 소리·패턴만 사용.
+ * AudioContext 미지원·실패 시 모든 호출은 조용히 무시된다(게임은 소리 없이 계속 동작).
+ *
+ * 공통 API:  Sound.unlock() / play(name, opts) / setMuted(bool) / isMuted() / startMusic() / stopMusic()
+ * 추가 API:  Sound.setVolume(0~1) / getVolume()
+ * 리듬 API:  Sound.Beat  (박자 시계 + lookahead 스케줄러 + 판정용 시간 변환) — 아래 Beat 참고
+ *
+ * 그리드: 4/4, 한 마디 = 16스텝(16분음표). stepInBar 0,4,8,12 = 정박(1·2·3·4박), 2,6,10,14 = 8분 엇박(앤),
+ *         1,3,5,… = 16분 엇박.
+ * 시간 단위는 모두 AudioContext 초(ctx.currentTime 기준). 콜백은 소리보다 약 0.03~0.15초 먼저 호출된다(예약 시점).
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'parrot-beat-muted';
+  var OFFSET_KEY = 'parrot-beat-offset';   // 사용자 보정값(ms), 선택 기능
+  var MASTER_VOL = 0.8;
+  var MUSIC_VOL = 0.55;      // 반주(메트로놈·베이스·코드·하이햇) 버스
+  var LOOKAHEAD = 0.12;      // 스케줄러가 미리 예약하는 구간(초)
+  var TICK_MS = 25;          // 스케줄러 깨어나는 주기(ms)
+  var COMP_DELAY = 0.006;    // DynamicsCompressor 룩어헤드(Chromium 6ms). 예약음만 이 경로를 지난다
+
+  var ctx = null, offline = false;
+  var master = null, comp = null, shaper = null, musicBus = null, clockBus = null, teacherBus = null,
+      sfxBus = null, tapBus = null, noiseBuf = null;
+  var muted = false, volume = 1, warmed = false;
+  var last = {};
+  var userOffset = 0;        // 초
+  var userPaused = false;
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+  try { userOffset = (parseFloat(localStorage.getItem(OFFSET_KEY)) || 0) / 1000; } catch (e) { userOffset = 0; }
+  if (!(userOffset >= -0.08 && userOffset <= 0.4)) userOffset = 0;   // design.md 범위 −80~+400ms
+
+  // ---------- 그래프 ----------
+  // [musicBus,teacherBus,sfxBus] → clockBus/compressor → master → soft-clip shaper → destination
+  // [tapBus] ─────────────────────────────────────────→ master   (탭은 컴프레서 룩어헤드 지연을 피함)
+  function build(c) {
+    ctx = c;
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER_VOL * volume;
+
+    // 소프트 클리퍼(지연 없음): 입력을 0.5배로 받아 ±2.0까지 처리, ±0.6까지는 선형, 이후 0.95로 부드럽게 수렴
+    shaper = ctx.createWaveShaper();
+    var n = 2048, curve = new Float32Array(n);
+    for (var i = 0; i < n; i++) {
+      var u = (i / (n - 1)) * 4 - 2, a = Math.abs(u);
+      var y = a < 0.6 ? a : 0.6 + 0.35 * Math.tanh((a - 0.6) / 0.35);
+      curve[i] = u < 0 ? -y : y;
+    }
+    shaper.curve = curve;
+    shaper.oversample = 'none';
+    var pre = ctx.createGain(); pre.gain.value = 0.5;
+    var post = ctx.createGain(); post.gain.value = 1; // shaper 출력은 원 레벨 그대로(곡선이 2배 영역을 표현)
+    master.connect(pre); pre.connect(shaper); shaper.connect(post); post.connect(ctx.destination);
+
+    comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 6;
+    comp.attack.value = 0.003; comp.release.value = 0.18;
+    comp.connect(master);
+
+    clockBus = ctx.createGain(); clockBus.gain.value = 1; clockBus.connect(comp); // 정지 시 예약음 컷용
+    musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(clockBus);
+    teacherBus = ctx.createGain(); teacherBus.gain.value = 1; teacherBus.connect(clockBus);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(comp);
+    tapBus = ctx.createGain(); tapBus.gain.value = 1; tapBus.connect(master);
+
+    var len = Math.floor(ctx.sampleRate * 0.6);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = noiseBuf.getChannelData(0), seed = 12345;
+    for (var j = 0; j < len; j++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; d[j] = seed / 0x3fffffff - 1; }
+  }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var c;
+      try { c = new AC({ latencyHint: 'interactive' }); } catch (e1) { c = new AC(); }
+      build(c);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function running() { return !!ctx && (offline || ctx.state === 'running'); }
+  function ready() { return running() && !muted; }
+  function throttled(name, t, gap) {
+    if (last[name] !== undefined && t - last[name] < gap && t >= last[name]) return true;
+    last[name] = t; return false;
+  }
+
+  // ---------- 합성 기본 블록 ----------
+  // 음: 파형, 주파수 f0→f1(glide초 동안), 시작, 길이, 피크, 어택, 출력
+  function tone(type, f0, f1, t, dur, vol, attack, dest, glide) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + (glide || dur));
+      var a = attack || 0.002;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  function noise(t, dur, vol, ftype, freq, q, dest, freqEnd) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = ftype; f.frequency.setValueAtTime(freq, t);
+      if (freqEnd) f.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+      if (q) f.Q.value = q;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.001);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(dest || sfxBus);
+      s.start(t, Math.random() * 0.3); s.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  // 새 지저귐: 위로 갔다 내려오는 짧은 글라이드 (앵무새 캐릭터 소리)
+  function chirp(t, f0, fPeak, fEnd, dur, vol, dest) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(fPeak, t + dur * 0.4);
+      o.frequency.exponentialRampToValueAtTime(fEnd, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+      g.gain.setValueAtTime(vol, t + dur * 0.5);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+
+  // 음이름 (C 메이저)
+  var N = { F2: 87.31, G2: 98.0, A2: 110.0, C3: 130.81, G3: 196.0, A3: 220.0, B3: 246.94,
+            C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0,
+            C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.0,
+            C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1567.98, A6: 1760.0, C7: 2093.0, G7: 3135.96 };
+
+  // ---------- 효과음 ----------
+  var sfx = {
+    // 선생님 북 (부르기 마디). 낮고 둥근 손북 '둥'. opts.accent=true면 조금 크고 높게
+    teacher: function (t, o) {
+      var ac = o && o.accent, k = ac ? 1.12 : 1, v = ac ? 1.15 : 1;
+      tone('sine', 250 * k, 150 * k, t, 0.17, 0.50 * v, 0.001, teacherBus, 0.06);
+      tone('triangle', 500 * k, 290 * k, t, 0.05, 0.10 * v, 0.001, teacherBus, 0.03);
+      noise(t, 0.022, 0.14 * v, 'lowpass', 1800, 0.7, teacherBus);
+    },
+    // 내 탭 (따라하기). 밝은 나무토막 '톡' — 선생님 북보다 높고 짧다. 탭 즉시 재생
+    // opts.soft=true → 절반 크기(부르기·카운트인·전환 마디의 연습 탭용)
+    tap: function (t, o) {
+      if (throttled('tap', t, 0.025)) return;
+      var v = o && o.soft ? 0.5 : 1;
+      tone('sine', 760, 700, t, 0.07, 0.36 * v, 0.001, tapBus, 0.02);
+      tone('sine', 1820, 1700, t, 0.035, 0.10 * v, 0.001, tapBus, 0.02);
+      noise(t, 0.012, 0.20 * v, 'bandpass', 2400, 1.4, tapBus);
+    },
+    // 판정: 탭 소리 위에 살짝 얹는 작은 반짝(리듬을 가리지 않게 아주 작고 짧게)
+    perfect: function (t) {
+      if (throttled('judge', t, 0.03)) return;
+      tone('sine', N.C7, 0, t + 0.01, 0.06, 0.05, 0.002);
+      tone('sine', N.G7, 0, t + 0.03, 0.05, 0.025, 0.002);
+    },
+    good: function (t) {
+      if (throttled('judge', t, 0.03)) return;
+      tone('sine', N.G6, 0, t + 0.01, 0.045, 0.035, 0.002);
+    },
+    // 놓침(쳐야 할 박을 안 침): 둔하고 낮은 '뚝'
+    miss: function (t) {
+      if (throttled('miss', t, 0.06)) return;
+      tone('triangle', 160, 105, t, 0.12, 0.12, 0.004);
+      noise(t, 0.05, 0.04, 'lowpass', 500, 0.7);
+    },
+    // 헛박(칠 곳이 아닌데 침): 탭 소리 뒤에 붙는 막힌 '퍽'
+    extra: function (t) {
+      if (throttled('extra', t, 0.06)) return;
+      noise(t + 0.01, 0.06, 0.08, 'lowpass', 700, 0.7, sfxBus, 250);
+      tone('sine', 110, 80, t + 0.01, 0.08, 0.10, 0.003);
+    },
+    // 하트 회복(단계 무실패 +1): 부드러운 상승 2음
+    heartGain: function (t) {
+      tone('triangle', N.C5, 0, t, 0.10, 0.11, 0.004);
+      tone('triangle', N.G5, 0, t + 0.10, 0.22, 0.12, 0.004);
+      tone('sine', N.G6, 0, t + 0.12, 0.18, 0.025, 0.004);
+    },
+    // 결과 화면 새 기록: 작은 반짝 상승 + 지저귐
+    newBest: function (t) {
+      var arp = [N.G5, N.C6, N.E6, N.G6];
+      for (var i = 0; i < arp.length; i++) tone('sine', arp[i], 0, t + i * 0.07, 0.16, 0.08, 0.003);
+      chirp(t + 0.30, 1800, 3000, 2400, 0.12, 0.05);
+      noise(t + 0.25, 0.3, 0.012, 'highpass', 7500);
+    },
+    // 한 마디를 전부 맞힘: 앵무새 기쁜 지저귐 2번
+    phraseClear: function (t) {
+      chirp(t, 1500, 2500, 2000, 0.09, 0.07);
+      chirp(t + 0.11, 1700, 2900, 2300, 0.10, 0.07);
+    },
+    // 콤보 단계 도달. opts.level = 1,2,3… (단계마다 시작음이 한 칸씩 올라감)
+    combo: function (t, o) {
+      var lv = Math.max(1, Math.min(5, Math.floor(+(o && o.level)) || 1));
+      var base = [N.C5, N.D5, N.E5, N.G5, N.A5][lv - 1];
+      tone('triangle', base, 0, t, 0.07, 0.08, 0.003);
+      tone('triangle', base * 1.25, 0, t + 0.06, 0.07, 0.08, 0.003);
+      tone('triangle', base * 1.5, 0, t + 0.12, 0.20, 0.11, 0.003);
+      tone('sine', base * 3, 0, t + 0.12, 0.15, 0.02, 0.003);
+    },
+    // 단계 상승(템포 오름): 상승 아르페지오 + 반짝. 마디 첫 박에 맞춰 Beat.schedule 권장
+    levelUp: function (t) {
+      var arp = [N.C5, N.E5, N.G5, N.C6];
+      for (var i = 0; i < arp.length; i++) tone('triangle', arp[i], 0, t + i * 0.06, 0.14, 0.12, 0.003);
+      tone('sine', N.E6, 0, t + 0.24, 0.30, 0.04, 0.005);
+      chirp(t + 0.26, 1600, 2700, 2200, 0.12, 0.05);
+      noise(t + 0.22, 0.25, 0.015, 'highpass', 7000);
+    },
+    // 하트 잃음: 부드러운 하강 2음 + 낮은 '툭'
+    heartLost: function (t) {
+      if (throttled('heartLost', t, 0.3)) return;
+      tone('triangle', N.E5, 0, t, 0.12, 0.13, 0.004);
+      tone('triangle', N.C5, 0, t + 0.12, 0.22, 0.13, 0.004);
+      tone('sine', 120, 80, t, 0.15, 0.12, 0.004);
+    },
+    // 게임 오버: 느린 하강 3음 + 저음 (반주는 Developer가 stopMusic/Beat.stop으로 멈춤)
+    gameOver: function (t) {
+      tone('triangle', N.G4, 0, t, 0.30, 0.15, 0.01);
+      tone('triangle', N.E4, 0, t + 0.28, 0.30, 0.15, 0.01);
+      tone('triangle', N.C4, 0, t + 0.56, 0.70, 0.15, 0.01);
+      tone('sine', N.C3, 0, t + 0.56, 0.80, 0.14, 0.02);
+      chirp(t + 0.95, 1400, 1500, 900, 0.25, 0.03); // 기운 빠진 '삐우…'
+    },
+    // 클리어(최종 단계 통과): 팡파르 + 앵무새 지저귐
+    clear: function (t) {
+      tone('square', N.C5, 0, t, 0.09, 0.05);
+      tone('square', N.E5, 0, t + 0.10, 0.09, 0.05);
+      tone('square', N.G5, 0, t + 0.20, 0.09, 0.05);
+      tone('triangle', N.C6, 0, t + 0.30, 0.70, 0.18, 0.01);
+      tone('triangle', N.G5, 0, t + 0.30, 0.70, 0.10, 0.01);
+      tone('triangle', N.E5, 0, t + 0.30, 0.70, 0.08, 0.01);
+      tone('sine', N.C3, 0, t + 0.30, 0.70, 0.12, 0.01);
+      chirp(t + 0.45, 1500, 2600, 2100, 0.10, 0.06);
+      chirp(t + 0.58, 1800, 3000, 2400, 0.10, 0.06);
+      chirp(t + 0.71, 2000, 3300, 2600, 0.14, 0.06);
+      noise(t + 0.30, 0.5, 0.02, 'highpass', 7000);
+    },
+    // 카운트인 막대 '딱'. opts.n = 1~4 (4는 조금 높게: "이제 시작")
+    count: function (t, o) {
+      var n = (o && o.n) || 1, f = n >= 4 ? 2000 : 1500;
+      tone('sine', f, f * 0.85, t, 0.04, 0.12, 0.001, musicBus);
+      noise(t, 0.015, 0.10, 'bandpass', 3500, 1.5, musicBus);
+    },
+    start: function (t) {
+      chirp(t, 1400, 2400, 1900, 0.09, 0.07);
+      tone('triangle', N.C5, 0, t + 0.10, 0.10, 0.12, 0.004);
+      tone('triangle', N.G5, 0, t + 0.20, 0.20, 0.12, 0.004);
+    },
+    button: function (t) { if (!throttled('button', t, 0.05)) tone('sine', 880, 660, t, 0.05, 0.06, 0.002); },
+    pause: function (t) { tone('sine', N.A4, N.E4, t, 0.12, 0.09); },
+    resume: function (t) { tone('sine', N.E4, N.A4, t, 0.12, 0.09); }
+  };
+
+  sfx.stray = sfx.extra;   // design.md 용어(헛박 = stray) 별칭
+
+  // ---------- 반주 ----------
+  // 진행: '부르기' 마디마다 다음 코드 (C → Am → F → G 순환). '따라하기' 마디는 직전 코드 유지.
+  var CHORDS = [
+    { bass: N.C3, notes: [N.C4, N.E4, N.G4] },
+    { bass: N.A2, notes: [N.A3, N.C4, N.E4] },
+    { bass: N.F2, notes: [N.A3, N.C4, N.F4] },
+    { bass: N.G2, notes: [N.B3, N.D4, N.G4] }
+  ];
+  var music = { on: false, chordIdx: -1, hat16: false, fadeTimer: null };
+
+  function bass(f, t, dur, vol) {
+    tone('sine', f, 0, t, dur, vol, 0.008, musicBus);
+    tone('triangle', f * 2, 0, t, dur * 0.6, vol * 0.25, 0.008, musicBus); // 작은 스피커에서도 들리게 2배음
+  }
+  function chord(ch, t, dur, vol) {
+    for (var i = 0; i < ch.notes.length; i++) tone('triangle', ch.notes[i], 0, t, dur, vol, 0.012, musicBus);
+  }
+  function metro(t, strong) {
+    if (strong) { tone('sine', 1320, 1250, t, 0.035, 0.13, 0.001, musicBus); noise(t, 0.008, 0.05, 'highpass', 5000, 0.7, musicBus); }
+    else tone('sine', 990, 950, t, 0.025, 0.065, 0.001, musicBus);
+  }
+  function hat(t, vol) { noise(t, 0.028, vol, 'highpass', 7500, 0.7, musicBus); }
+
+  // stepInfo마다 1번 호출 (예약 시점)
+  function backing(si) {
+    if (!music.on || si.late) return;
+    var t = si.time, s = si.stepInBar, ph = si.phase, beatDur = si.stepDur * 4;
+    if (ph === 'silent') return;
+    if (ph === 'countin') {                            // 막대 4번만: 딱 딱 딱 딱(4번째 높게)
+      if (s % 4 === 0) sfx.count(t, { n: s / 4 + 1 });
+      return;
+    }
+    if (s === 0 && ph === 'call') music.chordIdx = (music.chordIdx + 1) % CHORDS.length;
+    var ch = CHORDS[Math.max(0, music.chordIdx)];
+    if (ph === 'transition') ph = 'rest';            // 단계 전환 마디 = 쉬는 마디 반주(C 코드, 부르기 없음)
+    if (ph === 'rest') ch = CHORDS[0];
+
+    // 메트로놈: 1박 강, 2·3·4박 약. 따라하기 마디 1박은 약한 틱만
+    // (CEO 결정 7: '네 차례' 지저귐은 정답 음표와 헷갈릴 수 있어 제거 — 차례는 코드 빠짐 + 화면으로 구분)
+    if (s === 0 && ph === 'response') metro(t, false);
+    else if (s % 4 === 0) metro(t, s === 0);
+
+    // 하이햇: 8분 엇박(앤)에 은은하게. hat16 켜면 16분 엇박에 더 작게
+    if (s % 4 === 2) hat(t, 0.07);
+    else if (music.hat16 && s % 2 === 1) hat(t, 0.025);
+
+    // 베이스: 1박(모든 마디), 3박(부르기·쉬는 마디)
+    if (s === 0) bass(ch.bass, t, beatDur * 1.6, 0.42);
+    if (s === 8 && ph !== 'response') bass(ch.bass, t, beatDur * 1.4, 0.30);
+
+    // 코드: 부르기 마디만(풍성) — 따라하기 마디는 비워서 내 탭이 잘 들리게
+    if (ph === 'call' || ph === 'rest') {
+      if (s === 0) chord(ch, t, beatDur * 1.8, 0.06);
+      if (s === 8) chord(ch, t, beatDur * 1.4, 0.04);
+    }
+  }
+
+  // ---------- 박자 시계 ----------
+  var clk = { running: false, bpm: 100, pendingBpm: 0, stepDur: 60 / 100 / 4, step: 0, bar: 0, barTime: 0,
+              nextTime: 0, timer: null, curBar: null, bars: [], plan: {}, stepCbs: [], barCbs: [] };
+
+  function makeBar(barIndex, time) {
+    if (clk.pendingBpm) { clk.bpm = clk.pendingBpm; clk.stepDur = 60 / clk.bpm / 4; clk.pendingBpm = 0; }
+    var info = { bar: barIndex, time: time, bpm: clk.bpm, stepDur: clk.stepDur, beatDur: clk.stepDur * 4,
+                 barDur: clk.stepDur * 16, phase: clk.plan[barIndex] || 'rest' };
+    delete clk.plan[barIndex];
+    for (var i = 0; i < clk.barCbs.length; i++) {
+      try { var r = clk.barCbs[i](info); if (typeof r === 'string') info.phase = r; } catch (e) { reportErr(e); }
+    }
+    clk.bars.push(info);
+    if (clk.bars.length > 16) clk.bars.shift();
+    return info;
+  }
+  function reportErr(e) { try { setTimeout(function () { throw e; }, 0); } catch (e2) {} }
+
+  function pump(horizon) {
+    var nowT = ctx.currentTime;
+    while (clk.running && clk.nextTime < horizon) {
+      var s = clk.step % 16;
+      if (s === 0) { clk.curBar = makeBar(clk.bar, clk.nextTime); clk.barTime = clk.nextTime; }
+      var b = clk.curBar;
+      var t = b.time + s * b.stepDur;                 // 마디 시작 기준으로 계산(누적 오차 없음)
+      var si = { step: clk.step, bar: b.bar, stepInBar: s, beatInBar: s >> 2, sub: s & 3,
+                 isBeat: (s & 3) === 0, isOffbeat8: (s & 3) === 2, time: t, stepDur: b.stepDur,
+                 bpm: b.bpm, phase: b.phase, barTime: b.time, late: !offline && t < nowT - 0.01 };
+      backing(si);
+      for (var i = 0; i < clk.stepCbs.length; i++) { try { clk.stepCbs[i](si); } catch (e) { reportErr(e); } }
+      clk.step++;
+      if (clk.step % 16 === 0) clk.bar++;
+      clk.nextTime = b.time + (s + 1) * b.stepDur;
+    }
+  }
+  function tick() {
+    clk.timer = null;
+    if (!clk.running || !ctx) return;
+    try { if (ctx.state === 'running') pump(ctx.currentTime + LOOKAHEAD); } catch (e) { reportErr(e); }
+    if (clk.running && !offline) clk.timer = setTimeout(tick, TICK_MS);
+  }
+
+  // 지금 귀에 들리고 있는 오디오의 ctx 시간 (perfMs = performance.now() 기준 ms, 생략 시 지금)
+  function heardAt(perfMs) {
+    if (!ctx) return 0;
+    var pnow = (window.performance && performance.now) ? performance.now() : Date.now();
+    if (perfMs === undefined || !isFinite(perfMs) || Math.abs(perfMs - pnow) > 1000) perfMs = pnow;
+    var cur = ctx.currentTime;
+    try {
+      if (ctx.state === 'running' && ctx.getOutputTimestamp) {
+        var ts = ctx.getOutputTimestamp();
+        if (ts && ts.performanceTime > 0 && ts.contextTime > 0) {
+          var h = ts.contextTime + (perfMs - ts.performanceTime) / 1000;
+          if (h <= cur + 0.05 && h > cur - 0.5) return h;
+        }
+      }
+    } catch (e) {}
+    return cur - ((ctx.outputLatency || 0) || (ctx.baseLatency || 0)) - (pnow - perfMs) / 1000;
+  }
+
+  function positionAt(t) {
+    var b = null;
+    for (var i = clk.bars.length - 1; i >= 0; i--) if (clk.bars[i].time <= t) { b = clk.bars[i]; break; }
+    if (!b) b = clk.bars[0];
+    if (!b) return null;
+    var stepF = (t - b.time) / b.stepDur;
+    return { bar: b.bar, phase: b.phase, bpm: b.bpm, barTime: b.time, stepDur: b.stepDur,
+             stepF: stepF, beatF: stepF / 4, barF: b.bar + stepF / 16 };
+  }
+
+  var Beat = {
+    // 박자 시계 시작. bpm, opts.delay(첫 마디까지 초, 기본 0.1), opts.phases({마디번호: phase})
+    start: function (bpm, opts) {
+      if (!ctx || !running()) return false;
+      Beat.stop(true);
+      opts = opts || {};
+      clk.bpm = Math.max(40, Math.min(240, +bpm || 100)); clk.stepDur = 60 / clk.bpm / 4; clk.pendingBpm = 0;
+      clk.step = 0; clk.bar = 0; clk.bars = []; clk.curBar = null;
+      clk.plan = {};
+      if (opts.phases) for (var k in opts.phases) clk.plan[k] = opts.phases[k];
+      music.chordIdx = -1;
+      clk.nextTime = ctx.currentTime + Math.max(0.05, opts.delay === undefined ? 0.1 : +opts.delay);
+      clk.running = true;
+      try { clockBus.gain.cancelScheduledValues(ctx.currentTime); clockBus.gain.setValueAtTime(1, ctx.currentTime); } catch (e) {}
+      if (!offline) tick();
+      return true;
+    },
+    // 정지. 이미 예약된(최대 ~0.12초) 반주·선생님 북은 40ms 페이드로 끊는다
+    stop: function (keepSound) {
+      clk.running = false;
+      if (clk.timer) { clearTimeout(clk.timer); clk.timer = null; }
+      if (!keepSound && ctx && clockBus) {
+        try {
+          var t = ctx.currentTime;
+          clockBus.gain.cancelScheduledValues(t);
+          clockBus.gain.setValueAtTime(clockBus.gain.value, t);
+          clockBus.gain.linearRampToValueAtTime(0, t + 0.04);
+          clockBus.gain.setValueAtTime(1, t + LOOKAHEAD + 0.1);
+        } catch (e) {}
+      }
+    },
+    isRunning: function () { return clk.running; },
+    // 템포 변경: 다음 마디 첫 박부터 적용(마디 중간에 바뀌지 않음)
+    setBpm: function (bpm) { bpm = +bpm; if (bpm >= 40 && bpm <= 240) { if (clk.running) clk.pendingBpm = bpm; else { clk.bpm = bpm; clk.stepDur = 60 / bpm / 4; } } },
+    getBpm: function () { return clk.bpm; },
+    // 특정 마디의 phase 예약: 'call' | 'response' | 'countin' | 'transition' | 'rest' | 'silent'
+    planPhase: function (bar, phase) { clk.plan[bar] = phase; },
+    // 콜백 등록. 반환값은 해제 함수. onBar 콜백이 문자열을 반환하면 그 마디의 phase가 된다
+    onStep: function (fn) { clk.stepCbs.push(fn); return function () { var i = clk.stepCbs.indexOf(fn); if (i >= 0) clk.stepCbs.splice(i, 1); }; },
+    onBar: function (fn) { clk.barCbs.push(fn); return function () { var i = clk.barCbs.indexOf(fn); if (i >= 0) clk.barCbs.splice(i, 1); }; },
+    // 정확한 시각에 효과음 예약 (이미 지난 시각이면 즉시). 반환: 실제 예약 시각
+    schedule: function (time, name, opts) {
+      try {
+        if (!ready() || !sfx[name]) return -1;
+        var t = Math.max(+time || 0, ctx.currentTime);
+        sfx[name](t, opts || {});
+        return t;
+      } catch (e) { return -1; }
+    },
+    // 한 마디 안의 스텝 목록으로 선생님 북 예약. barInfo = onBar/onStep의 info. 반환: 각 음의 ctx 시각 배열
+    playPattern: function (barInfo, steps, name) {
+      var out = [];
+      if (!barInfo || !steps) return out;
+      for (var i = 0; i < steps.length; i++) {
+        var t = barInfo.time + steps[i] * barInfo.stepDur;
+        out.push(t);
+        Beat.schedule(t, name || 'teacher', { accent: steps[i] === 0 });
+      }
+      return out;
+    },
+    // 마디 시작 시각 (이미 예약된 마디는 정확, 미래 마디는 현재 템포로 추정)
+    barTime: function (bar) {
+      for (var i = clk.bars.length - 1; i >= 0; i--) if (clk.bars[i].bar === bar) return clk.bars[i].time;
+      var lb = clk.bars[clk.bars.length - 1];
+      if (!lb) return clk.nextTime;
+      var sd = 60 / (clk.pendingBpm || clk.bpm) / 4;
+      return lb.time + lb.barDur + (bar - lb.bar - 1) * 16 * sd;
+    },
+    ctxTime: function () { return ctx ? ctx.currentTime : 0; },
+    // 지금 들리는 소리의 ctx 시각. 화면 연출(박자에 맞춰 까딱이기 등)은 rAF에서 이 값을 쓴다
+    heardTime: function () { return heardAt(); },
+    // 탭 판정용 시각: 이벤트(pointerdown/keydown)의 timeStamp를 '그때 들리던 소리'의 시각으로 바꾼 값.
+    // 컴프레서 지연과 사용자 보정값을 이미 뺐으므로 info.time(예약 시각)과 바로 비교하면 된다.
+    tapTime: function (evt) {
+      if (!ctx) return 0;
+      var ts = evt && typeof evt.timeStamp === 'number' && evt.timeStamp > 0 ? evt.timeStamp : undefined;
+      return heardAt(ts) - COMP_DELAY - userOffset;
+    },
+    // 시각 → 박 위치 {bar, phase, stepF(마디 안 0~16), beatF(0~4), barF, bpm}. t 생략 시 heardTime
+    now: function (t) { return positionAt(t === undefined ? heardAt() : t); },
+    latency: function () {
+      if (!ctx) return { base: 0, output: 0, comp: COMP_DELAY, offset: userOffset };
+      return { base: ctx.baseLatency || 0, output: ctx.outputLatency || 0, comp: COMP_DELAY, offset: userOffset,
+               hasOutputTimestamp: !!ctx.getOutputTimestamp, sampleRate: ctx.sampleRate };
+    },
+    // 사용자 보정(ms, −80~+400 정수, design.md). +면 '소리가 늦게 들림(블루투스 등)' → 탭 시각에서 뺀다. localStorage 저장
+    setOffset: function (ms) { ms = Math.round(+ms || 0); if (ms < -80) ms = -80; if (ms > 400) ms = 400; userOffset = ms / 1000; try { localStorage.setItem(OFFSET_KEY, String(ms)); } catch (e) {} },
+    getOffset: function () { return userOffset * 1000; },
+    // 일시정지 버튼용: 오디오 시계 자체를 멈춘다(박자·예약음이 그대로 얼어붙고 resume 시 이어짐)
+    pause: function () { userPaused = true; if (ctx) try { var p = ctx.suspend(); if (p && p.catch) p.catch(function () {}); } catch (e) {} },
+    resume: function () { userPaused = false; if (ctx) try { var p = ctx.resume(); if (p && p.catch) p.catch(function () {}); } catch (e) {} },
+    isPaused: function () { return userPaused; },
+    // 반주 옵션: { hat16: true } → 16분 엇박에 아주 작은 하이햇 (16분 패턴이 나오는 단계용)
+    setBacking: function (o) { if (o && 'hat16' in o) music.hat16 = !!o.hat16; }
+  };
+
+  // ---------- 탭 전환 ----------
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx || offline) return;
+      try {
+        if (document.hidden) { var p1 = ctx.suspend(); if (p1 && p1.catch) p1.catch(function () {}); }
+        else if (!userPaused) { var p2 = ctx.resume(); if (p2 && p2.catch) p2.catch(function () {}); }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  return {
+    // 사용자 제스처(pointerdown/touchend/click/keydown) 안에서 호출. 여러 번 호출해도 안전
+    unlock: function () {
+      if (!ensureCtx() || offline) return;
+      try {
+        if (ctx.state !== 'running' && !userPaused) { var p = ctx.resume(); if (p && p.catch) p.catch(function () {}); }
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();   // iOS 무음 버퍼
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+        if (!warmed) {                                                          // 첫 탭 소리 초기화 지연 제거
+          warmed = true;
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          g.gain.value = 0; o.connect(g); g.connect(tapBus); o.start(); o.stop(ctx.currentTime + 0.05);
+        }
+      } catch (e) {}
+    },
+    // 즉시 재생. name: teacher|tap|perfect|good|miss|extra(=stray)|heartGain|newBest|phraseClear|combo|levelUp|heartLost|gameOver|clear|count|start|button|pause|resume
+    play: function (name, opts) {
+      try { if (ready() && sfx[name]) sfx[name](ctx.currentTime, opts || {}); } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try { if (master) { var t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL * volume, t, 0.02); } } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    setVolume: function (v) {
+      v = +v; if (!(v >= 0)) v = 0; if (v > 1) v = 1; volume = v;
+      try { if (master && !muted) { var t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setTargetAtTime(MASTER_VOL * volume, t, 0.02); } } catch (e) {}
+    },
+    getVolume: function () { return volume; },
+    // 반주 켜기. 시계가 멈춰 있으면 opts.bpm(기본 현재 bpm)으로 시계도 시작
+    startMusic: function (opts) {
+      if (music.fadeTimer) { clearTimeout(music.fadeTimer); music.fadeTimer = null; }
+      try { if (musicBus) { musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setValueAtTime(MUSIC_VOL, ctx.currentTime); } } catch (e) {}
+      music.on = true;
+      if (!clk.running && ctx) Beat.start((opts && opts.bpm) || clk.bpm, opts);
+    },
+    // 반주 끄기(시계는 계속 — 판정·선생님 북은 유지). fadeSec 주면 그동안 페이드아웃(게임 오버 0.8초).
+    // 전부 멈추려면 이어서 Sound.Beat.stop()
+    stopMusic: function (fadeSec) {
+      if (music.fadeTimer) { clearTimeout(music.fadeTimer); music.fadeTimer = null; }
+      var f = +fadeSec;
+      if (!(f > 0) || !ctx || offline) { music.on = false; return; }
+      try {
+        var t = ctx.currentTime;
+        musicBus.gain.cancelScheduledValues(t);
+        musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+        musicBus.gain.linearRampToValueAtTime(0.0001, t + f);
+      } catch (e) {}
+      music.fadeTimer = setTimeout(function () {
+        music.fadeTimer = null; music.on = false;
+        try { musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setValueAtTime(0, ctx.currentTime);
+              musicBus.gain.setValueAtTime(MUSIC_VOL, ctx.currentTime + LOOKAHEAD + 0.1); } catch (e) {}
+      }, f * 1000);
+    },
+    Beat: Beat,
+    // 테스트 전용: OfflineAudioContext에 그래프를 붙이고 스케줄러를 수동으로 돌린다
+    _test: {
+      attach: function (c) { offline = true; last = {}; build(c); },
+      pump: function (until) { pump(until); },
+      sfxNames: function () { return Object.keys(sfx); }
+    }
+  };
+})();
+</script>
+<script>
+/* ===== 박자 앵무새 규칙 엔진 (화면·오디오 없이 동작, simulateRun과 공유) ===== */
+// ---- rules engine (shared) ----
+var Rules = (function () {
+  var BPMS = [90, 94, 98, 102, 106, 110, 116, 122];
+  var CFG = { perfect: 0.045, good: 0.120, debounce: 0.050, hearts: 3, rounds: 4, stages: 8 };
+  var POOLS = [
+    ['x...|x...|x...|x...', 'x...|x...|x...|....', 'x...|....|x...|x...', 'x...|x...|....|x...', 'x...|....|x...|....'],
+    ['x.x.|x...|x...|x...', 'x...|x...|x.x.|x...', 'x.x.|x.x.|x...|x...', 'x...|x.x.|x...|x.x.', 'x.x.|x...|x.x.|x...'],
+    ['x...|..x.|x...|..x.', 'x...|x...|..x.|x...', 'x.x.|..x.|x...|x...', 'x...|..x.|..x.|x...', '..x.|x...|..x.|x...'],
+    ['x...|..x.|....|x...', '..x.|..x.|..x.|x...', 'x.x.|..x.|..x.|....', '....|x...|..x.|x...', 'x...|..x.|..x.|..x.'],
+    ['xxx.|x...|xxx.|x...', 'x.xx|x...|x.xx|x...', 'xx..|x...|xx..|x...', 'x...|x.xx|x...|x...', 'x.xx|x.xx|x...|....'],
+    ['x..x|x...|x..x|x...', 'x..x|..x.|x...|x...', 'x..x|..x.|x..x|..x.', 'x...|x..x|..x.|x...', 'x..x|..x.|....|x...'],
+    ['..xx|x...|..xx|x...', 'x..x|..xx|x...|x...', '.x..|x..x|..x.|x...', 'x.xx|..x.|.x.x|x...', 'xx.x|..x.|xx.x|..x.'],
+    ['x..x|..x.|..xx|x...', '..x.|.xx.|x..x|..x.', 'x.xx|.x..|x..x|.x..', '.x.x|x..x|..x.|x...', 'xx.x|..x.|.x..|x.x.']
+  ].map(function (p) { return p.map(function (s) { return s.replace(/\|/g, ''); }); });
+  function steps(p) { var o = []; for (var i = 0; i < 16; i++) if (p.charAt(i) === 'x') o.push(i); return o; }
+  function rng(seed) { var a = (seed >>> 0) || 1; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { var u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function newGame(opts) {
+    opts = opts || {};
+    var seed = opts.seed === undefined ? (Math.random() * 4294967296) >>> 0 : (opts.seed >>> 0);
+    var g = { rand: rng(seed), seed: seed, stage: Math.max(1, Math.min(8, opts.stage | 0 || 1)), hearts: CFG.hearts, score: 0, combo: 0, maxCombo: 0,
+      counts: { perfect: 0, good: 0, miss: 0, stray: 0 }, stageReached: 0, cleared: false, over: false,
+      queues: {}, chosen: {}, results: {}, stageFails: {}, errs: [] };
+    g.stageReached = g.stage;
+    return g;
+  }
+  function stageQueue(g, s) {
+    if (g.queues[s]) return g.queues[s];
+    var pool = POOLS[s - 1], q;
+    if (s === 1) q = pool.slice(0, 4);
+    else { var idx = [0, 1, 2, 3, 4]; for (var i = 4; i > 0; i--) { var j = Math.floor(g.rand() * (i + 1)); var t = idx[i]; idx[i] = idx[j]; idx[j] = t; } q = idx.slice(0, 4).map(function (k) { return pool[k]; }); }
+    g.queues[s] = { list: q, ptr: 0 };
+    return g.queues[s];
+  }
+  // pattern for (stage s, round r). 직전 라운드(같은 단계)를 실패했으면 그 패턴을 한 번 더
+  function choosePattern(g, s, r, prevFailed) {
+    var key = s + ':' + r;
+    if (g.chosen[key]) return g.chosen[key].p;
+    var q = stageQueue(g, s), prevC = g.chosen[s + ':' + (r - 1)], p, rep = false;
+    if (prevFailed === undefined) { var pr = g.results[s + ':' + (r - 1)]; prevFailed = !!(pr && pr.failed); }
+    if (r > 0 && prevFailed && prevC) { p = prevC.p; rep = true; }
+    else {
+      var used = 0;
+      for (var k = 0; k < r; k++) { var c = g.chosen[s + ':' + k]; if (c && !c.rep) used++; }
+      p = q.list[Math.min(used, q.list.length - 1)];
+    }
+    g.chosen[key] = { p: p, rep: rep };
+    return p;
+  }
+  // 일시정지로 무효가 된 라운드: 그 라운드에서 얻은 점수·판정 수·콤보를 되돌린다
+  function invalidateRound(g, rd, dropChoice) {
+    rd.invalid = true;
+    var a = rd.add;
+    g.score -= a.score; g.counts.perfect -= a.perfect; g.counts.good -= a.good; g.counts.miss -= a.miss; g.counts.stray -= a.stray;
+    if (rd.comboBefore !== undefined) { g.combo = rd.comboBefore; g.maxCombo = Math.max(rd.maxBefore, rd.comboBefore); }
+    if (dropChoice) delete g.chosen[rd.stage + ':' + rd.round];
+  }
+  function newRound(g, s, r, pattern, respTime, stepDur) {
+    var st = steps(pattern);
+    return { stage: s, round: r, pattern: pattern, steps: st, respTime: respTime, stepDur: stepDur, barDur: stepDur * 16,
+      notes: st.map(function (k) { return { step: k, t: respTime + k * stepDur, j: null, err: 0, tapT: 0 }; }),
+      taps: [], strays: 0, finalized: false, failed: false, invalid: false,
+      add: { score: 0, perfect: 0, good: 0, miss: 0, stray: 0 }, comboBefore: undefined };
+  }
+  function addCombo(g, n) {
+    var before = g.combo; g.combo = n ? g.combo + 1 : 0;
+    if (g.combo > g.maxCombo) g.maxCombo = g.combo;
+    return Math.floor(g.combo / 8) > Math.floor(before / 8) && n ? Math.floor(g.combo / 8) : 0;
+  }
+  function mult(combo) { return Math.min(2, 1 + 0.1 * Math.floor(combo / 8)); }
+  // judge a tap (time in schedule clock). returns {result, errMs, note, comboLevel, points}
+  function judgeTap(g, rd, tT) {
+    var start = rd.respTime, end = rd.respTime + rd.barDur;
+    if (tT < start - CFG.good || tT > end + CFG.good) return { result: 'ignored' };
+    var best = -1, bd = 1e9;
+    for (var i = 0; i < rd.notes.length; i++) { var n = rd.notes[i]; if (n.j) continue; var d = Math.abs(tT - n.t); if (d <= CFG.good && d < bd) { bd = d; best = i; } }
+    if (best < 0) {
+      if (tT < start || tT >= end) return { result: 'ignored' };
+      if (rd.comboBefore === undefined) { rd.comboBefore = g.combo; rd.maxBefore = g.maxCombo; }
+      rd.strays++; g.counts.stray++; rd.add.stray++; g.combo = 0;
+      rd.taps.push({ t: tT, kind: 'stray' });
+      return { result: 'stray', errMs: 0 };
+    }
+    var nn = rd.notes[best], err = tT - nn.t, res = Math.abs(err) <= CFG.perfect ? 'perfect' : 'good';
+    if (rd.comboBefore === undefined) { rd.comboBefore = g.combo; rd.maxBefore = g.maxCombo; }
+    nn.j = res; nn.err = err; nn.tapT = tT;
+    g.counts[res]++; rd.add[res]++; g.errs.push(err);
+    var lv = addCombo(g, true);
+    var pts = Math.round((res === 'perfect' ? 100 : 50) * mult(g.combo));
+    g.score += pts; rd.add.score += pts;
+    rd.taps.push({ t: tT, kind: res, note: best });
+    return { result: res, errMs: Math.round(err * 1000), note: best, comboLevel: lv, points: pts };
+  }
+  // mark misses for notes whose window has passed (judgeNow). returns list of missed note indices
+  function sweepMisses(g, rd, judgeNow, margin) {
+    var out = [];
+    for (var i = 0; i < rd.notes.length; i++) { var n = rd.notes[i]; if (!n.j && judgeNow > n.t + CFG.good + (margin || 0)) { if (rd.comboBefore === undefined) { rd.comboBefore = g.combo; rd.maxBefore = g.maxCombo; } n.j = 'miss'; g.counts.miss++; rd.add.miss++; g.combo = 0; out.push(i); } }
+    return out;
+  }
+  // finalize a round → {failed, heartLost, heartGain, bonus, over, cleared, stageDone}
+  function finalizeRound(g, rd) {
+    sweepMisses(g, rd, 1e12, 0);
+    rd.finalized = true;
+    var failed = rd.strays > 0 || rd.notes.some(function (n) { return n.j === 'miss'; });
+    rd.failed = failed;
+    g.results[rd.stage + ':' + rd.round] = { failed: failed, pattern: rd.pattern };
+    var ev = { failed: failed, heartLost: false, heartGain: false, bonus: 0, over: false, cleared: false, stageDone: false, flawless: false };
+    if (failed) { g.hearts--; ev.heartLost = true; g.stageFails[rd.stage] = (g.stageFails[rd.stage] || 0) + 1; }
+    else { ev.bonus += 100 * rd.stage; }
+    if (g.hearts <= 0) { g.hearts = 0; g.over = true; ev.over = true; g.score += ev.bonus; return ev; }
+    if (rd.round === CFG.rounds - 1) {
+      ev.stageDone = true;
+      if (!g.stageFails[rd.stage]) { ev.flawless = true; ev.bonus += 500; if (g.hearts < CFG.hearts) { g.hearts++; ev.heartGain = true; } }
+      if (rd.stage === CFG.stages) { g.cleared = true; g.over = true; ev.cleared = true; ev.bonus += 1000 * g.hearts; }
+      else g.stageReached = Math.max(g.stageReached, rd.stage + 1);
+    }
+    g.score += ev.bonus;
+    return ev;
+  }
+  function simulateRun(o) {
+    o = o || {};
+    var sigma = (+o.sigma || 0) / 1000, bias = (+o.bias || 0) / 1000, off = (+o.offset || 0) / 1000, missP = +o.missP || 0;
+    var seed = o.seed === undefined ? (Math.random() * 4294967296) >>> 0 : (o.seed >>> 0);
+    var g = newGame({ seed: seed, stage: o.stage }), br = rng((seed ^ 0x9e3779b9) >>> 0), t0 = 0;
+    for (var s = g.stage; s <= 8 && !g.over; s++) {
+      var sd = 60 / BPMS[s - 1] / 4;
+      for (var r = 0; r < 4 && !g.over; r++) {
+        var p = choosePattern(g, s, r), rd = newRound(g, s, r, p, t0 + sd * 16, sd);
+        var taps = rd.steps.map(function (k) {
+          var kk = k;
+          if (missP && (k & 3) !== 0 && br() < missP) kk = Math.round(k / 4) * 4;
+          return rd.respTime + kk * sd + bias + sigma * gauss(br) - off;
+        }).sort(function (a, b) { return a - b; });
+        var last = -1e9;
+        for (var i = 0; i < taps.length; i++) { if (taps[i] - last < CFG.debounce) continue; last = taps[i]; judgeTap(g, rd, taps[i]); }
+        finalizeRound(g, rd);
+        t0 += sd * 32;
+      }
+    }
+    return { cleared: g.cleared, stageReached: g.stageReached, score: g.score, counts: g.counts, maxCombo: g.maxCombo, hearts: g.hearts };
+  }
+  return { BPMS: BPMS, CFG: CFG, POOLS: POOLS, steps: steps, rng: rng, newGame: newGame, choosePattern: choosePattern, newRound: newRound,
+    judgeTap: judgeTap, invalidateRound: invalidateRound, sweepMisses: sweepMisses, finalizeRound: finalizeRound, simulateRun: simulateRun, mult: mult };
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
+</script>
+<script>
+/* ===== 박자 앵무새 게임 ===== */
+(function () {
+  'use strict';
+  var Beat = Sound.Beat;
+  var $ = function (id) { return document.getElementById(id); };
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  var reduced = false;
+  try { reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  var BEST_KEY = 'parrot-beat-best';
+  var MAXS = 8;
+
+  // ---------- 새 SVG: <use> 대신 실제 요소로 복제(부분 애니메이션용) ----------
+  function inflate(svg, artId) {
+    var src = document.getElementById(artId); if (!svg || !src) return;
+    var g = src.cloneNode(true); g.removeAttribute('id');
+    var u = svg.querySelector('use'); if (u) svg.removeChild(u);
+    svg.appendChild(g);
+  }
+  inflate($('tBird'), 'teacherArt'); inflate($('mBird'), 'parrotArt'); inflate($('resBirdSvg'), 'parrotArt');
+
+  var el = {
+    app: $('app'), stage: $('stage'), top: $('top'), tBox: $('tBox'), mBox: $('mBox'), tBird: $('tBird'), mBird: $('mBird'),
+    tlT: $('tlT'), tlMe: $('tlMe'), cvT: $('cvT'), cvM: $('cvM'), comboPill: $('comboPill'), comboNum: $('comboNum'),
+    stagePill: $('stagePill'), stageNum: $('stageNum'), sdots: $('sdots'), score: $('score'), hearts: $('hearts'),
+    muteBtn: $('muteBtn'), pauseBtn: $('pauseBtn'), icoOn: $('icoOn'), icoOff: $('icoOff'),
+    ovStart: $('ovStart'), ovPause: $('ovPause'), ovResult: $('ovResult'), ovCal: $('ovCal'),
+    startBtn: $('startBtn'), calBtn: $('calBtn'), bestTxt: $('bestTxt'), resumeBtn: $('resumeBtn'), restartBtn: $('restartBtn'),
+    againBtn: $('againBtn'), menuBtn: $('menuBtn'), calSuggest: $('calSuggest'), resTitle: $('resTitle'), resScore: $('resScore'),
+    newRec: $('newRec'), resLine: $('resLine'), resList: $('resList'), resBirdSvg: $('resBirdSvg'),
+    calRun: $('calRun'), calDone: $('calDone'), calDot: $('calDot'), calDots: $('calDots'), calVal: $('calVal'), calMsg: $('calMsg'),
+    calAgain: $('calAgain'), calOk: $('calOk'), calZero: $('calZero'), calBack: $('calBack'), live: $('live')
+  };
+  function show(node, on) { node.toggleAttribute('hidden', !on); }
+  function announce(t) { el.live.textContent = ''; setTimeout(function () { el.live.textContent = t; }, 30); }
+
+  // ---------- 팔레트 ----------
+  var PAL = {};
+  var PKEYS = ['ink', 'muted', 'panel', 'grid', 'gold', 'beat', 'off', 'early', 'late', 'good', 'teacher-ink', 'parrot-ink'];
+  function readPalette() {
+    var cs = getComputedStyle(document.documentElement);
+    PKEYS.forEach(function (k) { PAL[k] = cs.getPropertyValue('--' + k).trim() || '#888'; });
+    drawLegend();
+  }
+
+  // ---------- 저장 ----------
+  function loadBest() {
+    var b = { score: 0, stage: 0, cleared: false };
+    try { var v = JSON.parse(localStorage.getItem(BEST_KEY) || 'null'); if (v && typeof v === 'object') { b.score = Math.max(0, v.score | 0); b.stage = clamp(v.stage | 0, 0, MAXS); b.cleared = !!v.cleared; } } catch (e) {}
+    return b;
+  }
+  function saveBest(b) { try { localStorage.setItem(BEST_KEY, JSON.stringify(b)); } catch (e) {} }
+
+  // ---------- 게임 상태 ----------
+  var G = {
+    phase: 'menu', g: null, program: [], bars: [], rounds: [], lastTapT: -1e9, pendingStage: 0,
+    clockPending: null, resumePoint: null, pauseCtx: 0, lastHeard: null, disp: null, fade: null, fadeAt: 0,
+    auto: null, lastJudge: null, hud: { stage: 1, score: -1, hearts: -1, combo: -1, dots: '' },
+    resultLockUntil: 0, endTimer: null, suspendTimer: null, seed: 0, startStage: 1, grid: 8, lastBeatKey: '', lastStepKey: ''
+  };
+  function bpmOf(s) { return Rules.BPMS[clamp(s, 1, MAXS) - 1]; }
+  function gridOf(s) { return Rules.POOLS[s - 1].some(function (p) { return /x/.test(p.charAt(1) + p.charAt(3) + p.charAt(5) + p.charAt(7) + p.charAt(9) + p.charAt(11) + p.charAt(13) + p.charAt(15)); }) ? 16 : 8; }
+
+  function makeProgram(stage, round, withTransition) {
+    var out = [];
+    for (var s = stage; s <= MAXS; s++) {
+      if (s > stage || withTransition) out.push({ phase: 'transition', stage: s, round: -1, bpm: bpmOf(s) });
+      for (var r = (s === stage ? round : 0); r < 4; r++) {
+        out.push({ phase: 'call', stage: s, round: r, bpm: bpmOf(s) });
+        out.push({ phase: 'response', stage: s, round: r, bpm: bpmOf(s) });
+      }
+    }
+    out.push({ phase: 'rest', stage: MAXS, round: -1, bpm: bpmOf(MAXS) }, { phase: 'rest', stage: MAXS, round: -1, bpm: bpmOf(MAXS) },
+      { phase: 'rest', stage: MAXS, round: -1, bpm: bpmOf(MAXS) }, { phase: 'rest', stage: MAXS, round: -1, bpm: bpmOf(MAXS) });
+    return out;
+  }
+  function clockNow() { return Beat.tapTime({ timeStamp: performance.now() }); }
+
+  // ---------- 박자 시계 연결 ----------
+  Beat.onBar(function (info) {
+    if (G.phase === 'calibrate') return undefined;
+    if (G.phase !== 'play' || !G.g) return 'silent';
+    var spec = G.program.shift() || { phase: 'rest', stage: MAXS, round: -1, bpm: info.bpm };
+    spec = Object.assign({}, spec, { bar: info.bar, time: info.time, stepDur: info.stepDur, barDur: info.barDur, beatDur: info.beatDur, bpm: info.bpm });
+    var g = G.g;
+    if (g.over) spec.phase = 'rest';
+    if (spec.phase === 'call') {
+      var prev = null;
+      for (var i = G.rounds.length - 1; i >= 0; i--) { var q = G.rounds[i]; if (!q.invalid && q.stage === spec.stage && q.round === spec.round - 1) { prev = q; break; } }
+      var prevFailed = prev ? knownFailed(prev) : false;
+      var p = Rules.choosePattern(g, spec.stage, spec.round, prevFailed);
+      var rd = Rules.newRound(g, spec.stage, spec.round, p, info.time + info.barDur, info.stepDur);
+      rd.callTime = info.time; rd.fired = {}; rd.guide = guideFor(rd);
+      G.rounds.push(rd); if (G.rounds.length > 12) G.rounds.shift();
+      spec.rd = rd;
+    } else if (spec.phase === 'response') {
+      for (var j = G.rounds.length - 1; j >= 0; j--) { var r2 = G.rounds[j]; if (!r2.invalid && r2.stage === spec.stage && r2.round === spec.round) { spec.rd = r2; break; } }
+    } else if (spec.phase === 'transition') {
+      Beat.schedule(info.time, 'levelUp');
+    }
+    if (spec.phase === 'transition' || spec.phase === 'countin') Beat.setBacking({ hat16: spec.stage >= 5 });
+    G.bars.push(spec); if (G.bars.length > 24) G.bars.shift();
+    // 다음 마디 미리 보기: 단계 강제 변경(테스트 훅) / 템포 변경은 직전 마디에서
+    if (G.pendingStage && G.program[0] && (G.program[0].phase === 'call' || G.program[0].phase === 'transition')) {
+      var ns = G.pendingStage; G.pendingStage = 0;
+      G.program = makeProgram(ns, 0, false);
+      g.stageReached = Math.max(g.stageReached, ns);
+      Beat.setBacking({ hat16: ns >= 5 });
+    }
+    var nx = G.program[0];
+    if (nx && nx.bpm && nx.bpm !== info.bpm) Beat.setBpm(nx.bpm);
+    return spec.phase === 'transition' ? 'transition' : spec.phase;
+  });
+  // 선생님 북은 칸마다 예약(게임 오버 시 남은 음이 울리지 않도록)
+  Beat.onStep(function (si) {
+    if (G.phase !== 'play' || !G.g || G.g.over || si.phase !== 'call') return;
+    var spec = barSpec(si.bar);
+    if (!spec || !spec.rd || spec.rd.invalid) return;
+    if (spec.rd.pattern.charAt(si.stepInBar) === 'x') Beat.schedule(si.time, 'teacher', { accent: si.stepInBar === 0 });
+  });
+  function barSpec(bar) { for (var i = G.bars.length - 1; i >= 0; i--) if (G.bars[i].bar === bar) return G.bars[i]; return null; }
+  function heardSpec(t) {
+    for (var i = G.bars.length - 1; i >= 0; i--) if (G.bars[i].time <= t) return G.bars[i];
+    return null;
+  }
+  function knownFailed(rd) {
+    if (rd.finalized) return rd.failed;
+    if (rd.strays > 0) return true;
+    for (var i = 0; i < rd.notes.length; i++) if (rd.notes[i].j === 'miss') return true;
+    return false;
+  }
+  // 새 기호가 처음 나오는 패턴에 안내 고리
+  function guideFor(rd) {
+    var g = G.g, o = { off: false, rest: false };
+    if (rd.stage > 6) return o;
+    var hasOff = rd.steps.some(function (k) { return k % 4 !== 0; });
+    var hasRest = [0, 4, 8, 12].some(function (k) { return rd.pattern.charAt(k) !== 'x'; });
+    if (hasOff && !g.seenOff) { g.seenOff = true; o.off = true; }
+    if (hasRest && !g.seenRest) { g.seenRest = true; o.rest = true; }
+    return o;
+  }
+
+  // ---------- 시작 / 시계 ----------
+  function startGame(stage, seed) {
+    Sound.unlock();
+    clearTimeout(G.endTimer); clearTimeout(G.suspendTimer);
+    Beat.stop(true);
+    if (Beat.isPaused()) Beat.resume();
+    stage = clamp(stage | 0 || 1, 1, MAXS);
+    G.g = Rules.newGame({ seed: seed, stage: stage });
+    G.seed = G.g.seed; G.startStage = stage;
+    G.rounds = []; G.bars = []; G.lastTapT = -1e9; G.lastHeard = null; G.disp = null; G.fade = null; G.lastJudge = null; G.pendingStage = 0;
+    G.hud = { stage: stage, score: -1, hearts: -1, combo: -1, dots: '' };
+    G.grid = gridOf(stage);
+    G.phase = 'play';
+    show(el.ovStart, false); show(el.ovPause, false); show(el.ovResult, false); show(el.ovCal, false);
+    el.stage.classList.remove('idle');
+    setEyes(el.mBird, ''); setEyes(el.tBird, '');
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+    Sound.play('start');
+    requestClock(stage, 0, false, 0.12);
+    syncHUD(true);
+  }
+  function requestClock(stage, round, withTransition, notBefore) {
+    G.clockPending = { stage: stage, round: round, tr: withTransition, notBefore: Beat.ctxTime() + (notBefore || 0) };
+    tryClock();
+  }
+  function tryClock() {
+    var p = G.clockPending; if (!p) return;
+    if (Beat.ctxTime() < p.notBefore) return;
+    G.program = [{ phase: 'countin', stage: p.stage, round: -1, bpm: bpmOf(p.stage) }].concat(makeProgram(p.stage, p.round, p.tr));
+    G.bars = [];
+    Beat.setBacking({ hat16: p.stage >= 5 });
+    Sound.startMusic({ bpm: bpmOf(p.stage), delay: 0.15 });
+    if (Beat.isRunning()) G.clockPending = null;
+  }
+
+  // ---------- 판정 ----------
+  function activeRoundFor(tT) {
+    var gd = Rules.CFG.good;
+    for (var i = G.rounds.length - 1; i >= 0; i--) {
+      var rd = G.rounds[i];
+      if (rd.invalid || rd.finalized) continue;
+      if (tT >= rd.respTime - gd && tT <= rd.respTime + rd.barDur + gd) return rd;
+    }
+    return null;
+  }
+  // 모든 치기(실제 입력·tapAt·autoPlay)가 지나는 길. pos = {x,y} 화면 좌표(없으면 앵무새 북)
+  function doTap(tT, pos) {
+    if (G.phase !== 'play' || !G.g || G.g.over) return { result: 'ignored', errMs: 0 };
+    if (tT - G.lastTapT < Rules.CFG.debounce && tT >= G.lastTapT) return { result: 'ignored', errMs: 0 };
+    G.lastTapT = tT;
+    var rd = activeRoundFor(tT);
+    Sound.play('tap', { soft: !rd });            // 소리 먼저
+    var res = rd ? Rules.judgeTap(G.g, rd, tT) : { result: 'ignored' };
+    if (res.result === 'perfect') Sound.play('perfect');
+    else if (res.result === 'good') Sound.play('good');
+    else if (res.result === 'stray') Sound.play('stray');
+    if (res.comboLevel) Sound.play('combo', { level: res.comboLevel });
+    // 화면 반응
+    drumHit(el.mBird, true);
+    ripple(pos);
+    if (!rd) { var hs = heardSpec(clockNow()); if (hs && hs.phase === 'call') shush(); }
+    if (rd && res.result !== 'ignored') {
+      var tap = rd.taps[rd.taps.length - 1]; if (tap) tap.at = performance.now();
+      if (res.note !== undefined) rd.notes[res.note].jAt = performance.now();
+    }
+    G.lastJudge = { result: res.result, errMs: res.errMs === undefined ? 0 : res.errMs };
+    if (res.result === 'perfect' || res.result === 'good') bumpScore();
+    return { result: res.result, errMs: res.errMs === undefined ? 0 : res.errMs };
+  }
+  function inputTap(e) {
+    var tT = Beat.tapTime(e);
+    var pos = (e && e.clientX !== undefined && e.type && e.type.indexOf('pointer') === 0) ? { x: e.clientX, y: e.clientY } : null;
+    return doTap(tT, pos);
+  }
+
+  function processRounds(now) {
+    var g = G.g; if (!g) return;
+    var margin = 0.03;
+    for (var i = 0; i < G.rounds.length; i++) {
+      var rd = G.rounds[i];
+      if (rd.invalid || rd.finalized) continue;
+      var missed = Rules.sweepMisses(g, rd, now, margin);
+      if (missed.length) { Sound.play('miss'); var pn = performance.now(); missed.forEach(function (k) { rd.notes[k].jAt = pn; }); }
+      if (now > rd.respTime + rd.barDur + Rules.CFG.good + margin) {
+        var pn2 = performance.now();
+        rd.notes.forEach(function (n) { if (!n.j) n.jAt = pn2; });
+        var ev = Rules.finalizeRound(g, rd);
+        onRoundResult(rd, ev);
+        if (g.over) return;
+      }
+    }
+  }
+  function onRoundResult(rd, ev) {
+    var g = G.g;
+    if (ev.failed) {
+      Sound.play('heartLost'); setEyes(el.mBird, 'oops', 700); shake(el.mBird); heartLostFx(g.hearts);
+      var miss = rd.notes.filter(function (n) { return n.j === 'miss'; }).length;
+      announce('하트 1개 잃음' + (miss ? ', 놓침 ' + miss : '') + (rd.strays ? ', 헛박 ' + rd.strays : ''));
+    } else {
+      Sound.play('phraseClear'); setEyes(el.mBird, 'shut', 600); hop(el.mBird, 8, 1); nod(el.tBird);
+      var allP = rd.notes.every(function (n) { return n.j === 'perfect'; });
+      if (allP) notesFx(el.mBox, 3);
+      var pc = rd.notes.filter(function (n) { return n.j === 'perfect'; }).length;
+      announce('성공, 딱 ' + pc + ' 좋아 ' + (rd.notes.length - pc));
+    }
+    if (ev.heartGain) Sound.play('heartGain');
+    if (ev.bonus) bumpScore();
+    if (g.over) endGame(ev.cleared);
+  }
+
+  function endGame(cleared) {
+    var g = G.g;
+    G.phase = 'over';
+    el.pauseBtn.disabled = true;
+    if (cleared) { Sound.stopMusic(0.8); Sound.play('clear'); }
+    else { Sound.play('gameOver'); Sound.stopMusic(0.8); }
+    clearTimeout(G.endTimer);
+    G.endTimer = setTimeout(function () { Beat.stop(); }, 800);
+    var best = loadBest(), isNew = g.score > best.score;
+    var nb = { score: Math.max(best.score, g.score), stage: Math.max(best.stage, cleared ? MAXS : g.stageReached), cleared: best.cleared || cleared };
+    saveBest(nb);
+    G.result = { cleared: cleared, isNew: isNew && g.score > 0 };
+    setTimeout(function () { if (G.phase === 'over') showResult(); }, cleared ? 1300 : 1100);
+  }
+  function median(a) { if (!a.length) return 0; var b = a.slice().sort(function (x, y) { return x - y; }); var m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; }
+  function showResult() {
+    var g = G.g, r = G.result;
+    G.phase = 'result';
+    el.resTitle.textContent = r.cleared ? '클리어!' : '';
+    if (!r.cleared) { el.resTitle.innerHTML = '<span><span class="num">' + g.stageReached + '</span>단계까지</span>'; }
+    el.resScore.textContent = String(g.score);
+    show(el.newRec, r.isNew);
+    el.resLine.innerHTML = '최고 연속 <span class="num">' + g.maxCombo + '</span>';
+    el.resList.innerHTML = '<span>딱!<b class="num">' + g.counts.perfect + '</b></span><span>좋아<b class="num">' + g.counts.good +
+      '</b></span><span>놓침<b class="num">' + g.counts.miss + '</b></span><span>헛박<b class="num">' + g.counts.stray + '</b></span>';
+    var med = median(g.errs);
+    show(el.calSuggest, g.errs.length >= 16 && Math.abs(med) >= 0.06);
+    setEyes(el.resBirdSvg, r.cleared ? 'shut' : '');
+    show(el.ovResult, true);
+    el.pauseBtn.disabled = true;
+    if (r.isNew) Sound.play('newBest');
+    G.resultLockUntil = performance.now() + 800;
+    el.againBtn.disabled = true; el.menuBtn.disabled = true; el.calSuggest.disabled = true;
+    setTimeout(function () {
+      el.againBtn.disabled = false; el.menuBtn.disabled = false; el.calSuggest.disabled = false;
+      if (G.phase === 'result') try { el.againBtn.focus({ preventScroll: true }); } catch (e) {}
+    }, 800);
+    announce(r.cleared ? '클리어! ' + g.score + '점' : g.stageReached + '단계까지, ' + g.score + '점');
+    renderBest();
+  }
+  function toMenu() {
+    clearTimeout(G.endTimer); clearTimeout(G.suspendTimer);
+    Beat.stop(); if (Beat.isPaused()) Beat.resume();
+    G.phase = 'menu'; G.g = null; G.rounds = []; G.bars = []; G.clockPending = null;
+    show(el.ovPause, false); show(el.ovResult, false); show(el.ovCal, false); show(el.ovStart, true);
+    el.stage.classList.add('idle'); el.pauseBtn.disabled = false;
+    renderBest(); syncHUD(true);
+    try { el.startBtn.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function renderBest() {
+    var b = loadBest();
+    show(el.bestTxt, b.score > 0 || b.stage > 0);
+    el.bestTxt.innerHTML = (b.cleared ? '<svg width="14" height="14" viewBox="0 0 16 16" aria-label="클리어" style="vertical-align:-2px;margin-right:3px"><path d="M2 12 L1 4 L5 7 L8 2 L11 7 L15 4 L14 12 Z" fill="var(--gold)"/></svg>' : '') + '최고 <span class="num">' + b.score + '</span>점 · <span class="num">' + b.stage + '</span>단계';
+  }
+
+  // ---------- 일시정지 ----------
+  function pauseGame(auto) {
+    if (G.phase !== 'play') return;
+    var g = G.g, now = clockNow();
+    // 마디가 끝난 라운드는 판정 확정, 진행 중인 라운드는 무효
+    var resume = null;
+    for (var i = 0; i < G.rounds.length; i++) {
+      var rd = G.rounds[i];
+      if (rd.invalid || rd.finalized) continue;
+      if (now >= rd.respTime + rd.barDur) {
+        var ev = Rules.finalizeRound(g, rd); onRoundResult(rd, ev);
+        if (g.over) return;
+      }
+    }
+    var hs = heardSpec(now);
+    if (G.clockPending) resume = { stage: G.clockPending.stage, round: G.clockPending.round, tr: G.clockPending.tr };
+    else if (!hs || hs.phase === 'countin') { var nx = hs ? nextAfter(hs) : null; resume = nx || { stage: G.hud.stage, round: 0, tr: false }; }
+    else if (hs.phase === 'call' || hs.phase === 'response') resume = { stage: hs.stage, round: hs.round, tr: false };
+    else if (hs.phase === 'transition') resume = { stage: hs.stage, round: 0, tr: false };
+    else resume = null;
+    for (var j = 0; j < G.rounds.length; j++) {
+      var r2 = G.rounds[j];
+      if (r2.invalid || r2.finalized) continue;
+      Rules.invalidateRound(g, r2, !(resume && r2.stage === resume.stage && r2.round === resume.round));
+    }
+    if (!resume) { // 마지막 쉬는 마디: 남은 판정만 마치고 끝
+      for (var k = 0; k < G.rounds.length; k++) { var r3 = G.rounds[k]; if (!r3.invalid && !r3.finalized) { onRoundResult(r3, Rules.finalizeRound(g, r3)); if (g.over) return; } }
+      resume = { stage: MAXS, round: 3, tr: false };
+    }
+    G.resumePoint = resume;
+    G.clockPending = null;
+    Sound.play('pause');
+    Beat.stop();
+    G.pauseCtx = Beat.ctxTime();
+    G.phase = 'paused';
+    G.disp = null; G.fade = null; G.lastHeard = null;
+    clearTimeout(G.suspendTimer);
+    if (auto) Beat.pause(); else G.suspendTimer = setTimeout(function () { if (G.phase === 'paused') Beat.pause(); }, 160);
+    show(el.ovPause, true);
+    el.mBird.classList.remove('ready');
+    try { el.resumeBtn.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function nextAfter(spec) {
+    // 카운트인 다음 마디(프로그램에서 아직 안 꺼낸 첫 항목 또는 이미 예약된 다음 마디)
+    for (var i = 0; i < G.bars.length; i++) if (G.bars[i].bar === spec.bar + 1) { var b = G.bars[i]; return b.phase === 'transition' ? { stage: b.stage, round: 0, tr: false } : { stage: b.stage, round: Math.max(0, b.round), tr: false }; }
+    var p = G.program[0];
+    if (p) return { stage: p.stage, round: Math.max(0, p.round), tr: false };
+    return null;
+  }
+  function resumeGame() {
+    if (G.phase !== 'paused') return;
+    clearTimeout(G.suspendTimer);
+    Beat.resume(); Sound.unlock();
+    Sound.play('resume');
+    show(el.ovPause, false);
+    G.phase = 'play';
+    var rp = G.resumePoint || { stage: 1, round: 0, tr: false };
+    G.bars = [];
+    // 정지 직전 예약음이 다 지나간 뒤(시계 정지 페이드 0.22초) 카운트인부터 다시
+    G.clockPending = { stage: rp.stage, round: rp.round, tr: rp.tr, notBefore: G.pauseCtx + 0.3 };
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+  }
+
+  // ---------- 박자 맞추기(보정) ----------
+  var CAL = { clicks: [], taps: [], t0: 0, done: false, value: 0, beat: 60 / 90 };
+  function openCal() {
+    Sound.unlock();
+    clearTimeout(G.endTimer);
+    Beat.stop(true); if (Beat.isPaused()) Beat.resume();
+    G.phase = 'calibrate';
+    show(el.ovStart, false); show(el.ovResult, false); show(el.ovCal, true);
+    show(el.calRun, true); show(el.calDone, false); show(el.calAgain, false); show(el.calOk, false);
+    el.calDots.innerHTML = ''; for (var i = 0; i < 12; i++) { var d = document.createElement('i'); if (i < 4) d.className = 'warm'; el.calDots.appendChild(d); }
+    CAL.taps = []; CAL.done = false; CAL.started = false; CAL.lastTap = -1e9;
+    CAL.pendingAt = Beat.ctxTime() + 0.25;
+    el.pauseBtn.disabled = true;
+  }
+  function calTryStart() {
+    if (CAL.started || G.phase !== 'calibrate') return;
+    if (Beat.ctxTime() < CAL.pendingAt) return;
+    Sound.startMusic({ bpm: 90, delay: 0.4, phases: { 0: 'countin', 1: 'countin', 2: 'countin', 3: 'silent', 4: 'silent' } });
+    if (!Beat.isRunning()) return;
+    CAL.started = true;
+    CAL.t0 = Beat.barTime(0);
+    CAL.clicks = []; for (var i = 0; i < 12; i++) CAL.clicks.push(CAL.t0 + i * CAL.beat);
+  }
+  function calTap(e) {
+    if (!CAL.started || CAL.done) return;
+    var raw = Beat.tapTime(e) + Beat.getOffset() / 1000;
+    if (raw - CAL.lastTap < 0.05) return;
+    CAL.lastTap = raw;
+    Sound.play('tap');
+    var best = -1, bd = 1e9;
+    for (var i = 0; i < CAL.clicks.length; i++) { var d = Math.abs(raw - CAL.clicks[i]); if (d < bd) { bd = d; best = i; } }
+    if (best >= 0 && bd <= CAL.beat * 0.45) {
+      CAL.taps.push({ i: best, err: raw - CAL.clicks[best] });
+      var dot = el.calDots.children[best]; if (dot && best >= 4) dot.className = 'on';
+    }
+    drumHit(el.mBird, true);
+    ripple(e && e.clientX !== undefined && e.type.indexOf('pointer') === 0 ? { x: e.clientX, y: e.clientY } : null);
+  }
+  function calFrame() {
+    calTryStart();
+    if (!CAL.started || CAL.done) return;
+    var now = Beat.heardTime() - Beat.getOffset() / 1000;
+    var k = Math.floor((now - CAL.t0) / CAL.beat + 1e-6), f = (now - CAL.t0) / CAL.beat - k;
+    el.calDot.style.opacity = (k >= 0 && k < 12) ? String(0.35 + 0.65 * Math.max(0, 1 - f / 0.25)) : '0.35';
+    if (now > CAL.t0 + 12 * CAL.beat + 0.3) calFinish();
+  }
+  function calFinish() {
+    CAL.done = true;
+    Beat.stop(true); Sound.stopMusic();
+    var per = {}, errs = [];
+    CAL.taps.forEach(function (t) { if (t.i >= 4 && per[t.i] === undefined) per[t.i] = t.err; });
+    Object.keys(per).forEach(function (k) { errs.push(per[k]); });
+    show(el.calRun, false); show(el.calDone, true); show(el.calAgain, true);
+    if (errs.length < 5) {
+      CAL.value = null;
+      el.calVal.textContent = '';
+      el.calMsg.textContent = '다시 한 번 해 볼까요?';
+      show(el.calOk, false);
+      try { el.calAgain.focus({ preventScroll: true }); } catch (e) {}
+    } else {
+      var ms = clamp(Math.round(median(errs) * 1000), -80, 400);
+      CAL.value = ms;
+      el.calVal.textContent = (ms > 0 ? '+' : ms < 0 ? '−' : '') + Math.abs(ms) + 'ms';
+      el.calMsg.textContent = '';
+      show(el.calOk, true);
+      try { el.calOk.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+  function closeCal() {
+    Beat.stop(true); Sound.stopMusic();
+    show(el.ovCal, false);
+    G.phase = 'menu';
+    toMenu();
+  }
+  el.calBtn.addEventListener('click', function () { Sound.play('button'); openCal(); });
+  el.calSuggest.addEventListener('click', function () { if (el.calSuggest.disabled) return; Sound.play('button'); openCal(); });
+  el.calAgain.addEventListener('click', function () { Sound.play('button'); openCal(); });
+  el.calOk.addEventListener('click', function () { if (CAL.value !== null) Beat.setOffset(CAL.value); Sound.play('button'); closeCal(); });
+  el.calZero.addEventListener('click', function () { Beat.setOffset(0); Sound.play('button'); closeCal(); });
+  el.calBack.addEventListener('click', function () { Sound.play('button'); closeCal(); });
+
+  // ---------- 캐릭터 연출 ----------
+  function q(svg, sel) { return svg.querySelector(sel); }
+  function anim(node, kf, opt) { if (!node || !node.animate) return null; try { return node.animate(kf, opt); } catch (e) { return null; } }
+  function drumHit(svg, strong) {
+    var w = q(svg, '.wing'), d = q(svg, '.dhead'), a1 = q(svg, '.arc1'), a2 = q(svg, '.arc2');
+    if (reduced) { anim(d, [{ fill: 'var(--drum-side)' }, { fill: 'var(--drum-head)' }], { duration: 160 }); return; }
+    anim(w, [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-28deg)', offset: 0.33 }, { transform: 'rotate(0deg)' }], { duration: 120, easing: 'ease-out' });
+    anim(d, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(.8)', offset: 0.35 }, { transform: 'scaleY(1)' }], { duration: 120, easing: 'ease-out' });
+    anim(a1, [{ opacity: 0.7 }, { opacity: 0 }], { duration: 180, easing: 'ease-out' });
+    if (strong) anim(a2, [{ opacity: 0.7 }, { opacity: 0 }], { duration: 180, easing: 'ease-out' });
+  }
+  var eyeTimers = new WeakMap();
+  function setEyes(svg, kind, ms) {
+    var e = q(svg, '.eyes'), s = q(svg, '.eyes-shut'), o = q(svg, '.eyes-oops');
+    if (!e) return;
+    e.toggleAttribute('hidden', kind === 'shut' || kind === 'oops');
+    if (s) s.toggleAttribute('hidden', kind !== 'shut');
+    if (o) o.toggleAttribute('hidden', kind !== 'oops');
+    clearTimeout(eyeTimers.get(svg));
+    if (ms) eyeTimers.set(svg, setTimeout(function () { setEyes(svg, ''); }, ms));
+  }
+  function hop(svg, h, n) {
+    if (reduced) return;
+    var kf = [];
+    for (var i = 0; i < n; i++) { kf.push({ transform: 'translateY(0)' }, { transform: 'translateY(-' + h + 'px)' }); }
+    kf.push({ transform: 'translateY(0)' });
+    anim(q(svg, '.hop'), kf, { duration: n * 240 + (n === 1 ? 120 : 0), easing: 'ease-out' });
+  }
+  function shake(svg) {
+    if (reduced) return;
+    anim(q(svg, '.hop'), [{ transform: 'rotate(0)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' }],
+      { duration: 400, easing: 'ease-in-out' });
+  }
+  function nod(svg) {
+    if (reduced) return;
+    anim(q(svg, '.head'), [{ transform: 'translateY(0)' }, { transform: 'translateY(2px)' }, { transform: 'translateY(0)' }], { duration: 120, easing: 'ease-out' });
+  }
+  function shush() {
+    if (reduced) return;
+    anim(q(el.tBird, '.head'), [{ transform: 'rotate(0)' }, { transform: 'rotate(10deg)' }, { transform: 'rotate(0)' }], { duration: 300, easing: 'ease-out' });
+  }
+  function notesFx(box, n) {
+    if (reduced) return;
+    var cols = ['var(--beat)', 'var(--off)', 'var(--gold)'];
+    for (var i = 0; i < n; i++) {
+      var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      s.setAttribute('class', 'fx'); s.setAttribute('viewBox', '0 0 12 12');
+      s.innerHTML = '<use href="#icNote"/>';
+      s.style.color = cols[i % 3];
+      var bx = box.clientWidth, ang = n === 1 ? 0 : (i / (n - 1) - 0.5);
+      s.style.left = (bx / 2 - 6 + ang * bx * 0.5) + 'px'; s.style.top = (bx * 0.12) + 'px';
+      box.appendChild(s);
+      var dy = n > 3 ? 22 : 18;
+      var a = anim(s, [{ transform: 'translate(0,0)', opacity: 1 }, { transform: 'translate(' + (ang * 16) + 'px,-' + dy + 'px)', opacity: 0 }], { duration: n > 3 ? 900 : 600, delay: i * 50, easing: 'ease-out', fill: 'forwards' });
+      (function (node) { var done = function () { if (node.parentNode) node.parentNode.removeChild(node); }; if (a) a.onfinish = done; else setTimeout(done, 1000); })(s);
+    }
+  }
+  function ripple(pos) {
+    if (!pos) { var r = el.mBox.getBoundingClientRect(); pos = { x: r.left + r.width / 2, y: r.top + r.height * 0.8 }; }
+    var d = document.createElement('div'); d.className = 'ripple';
+    d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px';
+    document.body.appendChild(d);
+    var a = reduced ? anim(d, [{ opacity: 0.35, transform: 'scale(.5)' }, { opacity: 0, transform: 'scale(.5)' }], { duration: 100 })
+      : anim(d, [{ opacity: 0.35, transform: 'scale(.333)' }, { opacity: 0, transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' });
+    var done = function () { if (d.parentNode) d.parentNode.removeChild(d); };
+    if (a) a.onfinish = done; else setTimeout(done, 300);
+  }
+  function heartLostFx(left) {
+    var h = el.hearts.children[left];
+    if (h && !reduced) anim(h, [{ transform: 'scale(1)' }, { transform: 'scale(1.2)' }, { transform: 'scale(.9)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'ease-out' });
+  }
+  function bumpScore() { if (!reduced) anim(el.score, [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 140 }); }
+  function stageUpFx() {
+    if (!reduced) { anim(el.stagePill, [{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'ease-out' }); hop(el.tBird, 10, 2); notesFx(el.tBox, 5); }
+  }
+
+  // ---------- HUD ----------
+  function syncHUD(force) {
+    var g = G.g, h = G.hud;
+    var score = g ? g.score : 0, hearts = g ? g.hearts : 3, combo = g ? g.combo : 0, st = g ? h.stage : 1;
+    if (force || score !== h.score) { el.score.textContent = String(score); h.score = score; }
+    if (force || hearts !== h.hearts) {
+      for (var i = 0; i < 3; i++) el.hearts.children[i].classList.toggle('lost', i >= hearts);
+      el.hearts.setAttribute('aria-label', '하트 ' + hearts + '개 남음'); h.hearts = hearts;
+    }
+    if (force || combo !== h.combo) {
+      var prev = h.combo; h.combo = combo;
+      el.comboNum.textContent = String(combo);
+      el.comboPill.classList.toggle('show', combo >= 2);
+      if (combo > prev && combo >= 2 && !reduced) anim(el.comboNum, [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 140 });
+      if (combo >= 10 && combo % 10 === 0 && combo > prev) { el.comboPill.classList.add('gold'); setTimeout(function () { el.comboPill.classList.remove('gold'); }, 600); }
+    }
+    var ok = 0, done = 0;
+    if (g) G.rounds.forEach(function (rd) { if (rd.stage === st && rd.finalized && !rd.invalid) { done++; if (!rd.failed) ok++; } });
+    var dk = st + ':' + ok;
+    if (force || dk !== h.dots) {
+      h.dots = dk;
+      el.stageNum.textContent = String(st);
+      for (var k = 0; k < 4; k++) el.sdots.children[k].classList.toggle('on', k < ok);
+      el.stagePill.setAttribute('aria-label', '단계 ' + st + ', 4개 중 ' + ok + '개 성공');
+    }
+  }
+
+  // ---------- 그리기 ----------
+  var CV = { t: { cv: el.cvT, w: 0, h: 0, dpr: 1 }, m: { cv: el.cvM, w: 0, h: 0, dpr: 1 } };
+  function geo(c, cells) {
+    var L = c.w, S = c.h, mg = clamp(L * 0.03, 10, 24), inner = L - 2 * mg, cw = inner / cells;
+    return { L: L, S: S, mg: mg, inner: inner, cw: cw, y0: S * 0.52, D: Math.min(cw * 0.62, S * 0.44),
+      x: function (frac) { return mg + cw / 2 + frac * inner; } };
+  }
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+  // kind: 'beat' | 'off' | 'off16' | 'rest'. mode: 'fill' | 'ghost' | 'dash'
+  function drawSym(g, kind, x, y, D, mode, color, alpha, scale) {
+    g.save(); g.globalAlpha = alpha; g.translate(x, y); if (scale && scale !== 1) g.scale(scale, scale);
+    g.lineWidth = 2.5; g.strokeStyle = color; g.fillStyle = color;
+    if (kind === 'rest') {
+      g.setLineDash([3, 3]); g.lineWidth = 2; g.beginPath(); g.arc(0, 0, D * 0.31, 0, Math.PI * 2); g.stroke();
+    } else if (kind === 'beat') {
+      g.beginPath(); g.arc(0, 0, D / 2 - (mode === 'fill' ? 0 : 1.25), 0, Math.PI * 2);
+      if (mode === 'dash') { g.setLineDash([4, 3]); g.lineWidth = 2; g.stroke(); } else if (mode === 'ghost') g.stroke(); else g.fill();
+    } else {
+      var diag = 0.66 * D * (kind === 'off16' ? 0.8 : 1), side = diag / Math.SQRT2, r = side * 0.18;
+      g.rotate(Math.PI / 4);
+      rr(g, -side / 2, -side / 2, side, side, r);
+      if (mode === 'dash') { g.setLineDash([4, 3]); g.lineWidth = 2; g.stroke(); } else if (mode === 'ghost') g.stroke(); else g.fill();
+    }
+    g.restore();
+  }
+  function symKind(step) { return step % 4 === 0 ? 'beat' : step % 2 === 0 ? 'off' : 'off16'; }
+  function symColor(step) { return step % 4 === 0 ? PAL.beat : PAL.off; }
+  function symY(G0, step) { return step % 4 === 0 ? G0.y0 : G0.y0 - G0.S * 0.12; }
+  function easeOut(u) { u = clamp(u, 0, 1); return 1 - (1 - u) * (1 - u); }
+
+  function beginCanvas(c) {
+    var g = c.cv.getContext('2d');
+    g.setTransform(c.dpr, 0, 0, c.dpr, 0, 0);
+    g.clearRect(0, 0, c.w, c.h);
+    return g;
+  }
+  function drawBase(g, G0, spec, now, cells) {
+    var gold = 0;
+    if (spec && spec.phase === 'transition') { var u = (now - spec.time) / 0.9; if (u >= 0 && u < 1) gold = 1 - u; }
+    // 박 구분선
+    for (var b = 1; b < 4; b++) {
+      var x = Math.round(G0.mg + b * G0.inner / 4) + 0.5;
+      g.globalAlpha = 1; g.strokeStyle = PAL.grid; g.lineWidth = 1; g.setLineDash([]);
+      g.beginPath(); g.moveTo(x, G0.S * 0.15); g.lineTo(x, G0.S * 0.85); g.stroke();
+      if (gold > 0) { g.globalAlpha = 0.5 * gold; g.strokeStyle = PAL.gold; g.lineWidth = 2; g.beginPath(); g.moveTo(x, G0.S * 0.15); g.lineTo(x, G0.S * 0.85); g.stroke(); }
+    }
+    g.globalAlpha = 1;
+    // 박 점 (메트로놈)
+    for (var k = 0; k < 4; k++) {
+      var bx = G0.x(k / 4), lit = 0;
+      if (spec && now >= spec.time) {
+        var bt = spec.time + k * spec.beatDur, dt = now - bt;
+        if (dt >= 0 && dt < 0.15) lit = 1 - dt / 0.15;
+        if (spec.phase === 'countin' && dt >= 0 && now < spec.time + spec.barDur) lit = Math.max(lit, 0.45);
+      }
+      g.fillStyle = PAL.grid; g.beginPath(); g.arc(bx, G0.S - 10, 3, 0, Math.PI * 2); g.fill();
+      if (lit > 0) { g.globalAlpha = 0.6 * lit + (spec.phase === 'countin' ? 0.3 * lit : 0); g.fillStyle = PAL.ink; g.beginPath(); g.arc(bx, G0.S - 10, 3, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    }
+    // 빈 엇박 눈금
+    var stepEvery = cells === 16 ? 1 : 2;
+    g.strokeStyle = PAL.grid; g.lineWidth = 1;
+    for (var s = 0; s < 16; s += stepEvery) {
+      if (s % 4 === 0) continue;
+      var tx = Math.round(G0.x(s / 16)) + 0.5;
+      g.beginPath(); g.moveTo(tx, G0.y0 + 0.5 * G0.D - 3); g.lineTo(tx, G0.y0 + 0.5 * G0.D + 3); g.stroke();
+    }
+  }
+  function drawCursor(g, G0, frac, color) {
+    if (frac < 0 || frac > 1) return;
+    var x = Math.min(G0.x(frac), G0.L - 3);
+    g.globalAlpha = 0.06; g.fillStyle = color; g.fillRect(G0.mg, 2, Math.max(0, x - G0.mg), G0.S - 4);
+    g.globalAlpha = 0.55; g.fillStyle = PAL.ink; g.fillRect(x - 1, G0.S * 0.08, 2, G0.S * 0.84);
+    g.globalAlpha = 1; g.fillStyle = color;
+    g.beginPath(); g.moveTo(x - 4, G0.S * 0.08); g.lineTo(x + 4, G0.S * 0.08); g.lineTo(x, G0.S * 0.08 + 6); g.closePath(); g.fill();
+  }
+  function guideRing(g, x, y, D, pn) {
+    var a = reduced ? 0.2 : 0.175 + 0.075 * Math.cos(pn / 1200 * Math.PI * 2);
+    g.save(); g.globalAlpha = a; g.strokeStyle = PAL.ink; g.lineWidth = 2; g.beginPath(); g.arc(x, y, D / 2 + 8, 0, Math.PI * 2); g.stroke(); g.restore();
+  }
+  // 선생님 줄: 부르기 패턴
+  function drawTeacherRound(g, G0, rd, now, alpha, pn) {
+    var st = rd.stage;
+    if (st >= 8) return;
+    for (var s = 0; s < 16; s++) {
+      var on = rd.pattern.charAt(s) === 'x', t = rd.callTime + s * rd.stepDur, x = G0.x(s / 16);
+      if (!on) {
+        if (s % 4 === 0 && st <= 6) { drawSym(g, 'rest', x, G0.y0, G0.D, 'dash', PAL.muted, 0.7 * alpha); if (rd.guide.rest) guideRing(g, x, G0.y0, G0.D * 0.62, pn); }
+        continue;
+      }
+      var kind = symKind(s), col = symColor(s), y = symY(G0, s), dt = now - t;
+      if (st === 7) {
+        if (dt >= 0 && dt < 0.45) drawSym(g, kind, x, y, G0.D, 'fill', col, alpha * (1 - dt / 0.45), reduced ? 1 : 1.25 - 0.25 * easeOut(dt / 0.16));
+        continue;
+      }
+      if (dt < 0) drawSym(g, kind, x, y, G0.D, 'fill', col, 0.35 * alpha, 1);
+      else drawSym(g, kind, x, y, G0.D, 'fill', col, alpha, reduced ? 1 : 1.25 - 0.25 * easeOut(dt / 0.16));
+      if (rd.guide.off && s % 4 !== 0) guideRing(g, x, y, G0.D * 0.66, pn);
+    }
+  }
+  function pill(g, x, y, text, border, fs, sideL, sideR) {
+    g.save();
+    g.font = '800 ' + fs + 'px system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif';
+    var tw = g.measureText(text).width, w = tw + 14, h = fs + 6;
+    rr(g, x - w / 2, y - h, w, h, h / 2);
+    g.fillStyle = PAL.panel; g.fill(); g.lineWidth = 1; g.strokeStyle = border; g.stroke();
+    g.fillStyle = PAL.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (text === '×') g.fillStyle = PAL.muted;
+    g.fillText(text, x, y - h / 2 + 0.5);
+    if (sideL) { g.fillStyle = sideL; g.fillText('‹', x - w / 2 - 6, y - h / 2); }
+    if (sideR) { g.fillStyle = sideR; g.fillText('›', x + w / 2 + 6, y - h / 2); }
+    g.restore();
+  }
+  // 내 줄: 유령(1~3단계), 판정, 탭 막대
+  function drawMeRound(g, G0, rd, now, alpha, pn, isResp) {
+    var st = rd.stage, hint = st <= 3;
+    var showPills = G0.cw >= 34 && G0.S >= 76, fs = G0.S < 90 ? 11 : 13;
+    // 탭 막대
+    rd.taps.forEach(function (tp) {
+      var x = clamp(G0.x((tp.t - rd.respTime) / rd.barDur), 2, G0.L - 2), stray = tp.kind === 'stray';
+      g.globalAlpha = alpha; g.fillStyle = stray ? PAL.muted : PAL['parrot-ink'];
+      rr(g, x - 1.5, G0.S * 0.2, 3, G0.S * 0.6, 1.5); g.fill();
+      if (stray) {
+        g.strokeStyle = PAL.muted; g.lineWidth = 2; var yy = G0.S * 0.2 - 6;
+        g.beginPath(); g.moveTo(x - 4, yy - 4); g.lineTo(x + 4, yy + 4); g.moveTo(x + 4, yy - 4); g.lineTo(x - 4, yy + 4); g.stroke();
+      }
+    });
+    g.globalAlpha = 1;
+    for (var s = 0; s < 16; s++) {
+      var on = rd.pattern.charAt(s) === 'x', tCall = rd.callTime + s * rd.stepDur, x = G0.x(s / 16);
+      if (!on) {
+        if (s % 4 === 0 && hint && now >= tCall) drawSym(g, 'rest', x, G0.y0, G0.D, 'dash', PAL.muted, 0.7 * alpha * easeOut((now - tCall) / 0.12));
+        continue;
+      }
+      var kind = symKind(s), col = symColor(s), y = symY(G0, s), n = null;
+      for (var i = 0; i < rd.notes.length; i++) if (rd.notes[i].step === s) { n = rd.notes[i]; break; }
+      var judged = n && n.j && n.j !== 'miss', missed = n && n.j === 'miss';
+      if (hint && now >= tCall && !judged && !missed) {
+        var u = (now - tCall) / 0.12;
+        drawSym(g, kind, x, y, G0.D, 'ghost', col, 0.55 * alpha * easeOut(u), reduced ? 1 : 0.6 + 0.4 * easeOut(u));
+      }
+      if (judged) {
+        var age = (pn - (n.jAt || pn)) / 1000, perfect = n.j === 'perfect';
+        var sc = reduced ? 1 : (perfect ? 1.3 - 0.3 * easeOut(age / 0.18) : 1.15 - 0.15 * easeOut(age / 0.14));
+        drawSym(g, kind, x, y, G0.D, 'fill', col, alpha, sc);
+        var ringT = perfect ? 0.3 : 0.24;
+        if (age < ringT) {
+          var ru = age / ringT; g.save(); g.globalAlpha = alpha * (1 - ru); g.lineWidth = 2; g.strokeStyle = perfect ? PAL.gold : PAL.good;
+          var grow = reduced ? 0 : 4 * ru;
+          g.beginPath(); g.arc(x, y, G0.D / 2 + (perfect ? 5 : 6) + grow, 0, Math.PI * 2); g.stroke();
+          if (perfect) { g.beginPath(); g.arc(x, y, G0.D / 2 + 10 + grow, 0, Math.PI * 2); g.stroke(); }
+          g.restore();
+        }
+        var early = n.err < 0;
+        if (!perfect) { // 어긋남 선
+          var tx = clamp(G0.x((n.tapT - rd.respTime) / rd.barDur), 2, G0.L - 2), ly = Math.min(G0.y0 + 0.5 * G0.D + 6, G0.S - 16);
+          g.save(); g.globalAlpha = alpha; g.strokeStyle = g.fillStyle = early ? PAL.early : PAL.late; g.lineWidth = 2;
+          g.beginPath(); g.moveTo(x, ly); g.lineTo(tx, ly); g.stroke();
+          var dir = early ? -1 : 1; g.beginPath(); g.moveTo(tx + dir * 3, ly); g.lineTo(tx - dir * 3, ly - 3.5); g.lineTo(tx - dir * 3, ly + 3.5); g.closePath(); g.fill();
+          g.restore();
+        }
+        if (showPills) {
+          var pa = reduced ? 1 : easeOut(age / 0.12);
+          g.save(); g.globalAlpha = alpha * pa;
+          pill(g, x, y - G0.D / 2 - 6 + (1 - pa) * 4, perfect ? '딱!' : '좋아', perfect ? PAL.gold : PAL.good, fs, !perfect && early ? PAL.early : null, !perfect && !early ? PAL.late : null);
+          g.restore();
+        }
+      } else if (missed) {
+        var mage = (pn - (n.jAt || pn)) / 1000, blink = mage < 0.6 ? (Math.floor(mage / 0.15) % 2 === 0 ? 1 : 0.35) : 1;
+        drawSym(g, kind, x, y, G0.D, 'dash', PAL.muted, 0.75 * alpha * blink, 1);
+        if (showPills) { g.save(); g.globalAlpha = alpha; pill(g, x, y - G0.D / 2 - 6, '×', PAL.grid, fs); g.restore(); }
+        else { g.save(); g.globalAlpha = alpha; g.strokeStyle = PAL.muted; g.lineWidth = 2; var yx = y - G0.D / 2 - 8; g.beginPath(); g.moveTo(x - 4, yx - 4); g.lineTo(x + 4, yx + 4); g.moveTo(x + 4, yx - 4); g.lineTo(x - 4, yx + 4); g.stroke(); g.restore(); }
+      }
+    }
+  }
+  function draw(pn) {
+    var now = (G.phase === 'play' || G.phase === 'over') ? Beat.heardTime() - Beat.getOffset() / 1000 : (G.frozenNow || 0);
+    if (G.phase === 'play' || G.phase === 'over') G.frozenNow = now;
+    var spec = (G.phase === 'menu' || G.phase === 'calibrate') ? null : heardSpec(now);
+    var rd = spec && (spec.phase === 'call' || spec.phase === 'response') ? spec.rd : null;
+    if (rd && rd.invalid) rd = null;
+    if (rd !== G.disp) { if (G.disp && !G.disp.invalid) { G.fade = G.disp; G.fadeAt = pn; } G.disp = rd; }
+    var cells = spec ? gridOf(spec.stage) : G.grid;
+    var fadeA = 0;
+    if (G.fade) { var fu = (pn - G.fadeAt - 250) / 200; fadeA = fu <= 0 ? 1 : 1 - fu; if (fadeA <= 0) { G.fade = null; fadeA = 0; } }
+    // 선생님 줄
+    var c = CV.t, g = beginCanvas(c), G0 = geo(c, cells);
+    drawBase(g, G0, spec, now, cells);
+    if (G.fade && fadeA > 0 && G.fade !== rd) drawTeacherRound(g, geo(c, gridOf(G.fade.stage)), G.fade, now, fadeA, pn);
+    if (rd) drawTeacherRound(g, G0, rd, now, 1, pn);
+    if (spec && spec.phase === 'call') drawCursor(g, G0, (now - spec.time) / spec.barDur, PAL['teacher-ink']);
+    // 내 줄
+    c = CV.m; g = beginCanvas(c); var G1 = geo(c, cells);
+    drawBase(g, G1, spec, now, cells);
+    if (G.fade && fadeA > 0 && G.fade !== rd) drawMeRound(g, geo(c, gridOf(G.fade.stage)), G.fade, now, fadeA, pn, true);
+    if (rd) drawMeRound(g, G1, rd, now, 1, pn, spec.phase === 'response');
+    if (spec && spec.phase === 'response') drawCursor(g, G1, (now - spec.time) / spec.barDur, PAL['parrot-ink']);
+    return { spec: spec, now: now };
+  }
+  function drawLegend() {
+    var cs = document.querySelectorAll('.lcard canvas');
+    for (var i = 0; i < cs.length; i++) {
+      var cv = cs[i], dpr = Math.min(window.devicePixelRatio || 1, 2), w = 40, h = 32;
+      cv.width = w * dpr; cv.height = h * dpr;
+      var g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+      var k = cv.getAttribute('data-kind');
+      if (k === 'beat') drawSym(g, 'beat', 20, 18, 24, 'fill', PAL.beat, 1);
+      else if (k === 'off') drawSym(g, 'off', 20, 13, 24, 'fill', PAL.off, 1);
+      else drawSym(g, 'rest', 20, 18, 24, 'dash', PAL.muted, 0.7);
+    }
+  }
+
+  // ---------- 매 프레임: 차례 표시·새 연출 ----------
+  function onEnterBar(spec) {
+    var ph = spec ? spec.phase : 'countin';
+    el.tlT.classList.toggle('on', ph === 'call');
+    el.tlMe.classList.toggle('on', ph === 'response');
+    el.tBox.classList.toggle('on', ph === 'call' || ph === 'countin' || ph === 'transition');
+    el.mBox.classList.toggle('on', ph === 'response');
+    el.tBird.classList.toggle('listen', ph === 'response');
+    el.mBird.classList.toggle('listen', ph === 'call');
+    el.mBird.classList.remove('ready');
+    if (spec && (ph === 'transition' || ph === 'countin' || ph === 'call')) {
+      if (G.hud.stage !== spec.stage) { G.hud.stage = spec.stage; syncHUD(true); }
+      if (ph === 'transition') stageUpFx();
+    }
+  }
+  function birdFrame(spec, now) {
+    if (!spec) return;
+    var beatK = Math.floor((now - spec.time) / spec.beatDur);
+    if (spec.phase === 'countin') {
+      var key = spec.bar + ':' + beatK;
+      if (beatK >= 0 && beatK < 4 && key !== G.lastBeatKey) { G.lastBeatKey = key; nod(el.tBird); }
+    }
+    if (spec.phase === 'call') {
+      if (beatK === 3) el.mBird.classList.add('ready');
+      var rd = spec.rd;
+      if (rd && !rd.invalid) {
+        for (var i = 0; i < rd.steps.length; i++) {
+          var s = rd.steps[i], t = rd.callTime + s * rd.stepDur;
+          if (now >= t && !rd.fired[s]) { rd.fired[s] = true; if (now - t < 0.1) drumHit(el.tBird, s % 4 === 0); }
+        }
+      }
+    }
+  }
+  function autoFrame(now) {
+    var a = G.auto; if (!a) return;
+    for (var i = 0; i < G.rounds.length; i++) {
+      var rd = G.rounds[i];
+      if (rd.invalid || rd.finalized) continue;
+      rd.notes.forEach(function (n) {
+        if (n.autoT === undefined) n.autoT = n.t + (a.bias + a.sigma * gaussA()) / 1000;
+        if (!n.autoDone && now >= n.autoT) { n.autoDone = true; doTap(n.autoT, null); }
+      });
+    }
+  }
+  function gaussA() { var r = G.auto.rand, u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  function frame(pn) {
+    try {
+      if (G.phase === 'play') {
+        if (G.clockPending) tryClock();
+        var now = clockNow();
+        autoFrame(now);
+        processRounds(now);
+      }
+      if (G.phase === 'calibrate') calFrame();
+      var r = draw(pn);
+      if (G.phase === 'play') {
+        if (r.spec !== G.lastHeard) { G.lastHeard = r.spec; onEnterBar(r.spec); }
+        birdFrame(r.spec, r.now);
+      }
+      if (G.g) syncHUD(false);
+    } catch (e) { setTimeout(function () { throw e; }, 0); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- 입력 ----------
+  function overlayOpen() { return !el.ovStart.hidden || !el.ovPause.hidden || !el.ovResult.hidden || !el.ovCal.hidden; }
+  window.addEventListener('pointerdown', function (e) {
+    Sound.unlock();
+    var tg = e.target;
+    if (tg && tg.closest && tg.closest('button, a')) return;
+    if (G.phase === 'calibrate') { e.preventDefault(); calTap(e); return; }
+    if (overlayOpen()) return;
+    if (G.phase !== 'play') return;
+    if (e.button !== undefined && e.button > 0) return;
+    e.preventDefault();
+    inputTap(e);
+  }, { passive: false });
+  ['contextmenu', 'dblclick', 'gesturestart', 'selectstart'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (!(e.target.closest && e.target.closest('.overlay a'))) e.preventDefault(); }, { passive: false });
+  });
+  document.addEventListener('touchmove', function (e) { if (G.phase === 'play' || G.phase === 'calibrate') e.preventDefault(); }, { passive: false });
+  var IGNORE_KEYS = { Tab: 1, Shift: 1, Control: 1, Alt: 1, Meta: 1, CapsLock: 1, ContextMenu: 1, OS: 1, Fn: 1 };
+  document.addEventListener('keydown', function (e) {
+    var k = e.key, onBtn = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A');
+    Sound.unlock();
+    if (IGNORE_KEYS[k] || e.ctrlKey || e.metaKey || e.altKey) return;
+    if ((k === 'm' || k === 'M') && G.phase !== 'calibrate') { if (!e.repeat) toggleMute(); return; }
+    if (G.phase === 'play') {
+      if (k === 'p' || k === 'P' || k === 'Escape') { e.preventDefault(); if (!e.repeat) pauseGame(false); return; }
+      if (/^F\d+$/.test(k)) return;
+      e.preventDefault();
+      if (onBtn) try { e.target.blur(); } catch (er) {}
+      if (!e.repeat) inputTap(e);
+      return;
+    }
+    if (G.phase === 'calibrate') {
+      if (k === 'Escape') { e.preventDefault(); closeCal(); return; }
+      if (CAL.done) return;
+      e.preventDefault();
+      if (!e.repeat) calTap(e);
+      return;
+    }
+    if (G.phase === 'paused') {
+      if ((k === 'p' || k === 'P' || k === 'Escape' || ((k === 'Enter' || k === ' ') && !onBtn)) && !e.repeat) { e.preventDefault(); resumeGame(); }
+      return;
+    }
+    if (G.phase === 'menu') {
+      if ((k === 'Enter' || k === ' ') && !onBtn && !e.repeat) { e.preventDefault(); startGame(1); }
+      return;
+    }
+    if (G.phase === 'result' || G.phase === 'over') {
+      if (G.phase === 'over' || performance.now() < G.resultLockUntil) { e.preventDefault(); return; }
+      if ((k === 'Enter' || k === ' ') && !onBtn && !e.repeat) { e.preventDefault(); startGame(1); }
+    }
+  });
+  document.addEventListener('keyup', function (e) {
+    if ((G.phase === 'play' || G.phase === 'calibrate' || G.phase === 'over' || (G.phase === 'result' && performance.now() < G.resultLockUntil)) && (e.key === ' ' || e.key === 'Enter')) e.preventDefault();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) return;
+    if (G.phase === 'play') pauseGame(true);
+    else if (G.phase === 'calibrate' && CAL.started && !CAL.done) { Beat.stop(); openCal(); }
+  });
+  window.addEventListener('pagehide', function () { if (G.phase === 'play') pauseGame(true); });
+
+  // 버튼
+  el.startBtn.addEventListener('click', function () { startGame(1); });
+  el.resumeBtn.addEventListener('click', resumeGame);
+  el.restartBtn.addEventListener('click', function () { startGame(G.startStage || 1); });
+  el.againBtn.addEventListener('click', function () { if (el.againBtn.disabled || performance.now() < G.resultLockUntil) return; startGame(1); });
+  el.menuBtn.addEventListener('click', function () { if (el.menuBtn.disabled || performance.now() < G.resultLockUntil) return; Sound.play('button'); toMenu(); });
+  el.pauseBtn.addEventListener('click', function () {
+    Sound.unlock();
+    if (G.phase === 'play') pauseGame(false); else if (G.phase === 'paused') resumeGame();
+  });
+  function syncMute() {
+    var m = Sound.isMuted();
+    el.icoOn.toggleAttribute('hidden', m);
+    el.icoOff.toggleAttribute('hidden', !m);
+    el.muteBtn.setAttribute('aria-pressed', m ? 'true' : 'false');
+    el.muteBtn.setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
+  }
+  function toggleMute() { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); syncMute(); }
+  el.muteBtn.addEventListener('click', toggleMute);
+
+  // ---------- 레이아웃 (높이 기준) ----------
+  function px(v) { return parseFloat(v) || 0; }
+  function place(node, x, y, w, h) { node.style.left = x + 'px'; node.style.top = y + 'px'; node.style.width = w + 'px'; node.style.height = h + 'px'; }
+  function sizeCanvas(c, w, h) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.w = w; c.h = h; c.dpr = dpr;
+    var W = Math.round(w * dpr), H = Math.round(h * dpr);
+    if (c.cv.width !== W) c.cv.width = W;
+    if (c.cv.height !== H) c.cv.height = H;
+  }
+  function layout() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    document.documentElement.style.setProperty('--app-h', vh + 'px');
+    var bs = getComputedStyle(document.body);
+    var W = vw - px(bs.paddingLeft) - px(bs.paddingRight), H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    var TB = H <= 520 ? 44 : 52, SW = Math.min(W, 980), SH = Math.max(120, H - TB - 8);
+    var land = vw >= vh, A, S, L, rootS = document.documentElement.style;
+    rootS.setProperty('--tb', TB + 'px'); rootS.setProperty('--sw', SW + 'px'); rootS.setProperty('--sh', SH + 'px');
+    var tBox = el.tBox, mBox = el.mBox, cpw = 76, cph = 30;
+    if (land) {
+      var R = Math.floor((SH - 8) / 2);
+      A = clamp(Math.round(R * 0.78), 64, 220); S = clamp(Math.round(R * 0.5), 56, 132); L = SW - A - 16;
+      var top0 = Math.max(0, Math.floor((SH - (2 * R + 8)) / 2));
+      place(tBox, 0, top0 + (R - A) / 2, A, A);
+      place(el.tlT, A + 16, top0 + (R - S) / 2, L, S);
+      place(mBox, 0, top0 + R + 8 + (R - A) / 2, A, A);
+      place(el.tlMe, A + 16, top0 + R + 8 + (R - S) / 2, L, S);
+      var cy = Math.min(top0 + R + 8 + (R - A) / 2 + A - cph / 2, SH - cph);
+      el.comboPill.style.left = Math.max(0, A - cpw + 10) + 'px'; el.comboPill.style.top = cy + 'px';
+    } else {
+      S = clamp(Math.round(W * 0.16), 56, 120); L = Math.min(W, 760);
+      var B = Math.floor((SH - 2 * S - 8 - 16) / 2);
+      A = clamp(Math.min(Math.round(B * 0.75), Math.round(W * 0.5)), 64, 200);
+      A = Math.min(A, Math.max(40, B));
+      var lx = (SW - L) / 2;
+      place(tBox, (SW - A) / 2, Math.max(0, (B - A) / 2), A, A);
+      place(el.tlT, lx, B + 8, L, S);
+      place(el.tlMe, lx, B + 8 + S + 8, L, S);
+      var mTop = B + 8 + 2 * S + 16;
+      place(mBox, (SW - A) / 2, mTop + Math.max(0, (B - A) / 2), A, A);
+      var cx = (SW + A) / 2 + 16;
+      if (cx + cpw > SW) cx = SW - cpw;
+      el.comboPill.style.left = cx + 'px'; el.comboPill.style.top = (mTop + B / 2 - cph / 2) + 'px';
+    }
+    sizeCanvas(CV.t, L, S); sizeCanvas(CV.m, L, S);
+    document.body.classList.toggle('ov-full', SH < 460 || SW < 600);
+    document.body.classList.toggle('tb-760', SW < 760);
+    document.body.classList.toggle('tb-640', SW < 640);
+    document.body.classList.toggle('tb-420', SW < 420);
+  }
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', layout);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  try {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readPalette);
+    new MutationObserver(readPalette).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  } catch (e) {}
+
+  // ---------- 테스트 훅 (QA 전용) ----------
+  function copyState() {
+    var g = G.g, now = clockNow();
+    var ph = G.phase;
+    if (ph === 'play') { var hs = heardSpec(now); ph = hs ? (hs.phase === 'rest' ? 'transition' : hs.phase) : 'countin'; }
+    var next = [];
+    if (g) G.rounds.forEach(function (rd) { if (!rd.invalid && !rd.finalized) rd.notes.forEach(function (n) { if (!n.j) next.push(n.t); }); });
+    next.sort(function (a, b) { return a - b; });
+    var hs2 = G.g ? heardSpec(now) : null, rdc = hs2 && hs2.rd;
+    return {
+      phase: ph, stage: g ? G.hud.stage : 0, round: hs2 ? hs2.round : -1, bpm: hs2 ? hs2.bpm : (g ? bpmOf(G.hud.stage) : Beat.getBpm()), hearts: g ? g.hearts : 0, score: g ? g.score : 0,
+      combo: g ? g.combo : 0, maxCombo: g ? g.maxCombo : 0, counts: g ? Object.assign({}, g.counts) : { perfect: 0, good: 0, miss: 0, stray: 0 },
+      pattern: rdc ? rdc.pattern : '', nextNotes: next, latency: { auto: (Beat.latency().output || Beat.latency().base || 0), offset: Beat.getOffset() },
+      audioTime: now, ctxTime: Beat.ctxTime(), cleared: g ? g.cleared : false, stageReached: g ? g.stageReached : 0, lastJudge: G.lastJudge,
+      windows: { perfect: Rules.CFG.perfect * 1000, good: Rules.CFG.good * 1000 }
+    };
+  }
+  window.__parrot = {
+    state: copyState,
+    start: function (o) { o = o || {}; startGame(o.stage || 1, o.seed); return copyState(); },
+    setStage: function (n) { n = clamp(n | 0, 1, MAXS); if (G.phase === 'play') G.pendingStage = n; },
+    setHearts: function (n) { if (G.g) { G.g.hearts = clamp(n | 0, 1, 3); syncHUD(true); } },
+    setOffset: function (ms) { Beat.setOffset(ms); return Beat.getOffset(); },
+    tapAt: function (t) { return doTap(+t, null); },
+    autoPlay: function (o) { G.auto = o ? { sigma: +o.sigma || 0, bias: +o.bias || 0, rand: Rules.rng(o.seed === undefined ? 7 : o.seed) } : null; },
+    simulateRun: function (o) { return Rules.simulateRun(o || {}); },
+    patterns: function () { return Rules.POOLS.map(function (p) { return p.slice(); }); },
+    pause: function () { pauseGame(false); return copyState(); },
+    resume: function () { resumeGame(); return copyState(); }
+  };
+
+  // ---------- 시작 ----------
+  readPalette();
+  layout();
+  syncMute();
+  renderBest();
+  syncHUD(true);
+  show(el.ovStart, true);
+  var fontReady = (document.fonts && document.fonts.load) ? document.fonts.load('800 20px BeatDigits').catch(function () {}) : Promise.resolve();
+  Promise.race([fontReady, new Promise(function (r) { setTimeout(r, 600); })]).then(function () { requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
