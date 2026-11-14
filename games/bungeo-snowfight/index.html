@@ -218,11 +218,11 @@
   .stage.vert.stack #panel1 .phead { width: 70px; }
   .stage.vert.stack #panel1 .ammos { flex-direction: row; flex: 1; justify-content: flex-end; }
   .stage.vert.stack #panel1 .ammo { width: var(--abw); }
-  .stage.vert.stack #panel2 .phead { flex-direction: row; align-items: center; gap: 8px; flex: 1; }
+  .stage.vert.stack #panel2 .phead { flex-direction: row; align-items: center; gap: 8px; flex: 1; min-width: 0; }
   .stage.vert.stack #panel2 .ppct { flex-direction: row; align-items: baseline; gap: 6px; }
   .stage.vert.stack #panel2 .ppct b { font-size: 18px; }
-  .stage.vert.stack #panel2 .ammos { flex-direction: row; gap: 6px; }
-  .stage.vert.stack #panel2 .ammo { width: 76px; height: 40px; white-space: nowrap; padding: 0 4px 9px; flex-direction: row; gap: 4px; }
+  .stage.vert.stack #panel2 .ammos { flex-direction: row; gap: 6px; min-width: 0; flex: 0 1 auto; }
+  .stage.vert.stack #panel2 .ammo { width: 76px; flex: 0 1 76px; min-width: 60px; height: min(40px, calc(var(--K) - 8px)); white-space: nowrap; padding: 0 4px 9px; flex-direction: row; gap: 4px; }
   .stage.vert.stack #panel2 .ammo .an { font-size: 12px; }
   .stage.vert.stack #panel2 .ammo .ic.pat { width: 26px; height: 16px; } .stage.vert.stack #panel2 .ammo .ic.shu { width: 21px; height: 13px; }
   .stage.vert.stack #panel2 .rb { bottom: 3px; height: 4px; }
@@ -2770,6 +2770,13 @@ const Sound = (function () {
       cSide = Math.floor(Math.min((W - 2 * 96 - 24) / M, (H - TB - 8) / (N + 4), 64));
       cStack = Math.floor(Math.min(W / M, (H - TB - 8 - K - 8 - Qv - 8) / (N + 4), 64));
       if (Math.max(cSide, cStack) >= 24) vmode = cSide >= cStack ? 'side' : 'stack';
+      else if (!land && !pad) {
+        // 폰 세로: 위·아래 패널과 상단 바를 줄여 세로(위 컴퓨터 / 아래 나) 배치를 쓴다
+        var TBp = vh < 760 ? 44 : TB, Kp = vh < 760 ? 44 : K, Qp = vh < 760 ? clamp(Math.round(0.13 * H), 84, 96) : Qv;
+        var cHor = Math.floor(Math.min(W / (N + 3), (H - TBp - 8 - 8 - clamp(Math.round(0.13 * H), 112, 150)) / M, 64));
+        var cS = Math.floor(Math.min(W / M, (H - TBp - 8 - Kp - 8 - Qp - 8) / (N + 4), 64));
+        if (cS >= 16 && cS >= Math.min(cHor, 24)) { vmode = 'stack'; TB = TBp; K = Kp; Qv = Qp; cStack = cS; }
+      }
     }
     VERT = !!vmode;
     el.stage.classList.toggle('vert', VERT); el.stage.classList.toggle('side', vmode === 'side'); el.stage.classList.toggle('stack', vmode === 'stack');
