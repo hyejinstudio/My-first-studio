@@ -30,7 +30,7 @@ const Sound = (function () {
 
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
   try { userOffset = (parseFloat(localStorage.getItem(OFFSET_KEY)) || 0) / 1000; } catch (e) { userOffset = 0; }
-  if (!(Math.abs(userOffset) <= 0.3)) userOffset = 0;
+  if (!(userOffset >= -0.08 && userOffset <= 0.4)) userOffset = 0;   // design.md 범위 −80~+400ms
 
   // ---------- 그래프 ----------
   // [musicBus,teacherBus,sfxBus] → clockBus/compressor → master → soft-clip shaper → destination
@@ -153,11 +153,13 @@ const Sound = (function () {
       noise(t, 0.022, 0.14 * v, 'lowpass', 1800, 0.7, teacherBus);
     },
     // 내 탭 (따라하기). 밝은 나무토막 '톡' — 선생님 북보다 높고 짧다. 탭 즉시 재생
-    tap: function (t) {
+    // opts.soft=true → 절반 크기(부르기·카운트인·전환 마디의 연습 탭용)
+    tap: function (t, o) {
       if (throttled('tap', t, 0.025)) return;
-      tone('sine', 760, 700, t, 0.07, 0.36, 0.001, tapBus, 0.02);
-      tone('sine', 1820, 1700, t, 0.035, 0.10, 0.001, tapBus, 0.02);
-      noise(t, 0.012, 0.20, 'bandpass', 2400, 1.4, tapBus);
+      var v = o && o.soft ? 0.5 : 1;
+      tone('sine', 760, 700, t, 0.07, 0.36 * v, 0.001, tapBus, 0.02);
+      tone('sine', 1820, 1700, t, 0.035, 0.10 * v, 0.001, tapBus, 0.02);
+      noise(t, 0.012, 0.20 * v, 'bandpass', 2400, 1.4, tapBus);
     },
     // 판정: 탭 소리 위에 살짝 얹는 작은 반짝(리듬을 가리지 않게 아주 작고 짧게)
     perfect: function (t) {
@@ -180,6 +182,19 @@ const Sound = (function () {
       if (throttled('extra', t, 0.06)) return;
       noise(t + 0.01, 0.06, 0.08, 'lowpass', 700, 0.7, sfxBus, 250);
       tone('sine', 110, 80, t + 0.01, 0.08, 0.10, 0.003);
+    },
+    // 하트 회복(단계 무실패 +1): 부드러운 상승 2음
+    heartGain: function (t) {
+      tone('triangle', N.C5, 0, t, 0.10, 0.11, 0.004);
+      tone('triangle', N.G5, 0, t + 0.10, 0.22, 0.12, 0.004);
+      tone('sine', N.G6, 0, t + 0.12, 0.18, 0.025, 0.004);
+    },
+    // 결과 화면 새 기록: 작은 반짝 상승 + 지저귐
+    newBest: function (t) {
+      var arp = [N.G5, N.C6, N.E6, N.G6];
+      for (var i = 0; i < arp.length; i++) tone('sine', arp[i], 0, t + i * 0.07, 0.16, 0.08, 0.003);
+      chirp(t + 0.30, 1800, 3000, 2400, 0.12, 0.05);
+      noise(t + 0.25, 0.3, 0.012, 'highpass', 7500);
     },
     // 한 마디를 전부 맞힘: 앵무새 기쁜 지저귐 2번
     phraseClear: function (t) {
@@ -248,6 +263,8 @@ const Sound = (function () {
     resume: function (t) { tone('sine', N.E4, N.A4, t, 0.12, 0.09); }
   };
 
+  sfx.stray = sfx.extra;   // design.md 용어(헛박 = stray) 별칭
+
   // ---------- 반주 ----------
   // 진행: '부르기' 마디마다 다음 코드 (C → Am → F → G 순환). '따라하기' 마디는 직전 코드 유지.
   var CHORDS = [
@@ -256,7 +273,7 @@ const Sound = (function () {
     { bass: N.F2, notes: [N.A3, N.C4, N.F4] },
     { bass: N.G2, notes: [N.B3, N.D4, N.G4] }
   ];
-  var music = { on: false, chordIdx: -1, hat16: false };
+  var music = { on: false, chordIdx: -1, hat16: false, fadeTimer: null };
 
   function bass(f, t, dur, vol) {
     tone('sine', f, 0, t, dur, vol, 0.008, musicBus);
@@ -282,6 +299,7 @@ const Sound = (function () {
     }
     if (s === 0 && ph === 'call') music.chordIdx = (music.chordIdx + 1) % CHORDS.length;
     var ch = CHORDS[Math.max(0, music.chordIdx)];
+    if (ph === 'transition') ph = 'rest';            // 단계 전환 마디 = 쉬는 마디 반주(C 코드, 부르기 없음)
     if (ph === 'rest') ch = CHORDS[0];
 
     // 메트로놈: 1박 강, 2·3·4박 약. 따라하기 마디 1박은 '네 차례' 지저귐으로 대체(+약한 틱)
@@ -410,7 +428,7 @@ const Sound = (function () {
     // 템포 변경: 다음 마디 첫 박부터 적용(마디 중간에 바뀌지 않음)
     setBpm: function (bpm) { bpm = +bpm; if (bpm >= 40 && bpm <= 240) { if (clk.running) clk.pendingBpm = bpm; else { clk.bpm = bpm; clk.stepDur = 60 / bpm / 4; } } },
     getBpm: function () { return clk.bpm; },
-    // 특정 마디의 phase 예약: 'call' | 'response' | 'countin' | 'rest' | 'silent'
+    // 특정 마디의 phase 예약: 'call' | 'response' | 'countin' | 'transition' | 'rest' | 'silent'
     planPhase: function (bar, phase) { clk.plan[bar] = phase; },
     // 콜백 등록. 반환값은 해제 함수. onBar 콜백이 문자열을 반환하면 그 마디의 phase가 된다
     onStep: function (fn) { clk.stepCbs.push(fn); return function () { var i = clk.stepCbs.indexOf(fn); if (i >= 0) clk.stepCbs.splice(i, 1); }; },
@@ -460,8 +478,8 @@ const Sound = (function () {
       return { base: ctx.baseLatency || 0, output: ctx.outputLatency || 0, comp: COMP_DELAY, offset: userOffset,
                hasOutputTimestamp: !!ctx.getOutputTimestamp, sampleRate: ctx.sampleRate };
     },
-    // 사용자 보정(ms, -300~300). +면 '내가 늦게 치는 편' → 판정 시각을 앞당김. localStorage 저장
-    setOffset: function (ms) { ms = +ms || 0; if (Math.abs(ms) > 300) ms = ms > 0 ? 300 : -300; userOffset = ms / 1000; try { localStorage.setItem(OFFSET_KEY, String(ms)); } catch (e) {} },
+    // 사용자 보정(ms, −80~+400 정수, design.md). +면 '소리가 늦게 들림(블루투스 등)' → 탭 시각에서 뺀다. localStorage 저장
+    setOffset: function (ms) { ms = Math.round(+ms || 0); if (ms < -80) ms = -80; if (ms > 400) ms = 400; userOffset = ms / 1000; try { localStorage.setItem(OFFSET_KEY, String(ms)); } catch (e) {} },
     getOffset: function () { return userOffset * 1000; },
     // 일시정지 버튼용: 오디오 시계 자체를 멈춘다(박자·예약음이 그대로 얼어붙고 resume 시 이어짐)
     pause: function () { userPaused = true; if (ctx) try { var p = ctx.suspend(); if (p && p.catch) p.catch(function () {}); } catch (e) {} },
@@ -497,7 +515,7 @@ const Sound = (function () {
         }
       } catch (e) {}
     },
-    // 즉시 재생. name: teacher|tap|perfect|good|miss|extra|phraseClear|combo|levelUp|heartLost|gameOver|clear|count|start|button|pause|resume
+    // 즉시 재생. name: teacher|tap|perfect|good|miss|extra(=stray)|heartGain|newBest|phraseClear|combo|levelUp|heartLost|gameOver|clear|count|start|button|pause|resume
     play: function (name, opts) {
       try { if (ready() && sfx[name]) sfx[name](ctx.currentTime, opts || {}); } catch (e) {}
     },
@@ -514,11 +532,29 @@ const Sound = (function () {
     getVolume: function () { return volume; },
     // 반주 켜기. 시계가 멈춰 있으면 opts.bpm(기본 현재 bpm)으로 시계도 시작
     startMusic: function (opts) {
+      if (music.fadeTimer) { clearTimeout(music.fadeTimer); music.fadeTimer = null; }
+      try { if (musicBus) { musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setValueAtTime(MUSIC_VOL, ctx.currentTime); } } catch (e) {}
       music.on = true;
       if (!clk.running && ctx) Beat.start((opts && opts.bpm) || clk.bpm, opts);
     },
-    // 반주 끄기(시계는 계속 — 판정·선생님 북은 유지). 전부 멈추려면 Sound.Beat.stop()
-    stopMusic: function () { music.on = false; },
+    // 반주 끄기(시계는 계속 — 판정·선생님 북은 유지). fadeSec 주면 그동안 페이드아웃(게임 오버 0.8초).
+    // 전부 멈추려면 이어서 Sound.Beat.stop()
+    stopMusic: function (fadeSec) {
+      if (music.fadeTimer) { clearTimeout(music.fadeTimer); music.fadeTimer = null; }
+      var f = +fadeSec;
+      if (!(f > 0) || !ctx || offline) { music.on = false; return; }
+      try {
+        var t = ctx.currentTime;
+        musicBus.gain.cancelScheduledValues(t);
+        musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+        musicBus.gain.linearRampToValueAtTime(0.0001, t + f);
+      } catch (e) {}
+      music.fadeTimer = setTimeout(function () {
+        music.fadeTimer = null; music.on = false;
+        try { musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setValueAtTime(0, ctx.currentTime);
+              musicBus.gain.setValueAtTime(MUSIC_VOL, ctx.currentTime + LOOKAHEAD + 0.1); } catch (e) {}
+      }, f * 1000);
+    },
     Beat: Beat,
     // 테스트 전용: OfflineAudioContext에 그래프를 붙이고 스케줄러를 수동으로 돌린다
     _test: {
