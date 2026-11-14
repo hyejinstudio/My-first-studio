@@ -206,6 +206,28 @@
   .stage.portrait.narrow .ppct b { font-size: 16px; }
   .stage.portrait.narrow .ammos { justify-content: space-between; }
 
+  /* 1인 세로 필드 (prototype) */
+  .stage.vert.side { grid-template-columns: var(--P) var(--cw) var(--P); grid-template-rows: var(--ch); column-gap: 12px; }
+  .stage.vert.side #panel1 { align-self: end; }
+  .stage.vert.side #panel2 { align-self: start; }
+  .stage.vert.side .panel { height: auto; }
+  .stage.vert.stack { grid-template-columns: var(--W); grid-template-rows: var(--K) var(--ch) var(--Q); width: var(--W); }
+  .stage.vert.stack #panel2 { grid-row: 1; grid-column: 1; flex-direction: row; align-items: center; padding: 4px 10px; gap: 8px; }
+  .stage.vert.stack .cvwrap { grid-row: 2; grid-column: 1; justify-self: center; }
+  .stage.vert.stack #panel1 { grid-row: 3; grid-column: 1; flex-direction: row; align-items: center; }
+  .stage.vert.stack #panel1 .phead { width: 70px; }
+  .stage.vert.stack #panel1 .ammos { flex-direction: row; flex: 1; justify-content: flex-end; }
+  .stage.vert.stack #panel1 .ammo { width: var(--abw); }
+  .stage.vert.stack #panel2 .phead { flex-direction: row; align-items: center; gap: 8px; flex: 1; }
+  .stage.vert.stack #panel2 .ppct { flex-direction: row; align-items: baseline; gap: 6px; }
+  .stage.vert.stack #panel2 .ppct b { font-size: 18px; }
+  .stage.vert.stack #panel2 .ammos { flex-direction: row; gap: 6px; }
+  .stage.vert.stack #panel2 .ammo { width: 76px; height: 40px; white-space: nowrap; padding: 0 4px 9px; flex-direction: row; gap: 4px; }
+  .stage.vert.stack #panel2 .ammo .an { font-size: 12px; }
+  .stage.vert.stack #panel2 .ammo .ic.pat { width: 26px; height: 16px; } .stage.vert.stack #panel2 .ammo .ic.shu { width: 21px; height: 13px; }
+  .stage.vert.stack #panel2 .rb { bottom: 3px; height: 4px; }
+  .stage.vert.stack #panel2 .chk { display: none !important; }
+  .tip-cards.vert .tip-lab { justify-content: center; }
   /* 오버레이 */
   .overlay {
     position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
@@ -434,10 +456,10 @@
         <div class="lcard"><div class="lic"><svg class="pat" aria-hidden="true"><use href="#icPat"/></svg></div><div><b>팥붕</b><span>묵직해요 · 가까이 날아가요 · 칠한 색이 계속 남고 길을 막아요</span></div></div>
         <div class="lcard"><div class="lic"><svg class="shu" aria-hidden="true"><use href="#icShu"/></svg></div><div><b>슈붕</b><span>가벼워요 · 통통 튀어 멀리 · 칠한 색이 <span class="num" style="display:inline">6</span>초 뒤 바래요</span></div><i class="tsw" aria-hidden="true"></i></div>
       </div>
-      <p class="small sides"><span class="sw a"></span><span class="sw b"></span>왼쪽 줄무늬 vs 오른쪽 물방울</p>
+      <p class="small sides"><span class="sw a"></span><span class="sw b"></span><span id="sidesTxt">왼쪽 줄무늬 vs 오른쪽 물방울</span></p>
       <button class="primary" id="startBtn" type="button">시작하기</button>
-      <p class="small hint-key">마우스로 누른 채 뒤로 끌었다 놓기 · 1/2 붕어빵 고르기 · Space 바꾸기 · P 일시정지 · M 소리</p>
-      <p class="small hint-touch">누른 채 뒤로 끌었다 놓으면 반대쪽으로 날아가요 · 소리가 안 나면 무음 모드를 확인하세요</p>
+      <p class="small hint-key"><span id="hintKeyTxt">마우스로 누른 채 뒤로 끌었다 놓기</span> · 1/2 붕어빵 고르기 · Space 바꾸기 · P 일시정지 · M 소리</p>
+      <p class="small hint-touch"><span id="hintTouchTxt">누른 채 뒤로 끌었다 놓으면 반대쪽으로 날아가요</span> · 소리가 안 나면 무음 모드를 확인하세요</p>
     </div>
 
     <div class="overlay" id="ovPause" hidden>
@@ -1559,6 +1581,7 @@ const Sound = (function () {
   }
   function startGame(mode, diff, instant, withTip) {
     newGameState(mode, diff);
+    layout();
     if (instant) { S.phase = 'playing'; S.cd = 0; }
     else if (withTip) tipOpen();
     else { S.phase = 'countdown'; S.cd = S.cdTotal = CD_START; S.cdResume = false; }
@@ -1586,6 +1609,7 @@ const Sound = (function () {
     cancelAim(1); cancelAim(2);
     newGameState(S.mode, S.diff);
     S.phase = 'menu';
+    layout();
     renderStartOverlay();
     show(el.ovStart, true);
     updateRotate();
@@ -1621,6 +1645,7 @@ const Sound = (function () {
     var pl = S.players[owner], a = pl.aim;
     if (!a) return null;
     var vx = (a.cx - a.sx) / cellPx(), vy = (a.cy - a.sy) / cellPx();
+    if (VERT) { var t0 = vx; vx = -vy * 3 / 2.2; vy = t0 * 3 / 2.2; }
     var len = Math.hypot(vx, vy);
     if (len < PULL_MIN) return { valid: false, len: len, ux: len ? vx / len : 0, uy: len ? vy / len : 0 };
     var L = Math.min(len, PULL_MAX), power = (L - PULL_MIN) / (PULL_MAX - PULL_MIN);
@@ -1697,7 +1722,7 @@ const Sound = (function () {
 
   // ---------- 캔버스 ----------
   var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-  var C = 40, DPR = 1, CW = 760, CH = 400, OX = 60;
+  var C = 40, DPR = 1, CW = 760, CH = 400, OX = 60, VERT = false, SW = 760, SH = 400;
   var baseCv = document.createElement('canvas'), bctx = baseCv.getContext('2d');
   var tiles = {};
   var PAL = {};
@@ -1721,7 +1746,7 @@ const Sound = (function () {
       g.strokeStyle = PAL['team-a-pat']; g.lineWidth = Math.max(1.5, c / 24);
       var step = c < 22 ? c / 2 : c / 3;
       g.beginPath();
-      for (var k = -c; k <= 2 * c + 0.1; k += step) { g.moveTo(k, c); g.lineTo(k + c, 0); }
+      for (var k = -c; k <= 2 * c + 0.1; k += step) { if (VERT) { g.moveTo(k, 0); g.lineTo(k + c, c); } else { g.moveTo(k, c); g.lineTo(k + c, 0); } }
       g.stroke();
     } else {
       g.fillStyle = PAL['team-b']; g.fillRect(0, 0, c, c);
@@ -1745,6 +1770,10 @@ const Sound = (function () {
   }
   function gx(x) { return OX + x * C; }
   function gy(y) { return y * C; }
+  // 세로 보기: 논리 px (lx,ly) -> 화면 (ly, SHv - lx). UP = 화면 위쪽을 논리 px 벡터로
+  function viewT(g, shv) { if (VERT) g.setTransform(0, -DPR, DPR, 0, 0, shv * DPR); else g.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  function upX() { return VERT ? 1 : 0; } function upY() { return VERT ? 0 : -1; }
+  function upright(g, X, Y, fn) { g.save(); g.translate(X, Y); if (VERT) g.rotate(Math.PI / 2); fn(); g.restore(); }
   function cellFill(g, team, x, y) {
     if (team === 1 || team === 2) g.drawImage(tiles[team], x, y, C, C);
     else { g.fillStyle = PAL.snow; g.fillRect(x, y, C, C); }
@@ -1764,7 +1793,8 @@ const Sound = (function () {
   function drawBase() {
     var g = bctx;
     g.setTransform(DPR, 0, 0, DPR, 0, 0);
-    g.clearRect(0, 0, CW, CH);
+    g.clearRect(0, 0, SW, SH);
+    viewT(g, SH);
     paintField(g, CW, CH, N, M, function (i) { return S.base[i]; });
     baseDirty = false;
   }
@@ -1806,7 +1836,7 @@ const Sound = (function () {
     g.save();
     g.globalAlpha *= (1 - 0.4 * hFrac);
     g.fillStyle = PAL.shadow;
-    g.beginPath(); g.ellipse(x, y, 0.42 * len * (1 - 0.25 * hFrac), 0.2 * len * (1 - 0.25 * hFrac), 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(x, y, 0.42 * len * (1 - 0.25 * hFrac), 0.2 * len * (1 - 0.25 * hFrac), VERT ? Math.PI / 2 : 0, 0, Math.PI * 2); g.fill();
     g.restore();
   }
   function tempAlpha(t) {
@@ -1935,7 +1965,7 @@ const Sound = (function () {
   function obsFish(g, x, y, ang, alpha, sq, frac, owner, ringA) {
     var len = 0.96 * C, ga = g.globalAlpha;
     g.save(); g.globalAlpha = ga; g.fillStyle = PAL.shadow;
-    g.beginPath(); g.ellipse(x, y + 0.06 * C, 0.42 * len, 0.2 * len, 0, 0, Math.PI * 2); g.fill(); g.restore();
+    g.beginPath(); g.ellipse(x - upX() * 0.06 * C, y - upY() * 0.06 * C, 0.42 * len, 0.2 * len, VERT ? Math.PI / 2 : 0, 0, Math.PI * 2); g.fill(); g.restore();
     drawFish(g, x, y, len, ang, 'pat', alpha, sq[0], sq[1]);
     ga *= ringA;
     if (ga <= 0) return;
@@ -1946,11 +1976,11 @@ const Sound = (function () {
     g.globalAlpha = 0.14 * ga; g.strokeStyle = PAL.ink; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.stroke();
     if (frac > 0) {
       g.globalAlpha = 0.8 * ga; g.strokeStyle = teamInk(owner);
-      g.beginPath(); g.arc(x, y, R, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); g.stroke();
+      var a0r = -Math.PI / 2 + (VERT ? Math.PI / 2 : 0); g.beginPath(); g.arc(x, y, R, a0r, a0r + frac * Math.PI * 2); g.stroke();
     }
     g.globalAlpha = ga;
-    g.beginPath(); g.arc(x, y + R, 3, 0, Math.PI * 2); g.fillStyle = teamInk(owner); g.fill();
-    if (owner === 2) { g.beginPath(); g.arc(x, y + R, 1.1, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); }
+    var dX = x - upX() * R, dY = y - upY() * R; g.beginPath(); g.arc(dX, dY, 3, 0, Math.PI * 2); g.fillStyle = teamInk(owner); g.fill();
+    if (owner === 2) { g.beginPath(); g.arc(dX, dY, 1.1, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); }
     g.restore();
   }
   function drawObstacles(g) {
@@ -1980,7 +2010,7 @@ const Sound = (function () {
     g.fillStyle = PAL.snow; g.fill();
     g.globalAlpha = ringA;
     g.lineWidth = 2.5; g.strokeStyle = teamInk(owner);
-    g.beginPath(); g.arc(x + shakeX, y, 0.55 * C, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.arc(x + (VERT ? 0 : shakeX), y + (VERT ? shakeX : 0), 0.55 * C, 0, Math.PI * 2); g.stroke();
     g.restore();
     // 기둥 (발사 방향에 수직)
     var px = -Math.sin(ang), py = Math.cos(ang);
@@ -2015,16 +2045,16 @@ const Sound = (function () {
     if (pl.msgUntil > S.clock) {
       g.save();
       g.font = '700 13px system-ui, -apple-system, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      var tx = clamp(x, 34, CW - 34), ty = y - 0.95 * C;
-      g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('장전 중', tx, ty);
-      g.fillStyle = PAL.ink; g.fillText('장전 중', tx, ty);
+      upright(g, VERT ? x + 0.95 * C : clamp(x, 34, CW - 34), VERT ? y : y - 0.95 * C, function () {
+      g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('장전 중', 0, 0);
+      g.fillStyle = PAL.ink; g.fillText('장전 중', 0, 0); });
       g.restore();
     } else if (info && info.cancel) {
       g.save();
       g.font = '700 13px system-ui, -apple-system, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      var cx2 = clamp(x, 34, CW - 34), cy2 = y - 0.95 * C;
-      g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('취소', cx2, cy2);
-      g.fillStyle = PAL.muted; g.fillText('취소', cx2, cy2);
+      upright(g, VERT ? x + 0.95 * C : clamp(x, 34, CW - 34), VERT ? y : y - 0.95 * C, function () {
+      g.lineWidth = 4; g.strokeStyle = PAL.panel; g.strokeText('취소', 0, 0);
+      g.fillStyle = PAL.muted; g.fillText('취소', 0, 0); });
       g.restore();
     }
   }
@@ -2092,8 +2122,10 @@ const Sound = (function () {
       blockMark(g, X, Y, 1);
       if (pv.type === 'pat') {
         g.font = '700 11px system-ui, -apple-system, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'bottom';
-        g.lineWidth = 3; g.strokeStyle = PAL.panel; g.strokeText('깨기', X, Y - m - 2);
-        g.fillStyle = PAL.ink; g.fillText('깨기', X, Y - m - 2);
+        upright(g, X + upX() * (m + 2), Y + upY() * (m + 2), function () {
+          g.lineWidth = 3; g.strokeStyle = PAL.panel; g.strokeText('깨기', 0, 0);
+          g.fillStyle = PAL.ink; g.fillText('깨기', 0, 0);
+        });
       }
     }
     g.restore();
@@ -2122,7 +2154,7 @@ const Sound = (function () {
     shadow(g, X, Y, len, hFrac);
     var sc = reduced ? 1 : 1 + 0.25 * hFrac, sx = sc, sy = sc;
     if (!reduced && sq >= 0 && sq < 0.16) { var q = sq < 0.08 ? sq / 0.08 : 1 - (sq - 0.08) / 0.08; sx *= 1 + 0.18 * q; sy *= 1 - 0.18 * q; }
-    drawFish(g, X, Y - hFrac * C, len, ang, type, 1, sx, sy);
+    drawFish(g, X + upX() * hFrac * C, Y + upY() * hFrac * C, len, ang, type, 1, sx, sy);
   }
   // 슈붕 사라짐 (u 0~1)
   function vanishFish(g, X, Y, ang, u) {
@@ -2136,7 +2168,7 @@ const Sound = (function () {
     if (p.kind === 'ring') {
       g.globalAlpha = 0.7 * (1 - e); g.strokeStyle = onSnow ? PAL['snow-line'] : PAL.puff; g.lineWidth = 2;
       var rx = (0.3 + 0.4 * e) * C;
-      g.beginPath(); g.ellipse(gx(p.x), gy(p.y), rx, rx * 0.6, 0, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.ellipse(gx(p.x), gy(p.y), rx, rx * 0.6, VERT ? Math.PI / 2 : 0, 0, Math.PI * 2); g.stroke();
     } else {
       g.globalAlpha = 1 - e; g.fillStyle = PAL[p.color] || PAL.puff;
       g.beginPath(); g.arc(gx(p.x + p.vx * e), gy(p.y + p.vy * e), p.r * C, 0, Math.PI * 2); g.fill();
@@ -2159,12 +2191,12 @@ const Sound = (function () {
   function drawFinalCount(g) {
     if (S.phase !== 'playing' || S.timeLeft > 3 || S.timeLeft <= 0) return;
     var n = Math.ceil(S.timeLeft - 1e-9), u = clamp(1 - (S.timeLeft - (n - 1)), 0, 1);
-    var big = 0.42 * CH;
+    var big = 0.42 * M * C;
     var sc = reduced ? 1 : 1.15 - 0.15 * easeOutCubic(u / 0.25);
     var a = reduced ? 1 : (u < 0.12 ? u / 0.12 : u > 0.85 ? (1 - u) / 0.15 : 1);
     g.save();
     g.globalAlpha = 0.3 * clamp(a, 0, 1);
-    g.translate(CW / 2, CH / 2); g.scale(sc, sc);
+    g.translate(SW / 2, SH / 2); g.scale(sc, sc);
     g.font = '800 ' + Math.round(big) + 'px BungeoDigits, system-ui, sans-serif';
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineWidth = Math.max(4, big / 12); g.strokeStyle = PAL.panel; g.lineJoin = 'round';
@@ -2173,7 +2205,7 @@ const Sound = (function () {
     g.restore();
   }
   function drawCountdown(g) {
-    var txt = null, u = 0, big = 0.32 * CH;
+    var txt = null, u = 0, big = 0.32 * M * C;
     if (S.phase === 'countdown') {
       var n = Math.ceil(S.cd - 1e-9);
       txt = String(Math.max(1, n));
@@ -2186,7 +2218,7 @@ const Sound = (function () {
     var sc = reduced ? 1 : (u < 0.18 ? 1.3 - 0.3 * (u / 0.18) : 1);
     g.save();
     g.globalAlpha = 0.85 * clamp(a, 0, 1);
-    g.translate(CW / 2, CH / 2); g.scale(sc, sc);
+    g.translate(SW / 2, SH / 2); g.scale(sc, sc);
     g.font = (txt === '시작!' ? '800 ' + Math.round(big) + 'px system-ui, -apple-system, sans-serif' : '800 ' + Math.round(big) + 'px BungeoDigits, system-ui, sans-serif');
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineWidth = Math.max(4, big / 12); g.strokeStyle = PAL.panel; g.lineJoin = 'round';
@@ -2198,12 +2230,13 @@ const Sound = (function () {
     if (baseDirty) drawBase();
     var g = ctx;
     g.setTransform(DPR, 0, 0, DPR, 0, 0);
-    g.clearRect(0, 0, CW, CH);
+    g.clearRect(0, 0, SW, SH);
     g.save();
     g.beginPath();
-    if (g.roundRect) g.roundRect(0, 0, CW, CH, 12); else g.rect(0, 0, CW, CH);
+    if (g.roundRect) g.roundRect(0, 0, SW, SH, 12); else g.rect(0, 0, SW, SH);
     g.clip();
-    g.drawImage(baseCv, 0, 0, CW, CH);
+    g.drawImage(baseCv, 0, 0, SW, SH);
+    g.save(); viewT(g, SH);
     drawCellAnims(g);
     drawTemps(g);
     drawFades(g);
@@ -2212,6 +2245,7 @@ const Sound = (function () {
     if (S.phase === 'playing') { drawPreview(g, 1); drawPreview(g, 2); }
     drawProjectiles(g);
     drawParticles(g);
+    g.restore();
     drawFinalCount(g);
     drawCountdown(g);
     g.restore();
@@ -2320,9 +2354,16 @@ const Sound = (function () {
     show(el.diffs, S.mode === 'ai');
     show(el.pvpNote, S.mode === 'pvp');
     applyModeLabels();
+    startTexts();
+  }
+  // 1인 세로일 때만 시작 화면 문구를 '아래/위'로 (가로 예외·2인은 기존 문구)
+  function startTexts() {
+    $('sidesTxt').textContent = VERT ? '나는 아래 줄무늬 · 컴퓨터는 위 물방울' : '왼쪽 줄무늬 vs 오른쪽 물방울';
+    $('hintKeyTxt').textContent = VERT ? '마우스로 누른 채 아래로 끌었다 놓기' : '마우스로 누른 채 뒤로 끌었다 놓기';
+    $('hintTouchTxt').textContent = VERT ? '누른 채 아래로 끌었다 놓으면 위로 날아가요' : '누른 채 뒤로 끌었다 놓으면 반대쪽으로 날아가요';
   }
   Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
-    b.addEventListener('click', function () { Sound.unlock(); S.mode = b.dataset.mode; savePrefs(); renderStartOverlay(); });
+    b.addEventListener('click', function () { Sound.unlock(); S.mode = b.dataset.mode; savePrefs(); layout(); renderStartOverlay(); });
   });
   Array.prototype.forEach.call(document.querySelectorAll('.diff'), function (b) {
     b.addEventListener('click', function () { Sound.unlock(); S.diff = b.dataset.diff; savePrefs(); renderStartOverlay(); });
@@ -2552,9 +2593,11 @@ const Sound = (function () {
     ['pat', 'shu'].forEach(function (kind) {
       var g = tipCtx[kind], m = tip.m, W = TIP_W * m, H = 3 * m;
       g.setTransform(DPR, 0, 0, DPR, 0, 0);
-      g.clearRect(0, 0, W, H);
+      var sw2 = VERT ? H : W, sh2 = VERT ? W : H;
+      g.clearRect(0, 0, sw2, sh2);
       g.save();
-      g.beginPath(); if (g.roundRect) g.roundRect(0, 0, W, H, 8); else g.rect(0, 0, W, H); g.clip();
+      g.beginPath(); if (g.roundRect) g.roundRect(0, 0, sw2, sh2, 8); else g.rect(0, 0, sw2, sh2); g.clip();
+      viewT(g, sh2);
       withView(m, TIP_BAND * m, tip.tiles, function () {
         if (reduced) tipStatic(g, kind);
         else if (kind === 'pat') tipScenePat(g, lt);
@@ -2575,17 +2618,20 @@ const Sound = (function () {
     var mCol = Math.floor(Math.min(56, (AW - 26) / TIP_W, (AH - head - gap - 120) / 6));
     // 좌우 반반(나란히 비교)을 우선하고, 위아래가 1/3 넘게 크게 그려질 때만 위아래 (art-ui.md 크기표 6개 화면 배치와 일치)
     var col = mCol > mRow * 4 / 3, m = Math.max(12, col ? mCol : mRow);
+    if (VERT) { col = false; m = Math.max(12, Math.floor(Math.min(56, (AH - head - 60) / TIP_W, ((AW - gap) / 2 - 26) / 3))); }
     tip.side = col ? 'col' : 'row';
     var bs = el.tipBox.style, cw = Math.round(TIP_W * m), cardW = cw + 26;
-    bs.setProperty('--tmw', cw + 'px'); bs.setProperty('--tmh', 3 * m + 'px');
+    var tw = VERT ? 3 * m : cw, th = VERT ? cw : 3 * m; cardW = tw + 26;
+    bs.setProperty('--tmw', tw + 'px'); bs.setProperty('--tmh', th + 'px');
+    el.tipCards.classList.toggle('vert', VERT);
     bs.setProperty('--tgap', gap + 'px'); bs.setProperty('--tgap2', g2 + 'px');
     bs.setProperty('--tbw', (col ? cardW : 2 * cardW + gap) + 'px');
     el.tipCards.classList.toggle('col', col);
-    var w = Math.round(cw * DPR), h = Math.round(3 * m * DPR);
-    if (tip.m !== m || tipCv.pat.width !== w || tipCv.pat.height !== h) {
+    var w = Math.round(tw * DPR), h = Math.round(th * DPR);
+    if (tip.vert !== VERT || tip.m !== m || tipCv.pat.width !== w || tipCv.pat.height !== h) {
       tip.m = m;
       ['pat', 'shu'].forEach(function (k) { tipCv[k].width = w; tipCv[k].height = h; });
-      tip.tiles[1] = buildTile(1, m); tip.tiles[2] = buildTile(2, m);
+      tip.tiles[1] = buildTile(1, m); tip.tiles[2] = buildTile(2, m); tip.vert = VERT;
     }
     tipDrawAll();
   }
@@ -2719,6 +2765,34 @@ const Sound = (function () {
     var TB = vh <= 520 ? 44 : 52;
     var land = vw >= vh, pad = Math.min(vw, vh) >= 600;
     var c, P = 0, Q = 0, pill = (!land && pad) ? 36 : 0;
+    var vmode = null, cSide = 0, cStack = 0, Qv = clamp(Math.round(0.13 * H), 112, 150), K = 52;
+    if (S.mode === 'ai') {
+      cSide = Math.floor(Math.min((W - 2 * 96 - 24) / M, (H - TB - 8) / (N + 4), 64));
+      cStack = Math.floor(Math.min(W / M, (H - TB - 8 - K - 8 - Qv - 8) / (N + 4), 64));
+      if (Math.max(cSide, cStack) >= 24) vmode = cSide >= cStack ? 'side' : 'stack';
+    }
+    VERT = !!vmode;
+    el.stage.classList.toggle('vert', VERT); el.stage.classList.toggle('side', vmode === 'side'); el.stage.classList.toggle('stack', vmode === 'stack');
+    if (VERT) {
+      var root0 = document.documentElement.style;
+      c = vmode === 'side' ? cSide : cStack;
+      var vcw = M * c, vch = (N + 4) * c, sW, sH;
+      if (vmode === 'side') { P = clamp(Math.floor((W - vcw - 24) / 2), 96, 160); sW = 2 * P + 24 + vcw; sH = vch; }
+      else { Q = Qv; sW = W; sH = K + 8 + vch + 8 + Q; }
+      root0.setProperty('--tb', TB + 'px'); root0.setProperty('--c', c + 'px'); root0.setProperty('--cw', vcw + 'px'); root0.setProperty('--ch', vch + 'px');
+      root0.setProperty('--P', P + 'px'); root0.setProperty('--Q', Q + 'px'); root0.setProperty('--K', K + 'px'); root0.setProperty('--W', W + 'px'); root0.setProperty('--sw', sW + 'px');
+      el.stage.classList.remove('portrait'); el.stage.classList.remove('narrow');
+      root0.setProperty('--abh', '88px'); root0.setProperty('--abw', Math.floor(Math.max(64, Math.min(110, (W - 16 - 70 - 24) / 2))) + 'px');
+      if (vmode === 'stack') root0.setProperty('--abh', (Q - 18) + 'px');
+      show(el.rotPill, false);
+      document.body.classList.toggle('ov-full', sH < 460 || sW < 600);
+      var tbw0 = Math.min(W, Math.max(sW, 560));
+      document.body.classList.toggle('tb-1000', tbw0 < 1000); document.body.classList.toggle('tb-640', tbw0 < 640); document.body.classList.toggle('tb-420', tbw0 < 420);
+      var dpr0 = Math.min(window.devicePixelRatio || 1, 2), key0 = 'v' + c + ':' + dpr0;
+      C = c; CW = (N + 4) * c; CH = M * c; OX = 2.5 * c; SW = vcw; SH = vch;
+      if (key0 !== lastLayout) { lastLayout = key0; DPR = dpr0; cv.width = Math.round(vcw * dpr0); cv.height = Math.round(vch * dpr0); baseCv.width = cv.width; baseCv.height = cv.height; buildTiles(); baseDirty = true; }
+      tipLayout(); updateRotate(); startTexts(); return;
+    }
     if (land) {
       P = clamp(Math.round(0.1 * W), 84, 128);
       c = Math.floor(Math.min((W - 2 * P - 16) / (N + 3), (H - TB - 8) / M, 64));
@@ -2747,15 +2821,15 @@ const Sound = (function () {
     el.stage.classList.toggle('narrow', narrow);
     root.setProperty('--abh', Math.floor(abh) + 'px');
     root.setProperty('--abw', Math.floor(abw) + 'px');
-    show(el.rotPill, !land && pad);
+    show(el.rotPill, !land && pad && S.mode !== 'ai');
     document.body.classList.toggle('ov-full', stageH < 460 || stageW < 600);
     var tbw = Math.min(W, Math.max(stageW, 560));
     document.body.classList.toggle('tb-1000', tbw < 1000);
     document.body.classList.toggle('tb-640', tbw < 640);
     document.body.classList.toggle('tb-420', tbw < 420);
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var key = c + ':' + dpr;
-    C = c; CW = cw; CH = ch; OX = 1.5 * c;
+    var key = 'h' + c + ':' + dpr;
+    C = c; CW = cw; CH = ch; OX = 1.5 * c; SW = cw; SH = ch;
     if (key !== lastLayout) {
       lastLayout = key; DPR = dpr;
       cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
@@ -2764,11 +2838,12 @@ const Sound = (function () {
     }
     tipLayout();
     updateRotate();
+    startTexts();
   }
   function updateRotate() {
     var vw = window.innerWidth, vh = window.innerHeight;
     var phonePortrait = Math.min(vw, vh) < 600 && vh > vw;
-    show(el.rotOv, phonePortrait && !rotDismissed && S.phase === 'menu');
+    show(el.rotOv, phonePortrait && !rotDismissed && S.phase === 'menu' && S.mode !== 'ai');
   }
   window.addEventListener('resize', layout);
   window.addEventListener('orientationchange', layout);
