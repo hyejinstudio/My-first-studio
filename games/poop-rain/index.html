@@ -745,11 +745,12 @@ const Sound = (function () {
   var LEVELS = [15, 30, 45, 60, 75, 90];
   var NEAR_GAP = 12;
   // t, 간격, 속도, 동시 최대, 조준 비율 (design.md v2)
-  var SCHED = [[0, 1.00, 300, 3, 0], [5, .85, 320, 4, .10], [10, .65, 350, 5, .15], [15, .45, 400, 7, .20],
-               [20, .32, 450, 9, .25], [30, .20, 530, 12, .30], [40, .155, 590, 14, .35], [50, .13, 640, 16, .38],
-               [60, .115, 690, 18, .40], [75, .10, 750, 20, .40], [90, .09, 800, 22, .40]];
+  // v2.1: 간격 열 ×1.1 (0~15초 행, 20초 이후 행)
+  var SCHED = [[0, 1.10, 300, 3, 0], [5, .935, 320, 4, .10], [10, .715, 350, 5, .15], [15, .495, 400, 7, .20],
+               [20, .352, 450, 9, .25], [30, .22, 530, 12, .30], [40, .1705, 590, 14, .35], [50, .143, 640, 16, .38],
+               [60, .1265, 690, 18, .40], [75, .11, 750, 20, .40], [90, .099, 800, 22, .40]];
   // 별사탕 (design.md v2)
-  var STAR_FIRST = 4.0, STAR_GAP0 = 3.5, STAR_GAP1 = 5.0, STAR_MAX = 2, STAR_DEFER = 0.3;
+  var STAR_FIRST = 6.0, STAR_GAP0 = 3.5, STAR_GAP1 = 5.0, STAR_MAX = 2, STAR_DEFER = 0.3;
   var STAR_R = 17, STAR_CATCH = 30, STAR_AMP = 15, STAR_PER = 1.4, STAR_V0 = 240, STAR_VK = 2, STAR_VMAX = 360;
   var STAR_SEP_T = 1.0, STAR_SEP_X = 150, STAR_FAR = 120, RES_HALF = 30, RES_MAXBLOCK = 3;
   // 공정성
@@ -855,6 +856,13 @@ const Sound = (function () {
   function hexRgb(h) {
     h = h.replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
     var n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function skyDark() {
+    if (C._skyDark == null || C._skyFor !== C.sky) {
+      var r = /^#/.test(C.sky || '') ? hexRgb(C.sky) : [255, 255, 255];
+      C._skyFor = C.sky; C._skyDark = (0.299 * r[0] + 0.587 * r[1] + 0.114 * r[2]) < 110;
+    }
+    return C._skyDark;
   }
   function mixHex(a, b, f) {
     var x = hexRgb(a), y = hexRgb(b);
@@ -1204,9 +1212,21 @@ const Sound = (function () {
   // 빈 칸으로만 이동해 마지막 조각까지 살아남는 길이 있는지 본다.
   // v2: 이동 한도를 키보드 최고 속도 520u/s로 (조각당 3.47칸 → 3·4칸 번갈아). v1의 600u/s 가정은 후반 밀도에서 키보드로 못 가는 길을 허용했음
   var SL = 1 / 30, NC2 = 114, CW2 = 5, MOVE_PER = KEY_V * SL / CW2, SL_MARGIN = 4;
-  function moveCells(j) { return Math.floor(j * MOVE_PER + 1e-9) - Math.floor((j - 1) * MOVE_PER + 1e-9); }
+  // v2.1: 키보드 가속(0.06초)을 보수적으로 반영 — 정지 상태에서 출발한다고 보고 누적 이동 거리로 칸 수를 센다
+  // (0.06초까지 ½·가속·t², 이후 520u/s). 결과: 조각별 0·3·4·3·4·3… 칸 (가속 없을 때 3·3·4·3·4…)
+  // fairOk는 가속 모델로 먼저 보고, 캐릭터가 이미 가속 모델로는 빠듯한 자리(즉시 520u/s라야 빠져나감)면 v2의 즉시 이동 모델로 보장한다.
+  var PATH_ACCEL = true, pathAcc = PATH_ACCEL;
+  function cumCells(j) {
+    var T = j * SL, d;
+    if (!pathAcc) d = KEY_V * T;
+    else d = T < 0.06 ? 0.5 * KEY_ACC * T * T : KEY_V * (T - 0.03);
+    return Math.floor(d / CW2 + 1e-9);
+  }
+  function moveCells(j) { return cumCells(j) - cumCells(j - 1); }
   function wobX(p, age) { return p.baseX + WOB_AMP * Math.sin(2 * Math.PI / WOB_PER * age + p.ph); }
-  function buildSlices(list, now) {
+  // off: 조각 격자 위상을 now에서 off초 늦춰 본다 (v2.1 두 위상 검사)
+  function buildSlices(list, now, off) {
+    off = off || 0; now += off;
     var sl = [], i, j, q;
     for (i = 0; i < list.length; i++) {
       var p = list[i], w = windowOf(p, now); if (!w) continue;
@@ -1216,7 +1236,7 @@ const Sound = (function () {
         var lo = p.x, hi = p.x;
         if (p.type === 'wobble') {
           var t0 = Math.max(0, j * SL), t1 = (j + 1) * SL;
-          for (var f = 0; f <= 4; f++) { var xx = wobX(p, p.age + t0 + (t1 - t0) * f / 4); if (xx < lo || f === 0) lo = f === 0 ? xx : Math.min(lo, xx); if (xx > hi || f === 0) hi = f === 0 ? xx : Math.max(hi, xx); }
+          for (var f = 0; f <= 4; f++) { var xx = wobX(p, p.age + off + t0 + (t1 - t0) * f / 4); if (xx < lo || f === 0) lo = f === 0 ? xx : Math.min(lo, xx); if (xx > hi || f === 0) hi = f === 0 ? xx : Math.max(hi, xx); }
         }
         var arr = sl[j]; if (!arr) arr = sl[j] = new Uint8Array(NC2);
         var q0 = Math.max(0, Math.ceil((lo - m - 19.5) / CW2)), q1 = Math.min(NC2 - 1, Math.floor((hi + m - 19.5) / CW2));
@@ -1224,6 +1244,30 @@ const Sound = (function () {
       }
     }
     return sl;
+  }
+  // v2.1: 1/30초 조각 격자의 위상에 따라 판단이 흔들리지 않게 now와 now+1/60 두 위상에서 모두 길이 있어야 통과
+  var PHASE2 = 1 / 60;
+  function pathOk2(list, now, startX) {
+    return pathOk(buildSlices(list, now), startX) && pathOk(buildSlices(list, now, PHASE2), startX);
+  }
+  // 캐릭터 자리에서 조각마다 도달 가능한 칸 (trapped 판단용)
+  function reachTrace(sl, startX) {
+    var reach = new Uint8Array(NC2), out = [], i, j;
+    var ci = clamp(Math.round((startX - 19.5) / CW2), 0, NC2 - 1);
+    for (i = Math.max(0, ci - 1); i <= Math.min(NC2 - 1, ci + 1); i++) reach[i] = 1;
+    out.push(reach);
+    for (j = 1; j < sl.length; j++) { reach = spread(reach, sl[j - 1], sl[j], moveCells(j)); out.push(reach); }
+    return out;
+  }
+  // with의 도달 칸이 without의 도달 칸을 하나도 줄이지 않는지
+  function sameReach(withSl, withoutSl, startX) {
+    var a = reachTrace(withSl, startX), b = reachTrace(withoutSl, startX);
+    for (var j = 0; j < b.length; j++) {
+      var bb = b[j], aa = a[j];
+      if (!aa) { for (var q = 0; q < NC2; q++) if (bb[q]) return false; continue; }
+      for (var i = 0; i < NC2; i++) if (bb[i] && !aa[i]) return false;
+    }
+    return true;
   }
   function pathOk(sl, startX) {
     var reach = new Uint8Array(NC2), i, j, any;
@@ -1315,16 +1359,33 @@ const Sound = (function () {
     for (i = 0; i < rs.length; i++) if (!resBlockOk(map, rs[i]) || (pre[i] && !resOk(map, rs[i]))) { FS.res++; return false; }
     // 보강: 실제로 지나갈 수 있는 길 (테스트 훅 fairMode('spec')이면 design.md 규칙만)
     if (G.fairSpecOnly) return true;
-    var withP = buildSlices(G.poops.concat([p]), now);
-    if (pathOk(withP, G.player.x)) return true;
-    var without = buildSlices(G.poops, now);
-    if (pathOk(without, G.player.x)) { FS.path++; return false; }
+    var all = G.poops.concat([p]), px = G.player.x;
+    var withP = buildSlices(all, now);   // 위상 0을 먼저 (windowOf가 새 똥의 도착 시각을 now 기준으로 기록)
+    var withP2 = buildSlices(all, now, PHASE2);
+    var without = buildSlices(G.poops, now), without2 = buildSlices(G.poops, now, PHASE2);
+    var ok = pathFair(withP, withP2, without, without2, px, PATH_ACCEL);
+    if (ok == null && PATH_ACCEL) ok = pathFair(withP, withP2, without, without2, px, false);
+    pathAcc = PATH_ACCEL;
+    if (ok != null) { if (!ok) FS.path++; return ok; }
     FS.trapped++;
     // 이미 캐릭터 자리에서 길이 없다고 나오면(격자 오차·테스트 훅 강제 생성 등) 캐릭터 가까이엔 더 떨어뜨리지 않고,
-    // 화면 전체 기준 길만 확인한다
+    // v2.1: 지금 도달 가능한 칸을 하나라도 줄이는 생성은 금지, 화면 전체 기준 길도 확인한다
     var c0 = p.type === 'wobble' ? p.baseX : p.x;
-    if (Math.abs(c0 - G.player.x) < p.r + HB_HALF + 140 + (p.type === 'wobble' ? WOB_AMP : 0)) return false;
+    if (Math.abs(c0 - px) < p.r + HB_HALF + 140 + (p.type === 'wobble' ? WOB_AMP : 0)) return false;
+    pathAcc = false;
+    var keep = sameReach(withP, without, px) && sameReach(withP2, without2, px);
+    pathAcc = PATH_ACCEL;
+    if (!keep) return false;
     return pathOk(withP, null) || !pathOk(without, null);
+  }
+
+  // 두 위상 경로 검사: true = 통과, false = 새 똥이 길을 막음, null = 새 똥 없이도 길 없음(trapped)
+  function pathFair(withP, withP2, without, without2, px, acc) {
+    pathAcc = acc;
+    if (pathOk(withP, px) && pathOk(withP2, px)) return true;
+    // 새 똥 없이는 어느 한 위상에서라도 길이 있으면: 새 똥이 길을 막는 것 → 거절
+    if (pathOk(without, px) || pathOk(without2, px)) return false;
+    return null;
   }
 
   // ===== 생성 =====
@@ -1339,7 +1400,10 @@ const Sound = (function () {
 
   function spawnRegular() {
     var sp = G.sp, t = G.time, R = G.rng;
-    if (G.poops.length >= sp.maxOnScreen) { G.nextSpawn = t + 0.05; return; }
+    // v2.1: 1초 안에 나올 대본 똥 자리도 동시 최대에 포함 (대본 똥이 한도를 넘지 않게 일반 등장을 미룸)
+    var pend = 0;
+    for (var si = G.scriptIdx; si < SCRIPT_T.length; si++) if (G.scriptNext[si] <= t + 1.0) pend++;
+    if (G.poops.length + pend >= sp.maxOnScreen) { G.nextSpawn = t + 0.05; return; }
     var type = 'normal', r = R();
     var bigP = t >= 40 ? .14 : t >= 18 ? .10 : 0, wobP = t >= 50 ? .15 : t >= 28 ? .10 : 0;
     if (r < bigP) type = 'big'; else if (r < bigP + wobP) type = 'wobble';
@@ -1384,6 +1448,8 @@ const Sound = (function () {
     return null;
   }
   function spawnScripted() {
+    // v2.1: 대본 똥도 동시 최대 안에서만
+    if (G.poops.length >= G.sp.maxOnScreen) { G.scriptNext[G.scriptIdx] = G.time + 0.05; return; }
     var p = makePoop('normal', G.player.x, SCRIPT_V0 + G.rng() * (SCRIPT_V1 - SCRIPT_V0));
     if (fairOk(p)) { G.poops.push(p); G.scriptIdx++; }
     else G.scriptNext[G.scriptIdx] = G.time + 0.05;
@@ -1427,9 +1493,9 @@ const Sound = (function () {
     if (!G.umb && G.umbNext - t < STAR_SEP_T) { G.starNext = G.umbNext + STAR_SEP_T; return; }
     var vy = starSpeed(t), keys = starKeys(SPAWN_Y, vy, t);
     var map = buildMap(t);
-    // 용기 별사탕(15초 전 20%, 이후 40%): 별사탕이 똥보다 느려 "지금 화면의 똥" 중에는 같은 버킷에 도착하는 똥이
+    // 용기 별사탕(v2.1: 15초 전 0%, 이후 40%): 별사탕이 똥보다 느려 "지금 화면의 똥" 중에는 같은 버킷에 도착하는 똥이
     // 없으므로, 별사탕을 먼저 놓고 그 도착 버킷에 떨어질 다음 똥 하나를 별 옆 55~90u에 배치한다(spawnRegular).
-    var brave = R() < (t < 15 ? .2 : .4);
+    var brave = R() < (t < 15 ? 0 : .4);
     var px = G.player.x;
     for (var a = 0; a < 7; a++) {
       var bx = 40 + R() * 520;
@@ -1616,7 +1682,10 @@ const Sound = (function () {
     var pts = starPts(G.chain);
     G.starScore += pts; G.starStats.caught++;
     G.fx.push({ k: 'starGet', x: st.x, y: st.y, pink: st.pink, rot: starRot(st), t: 0 });
-    G.fx.push({ k: 'starPop', x: st.x, pts: pts, chain: G.chain, t: 0 });
+    // v2.1: 아직 떠 있는 팝업(0.7초)이 있으면 새 팝업을 한 줄 위로 올려 겹치지 않게
+    var row = 0;
+    for (var fi = 0; fi < G.fx.length; fi++) if (G.fx[fi].k === 'starPop' && G.fx[fi].row >= row) row = G.fx[fi].row + 1;
+    G.fx.push({ k: 'starPop', x: st.x, pts: pts, chain: G.chain, row: Math.min(row, 3), t: 0 });
     if (st.ring) { G.fx.push({ k: 'ringGet', x: st.x, y: st.y, t: 0 }); }
     if (st.ring || !candySeen()) markCandySeen();
     Sound.play('star', { chain: G.chain, x: st.x / FW });
@@ -1978,7 +2047,7 @@ const Sound = (function () {
         c.restore();
       } else if (f.k === 'starPop') {
         var tt = f.t, pa = tt < .4 ? 1 : 1 - (tt - .4) / .3;
-        var py = GROUND - 1.9 * KU - 16 - (RM ? 0 : .35 * U * easeOut(tt / .7));
+        var py = GROUND - 1.9 * KU - 16 - (RM ? 0 : .35 * U * easeOut(tt / .7)) - (f.row || 0) * 24 * lw;
         var psc = RM ? 1 : (tt < .1 ? .8 + .2 * (tt / .1) : 1);
         var pxx = clamp(f.x, 30 * lw, FW - 30 * lw);
         c.save(); c.globalAlpha = clamp(pa, 0, 1); c.translate(pxx, py); c.scale(psc, psc);
@@ -1989,7 +2058,9 @@ const Sound = (function () {
         if (f.chain >= 2) { ctxt = '×' + f.chain; c.font = '700 ' + (12 * lw) + 'px ' + NUMF; cw = c.measureText(ctxt).width + 4 * lw; }
         var x0 = -(tw + cw) / 2;
         c.font = '800 ' + (18 * lw) + 'px ' + NUMF; c.textAlign = 'left';
-        c.lineWidth = 4 * lw; c.strokeStyle = C.sky; c.strokeText(txt, x0, 0);
+        // v2.1: 테두리 강화 (다크 모드는 더 어둡고 두껍게 — 우산 캐노피 위에서도 읽히게)
+        var dk = skyDark();
+        c.lineWidth = (dk ? 6 : 5) * lw; c.strokeStyle = dk ? C.shadow : C.sky; c.strokeText(txt, x0, 0);
         c.fillStyle = C['candy-text']; c.fillText(txt, x0, 0);
         if (ctxt) {
           c.font = '700 ' + (12 * lw) + 'px ' + NUMF;
@@ -2230,7 +2301,8 @@ const Sound = (function () {
           amp: p.type === 'wobble' ? WOB_AMP : 0, period: WOB_PER, landY: landY(p) };
       }),
       items: G.umb ? [{ type: 'umbrella', x: G.umb.x, y: G.umb.y, baseX: G.umb.baseX, age: G.umb.age, phase: G.umb.ph, r: UMB_R, vy: UMB_V }] : [],
-      spawn: { interval: G.sp.interval, speed: G.sp.speed, maxOnScreen: G.sp.maxOnScreen, aimRatio: G.sp.aimRatio }
+      spawn: { interval: G.sp.interval, speed: G.sp.speed, maxOnScreen: G.sp.maxOnScreen, aimRatio: G.sp.aimRatio },
+      popups: G.fx.filter(function (f) { return f.k === 'starPop'; }).map(function (f) { return { x: f.x, pts: f.pts, chain: f.chain, row: f.row || 0, t: f.t }; })
     };
   }
   window.__poop = {
@@ -2293,7 +2365,10 @@ const Sound = (function () {
       out.sort(function (a, b) { return a.t0 - b.t0; });
       return out;
     },
-    pathCheck: function () { return pathOk(buildSlices(G.poops, G.time), G.player.x); },
+    // pathCheck = v2와 같은 즉시 520u/s 모델(한 위상), pathCheck2 = 두 위상, pathCheckAcc = 가속 모델·두 위상
+    pathCheck: function () { pathAcc = false; var r = pathOk(buildSlices(G.poops, G.time), G.player.x); pathAcc = PATH_ACCEL; return r; },
+    pathCheck2: function () { pathAcc = false; var r = pathOk2(G.poops, G.time, G.player.x); pathAcc = PATH_ACCEL; return r; },
+    pathCheckAcc: function () { pathAcc = true; var r = pathOk2(G.poops, G.time, G.player.x); pathAcc = PATH_ACCEL; return r; },
     fairStats: function () { return { bucket: FS.bucket, link: FS.link, path: FS.path, trapped: FS.trapped, res: FS.res }; },
     fairMode: function (m) { G.fairSpecOnly = m === 'spec'; return G.fairSpecOnly ? 'spec' : 'strict'; },
     clear: function () {
