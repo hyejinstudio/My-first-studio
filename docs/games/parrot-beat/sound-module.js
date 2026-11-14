@@ -7,7 +7,11 @@
  * 리듬 API:  Sound.Beat  (박자 시계 + lookahead 스케줄러 + 판정용 시간 변환) — 아래 Beat 참고
  *
  * 그리드: 4/4, 한 마디 = 16스텝(16분음표). stepInBar 0,4,8,12 = 정박(1·2·3·4박), 2,6,10,14 = 8분 엇박(앤),
- *         1,3,5,… = 16분 엇박.
+ *         1,3,5,… = 16분 엇박. 마디 길이는 가변(1~8박, 기본 4박): onBar가 {phase:'ready', beats:2}를 반환하면
+ *         그 마디는 2박(8스텝)이고 다음 마디는 2박 뒤에 시작한다.
+ * phase: countin | call | ready | response | transition | rest | silent
+ *   call  = 반주 없음, 선생님 북 + 아주 약한 정박 틱만
+ *   ready = 반주 없음, 박마다 부드러운 카운트(마지막 박 '이제 너')
  * 시간 단위는 모두 AudioContext 초(ctx.currentTime 기준). 콜백은 소리보다 약 0.03~0.15초 먼저 호출된다(예약 시점).
  */
 const Sound = (function () {
