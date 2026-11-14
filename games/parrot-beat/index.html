@@ -244,6 +244,7 @@
   @media (max-height: 520px) {
     .overlay h2 { font-size: 20px; }
     .overlay { gap: 6px; padding: 8px; }
+    body.ov-full .overlay { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
     .minis svg { width: 56px; height: 56px; }
     .resbig { font-size: 32px; }
     #resBird svg { width: 64px; height: 64px; }
@@ -1764,18 +1765,24 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     g.globalAlpha = 1; g.fillStyle = color;
     g.beginPath(); g.moveTo(x - 4, G0.S * 0.08); g.lineTo(x + 4, G0.S * 0.08); g.lineTo(x, G0.S * 0.08 + 6); g.closePath(); g.fill();
   }
-  function guideRing(g, x, y, D, pn) {
-    var a = reduced ? 0.2 : 0.175 + 0.075 * Math.cos(pn / 1200 * Math.PI * 2);
+  function guideRing(g, x, y, D, pn, mul) {
+    var a = (reduced ? 0.2 : 0.175 + 0.075 * Math.cos(pn / 1200 * Math.PI * 2)) * (mul === undefined ? 1 : mul);
     g.save(); g.globalAlpha = a; g.strokeStyle = PAL.ink; g.lineWidth = 2; g.beginPath(); g.arc(x, y, D / 2 + 8, 0, Math.PI * 2); g.stroke(); g.restore();
   }
   // 선생님 줄: 부르기 패턴
   function drawTeacherRound(g, G0, rd, now, alpha, pn) {
     var st = rd.stage;
     if (st >= 8) return;
+    // 4~6단계: 따라하기 마디가 시작되면 선생님 줄 기호가 사라짐(기억해서 치기). 짧은 페이드, reduced-motion이면 즉시
+    if (st >= 4 && st <= 6 && now >= rd.respTime) {
+      var hu = reduced ? 1 : (now - rd.respTime) / 0.18;
+      if (hu >= 1) return;
+      alpha *= 1 - easeOut(hu);
+    }
     for (var s = 0; s < 16; s++) {
       var on = rd.pattern.charAt(s) === 'x', t = rd.callTime + s * rd.stepDur, x = G0.x(s / 16);
       if (!on) {
-        if (s % 4 === 0 && st <= 6) { drawSym(g, 'rest', x, G0.y0, G0.D, 'dash', PAL.muted, 0.7 * alpha); if (rd.guide.rest) guideRing(g, x, G0.y0, G0.D * 0.62, pn); }
+        if (s % 4 === 0 && st <= 6) { drawSym(g, 'rest', x, G0.y0, G0.D, 'dash', PAL.muted, 0.7 * alpha); if (rd.guide.rest) guideRing(g, x, G0.y0, G0.D * 0.62, pn, alpha); }
         continue;
       }
       var kind = symKind(s), col = symColor(s), y = symY(G0, s), dt = now - t;
@@ -1785,7 +1792,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
       }
       if (dt < 0) drawSym(g, kind, x, y, G0.D, 'fill', col, 0.35 * alpha, 1);
       else drawSym(g, kind, x, y, G0.D, 'fill', col, alpha, reduced ? 1 : 1.25 - 0.25 * easeOut(dt / 0.16));
-      if (rd.guide.off && s % 4 !== 0) guideRing(g, x, y, G0.D * 0.66, pn);
+      if (rd.guide.off && s % 4 !== 0) guideRing(g, x, y, G0.D * 0.66, pn, alpha);
     }
   }
   function pill(g, x, y, text, border, fs, sideL, sideR) {
@@ -2105,6 +2112,11 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   } catch (e) {}
 
   // ---------- 테스트 훅 (QA 전용) ----------
+  // HUD(onEnterBar)와 같은 규칙: 카운트인·부르기·전환 마디에 들어서는 순간 그 마디의 단계
+  function hudStageAt(spec) {
+    if (G.phase === 'play' && spec && (spec.phase === 'transition' || spec.phase === 'countin' || spec.phase === 'call')) return spec.stage;
+    return G.hud.stage;
+  }
   function copyState() {
     var g = G.g, now = clockNow();
     var ph = G.phase;
@@ -2114,7 +2126,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     next.sort(function (a, b) { return a - b; });
     var hs2 = G.g ? heardSpec(now) : null, rdc = hs2 && hs2.rd;
     return {
-      phase: ph, stage: g ? G.hud.stage : 0, round: hs2 ? hs2.round : -1, bpm: hs2 ? hs2.bpm : (g ? bpmOf(G.hud.stage) : Beat.getBpm()), hearts: g ? g.hearts : 0, score: g ? g.score : 0,
+      phase: ph, stage: g ? hudStageAt(hs2) : 0, round: hs2 ? hs2.round : -1, bpm: hs2 ? hs2.bpm : (g ? bpmOf(G.hud.stage) : Beat.getBpm()), hearts: g ? g.hearts : 0, score: g ? g.score : 0,
       combo: g ? g.combo : 0, maxCombo: g ? g.maxCombo : 0, counts: g ? Object.assign({}, g.counts) : { perfect: 0, good: 0, miss: 0, stray: 0 },
       pattern: rdc ? rdc.pattern : '', nextNotes: next, latency: { auto: (Beat.latency().output || Beat.latency().base || 0), offset: Beat.getOffset() },
       audioTime: now, ctxTime: Beat.ctxTime(), cleared: g ? g.cleared : false, stageReached: g ? g.stageReached : 0, lastJudge: G.lastJudge,
