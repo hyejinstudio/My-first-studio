@@ -288,6 +288,23 @@ const Sound = (function () {
   }
   function hat(t, vol) { noise(t, 0.028, vol, 'highpass', 7500, 0.7, musicBus); }
 
+  // 부르기 마디 박 기준 틱: 선생님 북(150~250Hz, 0.50)과 음역·크기 모두 확실히 다른 아주 작고 짧은 고음 '칫'.
+  // 엇박을 귀로 잴 기준만 준다. 1박은 아주 미세하게만 강조(크기 ×1.2, 음높이 +4%)
+  function guideTick(t, strong) {
+    tone('sine', strong ? 2500 : 2400, strong ? 2350 : 2250, t, 0.014, strong ? 0.054 : 0.045, 0.001, musicBus);
+  }
+  // 준비 마디 카운트: 카운트인 막대 '딱'보다 부드럽게(어택 3ms, 노이즈 적게, 크기 약 60%).
+  // last=true(준비 마지막 박)는 위로 살짝 올라가는 '뾰?' = "이제 너"
+  function readyTick(t, last) {
+    if (last) {
+      tone('sine', 1760, 2090, t, 0.075, 0.095, 0.003, musicBus, 0.05);
+      noise(t, 0.008, 0.025, 'bandpass', 3200, 1.5, musicBus);
+    } else {
+      tone('triangle', 1320, 1250, t, 0.05, 0.085, 0.003, musicBus);
+      noise(t, 0.008, 0.025, 'bandpass', 2800, 1.5, musicBus);
+    }
+  }
+
   // stepInfo마다 1번 호출 (예약 시점)
   function backing(si) {
     if (!music.on || si.late) return;
@@ -298,42 +315,65 @@ const Sound = (function () {
       return;
     }
     if (s === 0 && ph === 'call') music.chordIdx = (music.chordIdx + 1) % CHORDS.length;
+    // 부르기 마디: 반주(코드·베이스·하이햇·메트로놈) 전부 없음. 선생님 북만 또렷하게 + 정박 기준 틱
+    if (ph === 'call') {
+      if (s % 4 === 0) guideTick(t, s === 0);
+      return;
+    }
+    // 준비 마디(부르기 → 따라하기 사이, 2박 또는 4박): 박마다 부드러운 카운트, 마지막 박만 '이제 너'. 반주 없음
+    if (ph === 'ready') {
+      if (s % 4 === 0) readyTick(t, (s >> 2) === si.beats - 1);
+      return;
+    }
     var ch = CHORDS[Math.max(0, music.chordIdx)];
     if (ph === 'transition') ph = 'rest';            // 단계 전환 마디 = 쉬는 마디 반주(C 코드, 부르기 없음)
     if (ph === 'rest') ch = CHORDS[0];
 
-    // 메트로놈: 1박 강, 2·3·4박 약. 따라하기 마디 1박은 '네 차례' 지저귐으로 대체(+약한 틱)
-    if (s === 0 && ph === 'response') {
-      chirp(t, 1200, 1900, 1750, 0.08, 0.10, musicBus);
-      metro(t, false);
-    } else if (s % 4 === 0) metro(t, s === 0);
+    // 메트로놈: 1박 강, 2·3·4박 약. 따라하기 마디 1박은 약한 틱만
+    // ('네 차례' 지저귐은 정답 음표와 헷갈릴 수 있어 제거 — 차례는 준비 카운트 + 반주 등장 + 화면으로 구분)
+    if (s === 0 && ph === 'response') metro(t, false);
+    else if (s % 4 === 0) metro(t, s === 0);
 
     // 하이햇: 8분 엇박(앤)에 은은하게. hat16 켜면 16분 엇박에 더 작게
     if (s % 4 === 2) hat(t, 0.07);
     else if (music.hat16 && s % 2 === 1) hat(t, 0.025);
 
-    // 베이스: 1박(모든 마디), 3박(부르기·쉬는 마디)
+    // 베이스: 1박(따라하기·쉬는 마디), 3박(쉬는 마디)
     if (s === 0) bass(ch.bass, t, beatDur * 1.6, 0.42);
     if (s === 8 && ph !== 'response') bass(ch.bass, t, beatDur * 1.4, 0.30);
 
-    // 코드: 부르기 마디만(풍성) — 따라하기 마디는 비워서 내 탭이 잘 들리게
-    if (ph === 'call' || ph === 'rest') {
+    // 코드: 쉬는(전환) 마디만 — 따라하기 마디는 비워서 내 탭이 잘 들리게 (부르기 마디는 위에서 이미 return)
+    if (ph === 'rest') {
       if (s === 0) chord(ch, t, beatDur * 1.8, 0.06);
       if (s === 8) chord(ch, t, beatDur * 1.4, 0.04);
     }
   }
 
   // ---------- 박자 시계 ----------
-  var clk = { running: false, bpm: 100, pendingBpm: 0, stepDur: 60 / 100 / 4, step: 0, bar: 0, barTime: 0,
+  // 마디 길이는 마디마다 가변: beats 1~8박(기본 4). 'ready' 반 마디 = beats 2
+  var clk = { running: false, bpm: 100, pendingBpm: 0, stepDur: 60 / 100 / 4, step: 0, sib: 0, bar: 0, barTime: 0,
               nextTime: 0, timer: null, curBar: null, bars: [], plan: {}, stepCbs: [], barCbs: [] };
+
+  function clampBeats(b) { b = Math.round(+b); return b >= 1 && b <= 8 ? b : 4; }
+  // 'call' 또는 {phase:'ready', beats:2} 둘 다 받아 info에 반영
+  function applyPhase(info, r) {
+    if (typeof r === 'string') { info.phase = r; return; }
+    if (r && typeof r === 'object') {
+      if (typeof r.phase === 'string') info.phase = r.phase;
+      if (r.beats !== undefined) info.beats = clampBeats(r.beats);
+    }
+  }
+  function setLen(info) { info.steps = info.beats * 4; info.barDur = info.stepDur * info.steps; }
 
   function makeBar(barIndex, time) {
     if (clk.pendingBpm) { clk.bpm = clk.pendingBpm; clk.stepDur = 60 / clk.bpm / 4; clk.pendingBpm = 0; }
     var info = { bar: barIndex, time: time, bpm: clk.bpm, stepDur: clk.stepDur, beatDur: clk.stepDur * 4,
-                 barDur: clk.stepDur * 16, phase: clk.plan[barIndex] || 'rest' };
+                 beats: 4, steps: 16, barDur: clk.stepDur * 16, phase: 'rest' };
+    applyPhase(info, clk.plan[barIndex]);
+    setLen(info);
     delete clk.plan[barIndex];
     for (var i = 0; i < clk.barCbs.length; i++) {
-      try { var r = clk.barCbs[i](info); if (typeof r === 'string') info.phase = r; } catch (e) { reportErr(e); }
+      try { applyPhase(info, clk.barCbs[i](info)); setLen(info); } catch (e) { reportErr(e); }
     }
     clk.bars.push(info);
     if (clk.bars.length > 16) clk.bars.shift();
@@ -344,17 +384,19 @@ const Sound = (function () {
   function pump(horizon) {
     var nowT = ctx.currentTime;
     while (clk.running && clk.nextTime < horizon) {
-      var s = clk.step % 16;
+      var s = clk.sib;
       if (s === 0) { clk.curBar = makeBar(clk.bar, clk.nextTime); clk.barTime = clk.nextTime; }
       var b = clk.curBar;
       var t = b.time + s * b.stepDur;                 // 마디 시작 기준으로 계산(누적 오차 없음)
       var si = { step: clk.step, bar: b.bar, stepInBar: s, beatInBar: s >> 2, sub: s & 3,
                  isBeat: (s & 3) === 0, isOffbeat8: (s & 3) === 2, time: t, stepDur: b.stepDur,
-                 bpm: b.bpm, phase: b.phase, barTime: b.time, late: !offline && t < nowT - 0.01 };
+                 bpm: b.bpm, phase: b.phase, barTime: b.time, beats: b.beats, steps: b.steps,
+                 late: !offline && t < nowT - 0.01 };
       backing(si);
       for (var i = 0; i < clk.stepCbs.length; i++) { try { clk.stepCbs[i](si); } catch (e) { reportErr(e); } }
       clk.step++;
-      if (clk.step % 16 === 0) clk.bar++;
+      clk.sib++;
+      if (clk.sib >= b.steps) { clk.sib = 0; clk.bar++; }
       clk.nextTime = b.time + (s + 1) * b.stepDur;
     }
   }
@@ -389,8 +431,8 @@ const Sound = (function () {
     if (!b) b = clk.bars[0];
     if (!b) return null;
     var stepF = (t - b.time) / b.stepDur;
-    return { bar: b.bar, phase: b.phase, bpm: b.bpm, barTime: b.time, stepDur: b.stepDur,
-             stepF: stepF, beatF: stepF / 4, barF: b.bar + stepF / 16 };
+    return { bar: b.bar, phase: b.phase, bpm: b.bpm, barTime: b.time, stepDur: b.stepDur, beats: b.beats, barDur: b.barDur,
+             stepF: stepF, beatF: stepF / 4, barF: b.bar + stepF / b.steps };
   }
 
   var Beat = {
@@ -400,7 +442,7 @@ const Sound = (function () {
       Beat.stop(true);
       opts = opts || {};
       clk.bpm = Math.max(40, Math.min(240, +bpm || 100)); clk.stepDur = 60 / clk.bpm / 4; clk.pendingBpm = 0;
-      clk.step = 0; clk.bar = 0; clk.bars = []; clk.curBar = null;
+      clk.step = 0; clk.sib = 0; clk.bar = 0; clk.bars = []; clk.curBar = null;
       clk.plan = {};
       if (opts.phases) for (var k in opts.phases) clk.plan[k] = opts.phases[k];
       music.chordIdx = -1;
@@ -428,9 +470,12 @@ const Sound = (function () {
     // 템포 변경: 다음 마디 첫 박부터 적용(마디 중간에 바뀌지 않음)
     setBpm: function (bpm) { bpm = +bpm; if (bpm >= 40 && bpm <= 240) { if (clk.running) clk.pendingBpm = bpm; else { clk.bpm = bpm; clk.stepDur = 60 / bpm / 4; } } },
     getBpm: function () { return clk.bpm; },
-    // 특정 마디의 phase 예약: 'call' | 'response' | 'countin' | 'transition' | 'rest' | 'silent'
+    // 특정 마디의 phase 예약: 'call' | 'ready' | 'response' | 'countin' | 'transition' | 'rest' | 'silent'
+    // 또는 {phase, beats} (beats 1~8, 기본 4. 예 {phase:'ready', beats:2} = 반 마디)
     planPhase: function (bar, phase) { clk.plan[bar] = phase; },
-    // 콜백 등록. 반환값은 해제 함수. onBar 콜백이 문자열을 반환하면 그 마디의 phase가 된다
+    // 콜백 등록. 반환값은 해제 함수. onBar 콜백이 문자열을 반환하면 그 마디의 phase가 되고,
+    // {phase, beats}를 반환하면 phase와 마디 길이(박 수)가 함께 정해진다. info.barDur/steps/beats는 반환값 반영 후 값
+    // (같은 콜백 안에서 반환 전에 읽은 info.barDur는 기본 4박 기준이므로, 길이를 바꾸는 마디는 반환 뒤 값을 쓰거나 직접 계산)
     onStep: function (fn) { clk.stepCbs.push(fn); return function () { var i = clk.stepCbs.indexOf(fn); if (i >= 0) clk.stepCbs.splice(i, 1); }; },
     onBar: function (fn) { clk.barCbs.push(fn); return function () { var i = clk.barCbs.indexOf(fn); if (i >= 0) clk.barCbs.splice(i, 1); }; },
     // 정확한 시각에 효과음 예약 (이미 지난 시각이면 즉시). 반환: 실제 예약 시각
@@ -453,13 +498,17 @@ const Sound = (function () {
       }
       return out;
     },
-    // 마디 시작 시각 (이미 예약된 마디는 정확, 미래 마디는 현재 템포로 추정)
+    // 마디 시작 시각 (이미 예약된 마디는 정확, 미래 마디는 현재 템포 + planPhase로 예약된 박 수(없으면 4박)로 추정)
     barTime: function (bar) {
       for (var i = clk.bars.length - 1; i >= 0; i--) if (clk.bars[i].bar === bar) return clk.bars[i].time;
       var lb = clk.bars[clk.bars.length - 1];
       if (!lb) return clk.nextTime;
-      var sd = 60 / (clk.pendingBpm || clk.bpm) / 4;
-      return lb.time + lb.barDur + (bar - lb.bar - 1) * 16 * sd;
+      var sd = 60 / (clk.pendingBpm || clk.bpm) / 4, t = lb.time + lb.barDur;
+      for (var k = lb.bar + 1; k < bar; k++) {
+        var p = clk.plan[k];
+        t += (p && typeof p === 'object' && p.beats !== undefined ? clampBeats(p.beats) : 4) * 4 * sd;
+      }
+      return t;
     },
     ctxTime: function () { return ctx ? ctx.currentTime : 0; },
     // 지금 들리는 소리의 ctx 시각. 화면 연출(박자에 맞춰 까딱이기 등)은 rAF에서 이 값을 쓴다
