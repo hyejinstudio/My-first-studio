@@ -144,6 +144,8 @@ const Sound = (function () {
 
   // 아슬아슬 회피 연속(combo) 사다리: C 메이저 펜타토닉
   var DODGE = [N.C6, N.D6, N.E6, N.G6];
+  // (v2) 별사탕 연속 획득(chain) 사다리: 기준음 f (C 메이저 펜타토닉 6단). 실제로는 f → f×2 '또-링'
+  var STAR = [N.C5, N.D5, N.E5, N.G5, N.A5, N.C6];
 
   var sfx = {
     // 게임 시작: '띠용' 스프링 + 상승 3음 + 반짝
@@ -180,6 +182,24 @@ const Sound = (function () {
       tone('sine', f, 0, t + 0.06, 0.12, 0.07, 0.003);
       tone('sine', f * 1.5, 0, t + 0.10, 0.10, 0.03, 0.003);
     },
+    // (v2) 별사탕 획득: 맑은 2음 '또-링'(앞꾸밈음 f → 옥타브 위 f×2 벨). opts.chain 1~6, 7 이상은 6단 고정
+    // dodge(노이즈 '휙' + sine)와 달리 노이즈 없음, triangle 꾸밈음 + 옥타브 도약 + 3배음 반짝으로 구분
+    star: function (t, opts) {
+      if (throttled('star', t, 0.05)) return;
+      var c = Math.floor(+(opts && opts.chain));
+      if (!(c >= 1)) c = 1;
+      if (c > STAR.length) c = STAR.length;
+      var f = STAR[c - 1], v = 0.10 + (c - 1) * 0.004;
+      tone('triangle', f, 0, t, 0.045, 0.08, 0.002);               // '또'
+      tone('triangle', f * 2, 0, t + 0.045, 0.20, v, 0.002);        // '링'
+      tone('sine', f * 3, 0, t + 0.045, 0.12, 0.025, 0.002);        // 반짝 배음
+      if (c === STAR.length) tone('sine', f * 3, 0, t + 0.11, 0.16, 0.035, 0.003); // 최대 단계: 위로 한 번 더 '찡'
+    },
+    // (v2, 선택) 별사탕 놓침: 아주 작은 하강 '퓨'. 연속이 끊길 때(chain 2 이상)만 부르는 것을 권장
+    starMiss: function (t) {
+      if (throttled('starMiss', t, 0.3)) return;
+      sweep('sine', N.E5, N.A4, t, 0.12, 0.14, 0.035, 0.004);
+    },
     // 아이템 획득: 빠른 상승 아르페지오 '뾰로롱'
     item: function (t) {
       if (throttled('item', t, 0.15)) return;
@@ -187,18 +207,20 @@ const Sound = (function () {
       for (var i = 0; i < m.length; i++) tone('triangle', m[i], 0, t + i * 0.05, 0.10, 0.12, 0.003);
     },
     // 무적(우산) 시작: 펼치는 '파앗' + 반짝이는 화음
+    // (v2) 우산이 자주 나와 약 25% 작고 짧게: 노이즈 0.06→0.045, 화음 0.45→0.32s, 피크 0.10/0.08→0.08/0.06
     shieldOn: function (t) {
       if (throttled('shieldOn', t, 0.3)) return;
-      noise(t, 0.18, 0.06, 'bandpass', 800, 4000, 1.2, 0.02);
-      tone('sine', N.C5, 0, t + 0.08, 0.45, 0.10, 0.01);
-      tone('sine', N.E5, 0, t + 0.08, 0.45, 0.08, 0.01);
-      tone('sine', N.G5, 0, t + 0.08, 0.45, 0.08, 0.01);
-      tone('sine', N.C6, 0, t + 0.16, 0.35, 0.05, 0.01);
+      noise(t, 0.15, 0.045, 'bandpass', 800, 4000, 1.2, 0.02);
+      tone('sine', N.C5, 0, t + 0.07, 0.32, 0.08, 0.01);
+      tone('sine', N.E5, 0, t + 0.07, 0.32, 0.06, 0.01);
+      tone('sine', N.G5, 0, t + 0.07, 0.32, 0.06, 0.01);
+      tone('sine', N.C6, 0, t + 0.13, 0.24, 0.035, 0.01);
     },
-    // 무적 곧 끝남 경고(선택, 아주 작게): 1초마다 '틱'
-    shieldWarn: function (t) {
+    // 무적 곧 끝남 경고(아주 작게) '틱'. (v2) 남은 1.5초 → n:1, 남은 0.8초 → n:2(조금 높은 C6)
+    shieldWarn: function (t, opts) {
       if (throttled('shieldWarn', t, 0.25)) return;
-      tone('sine', N.G5, 0, t, 0.06, 0.05, 0.002);
+      var hi = opts && +opts.n === 2;
+      tone('sine', hi ? N.C6 : N.G5, 0, t, 0.06, 0.05, 0.002);
     },
     // 무적 끝: 접히는 하강 2음 (작게)
     shieldOff: function (t) {
@@ -333,8 +355,8 @@ const Sound = (function () {
         s.buffer = b; s.connect(ctx.destination); s.start(0);
       } catch (e) {}
     },
-    // name: start|plop|bigLand|dodge|item|shieldOn|shieldWarn|shieldOff|hit|gameOver|record|levelUp|tap
-    // opts 공통: x 0~1 (선택, 좌우 위치). dodge → { combo 1.. }
+    // name: start|plop|bigLand|dodge|star|starMiss|item|shieldOn|shieldWarn|shieldOff|hit|gameOver|record|levelUp|tap
+    // opts 공통: x 0~1 (선택, 좌우 위치). dodge → { combo 1.. }, star → { chain 1..6 }, shieldWarn → { n 1|2 }
     play: function (name, opts) {
       try {
         if (!ready() || typeof name !== 'string' || !sfx.hasOwnProperty(name)) return;
