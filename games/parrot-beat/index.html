@@ -116,6 +116,15 @@
   button.small { height: 44px; padding: 0 14px; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
   button.small svg { width: 18px; height: 18px; flex: none; }
   button.hl { border: 2px solid var(--gold); }
+  button.primary svg { width: 20px; height: 20px; flex: none; }
+  #retryBtn { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; }
+  /* 결과 화면: 게임 오버일 때 「다시 하기」는 secondary 모양 */
+  #againBtn.as-secondary { height: 44px; padding: 0 18px; font-size: 15px; font-weight: 400; background: var(--panel); color: var(--ink); border: 1px solid var(--grid); }
+  #againBtn.as-secondary:active { background: var(--grid); filter: none; }
+  .retrypill { display: inline-flex; align-items: center; gap: 4px; background: var(--panel); border: 2px solid var(--grid); color: var(--muted);
+    border-radius: 999px; padding: 1px 10px 1px 8px; font-size: 12px; font-weight: 700; }
+  .retrypill svg { width: 14px; height: 14px; flex: none; }
+  .retrypill b { color: var(--ink); font-size: 13px; }
 
   /* 무대 */
   .stage { position: relative; flex: none; width: var(--sw, 600px); height: var(--sh, 400px); }
@@ -222,6 +231,7 @@
   .reslist { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .reslist span { background: var(--panel); border: 1px solid var(--grid); border-radius: 999px; padding: 2px 10px; font-size: 13px; color: var(--muted); }
   .reslist b { color: var(--ink); margin-left: 4px; }
+  .overlay .resbtns { gap: 8px 10px; }
   #resBird svg { width: 96px; height: 96px; }
   .calbig { width: 120px; height: 120px; border-radius: 50%; background: var(--panel); border: 2px solid var(--grid); display: grid; place-items: center; }
   .calbig i { width: 56px; height: 56px; border-radius: 50%; background: var(--beat); opacity: .35; }
@@ -250,7 +260,7 @@
     body.ov-full .overlay { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
     .minis svg { width: 56px; height: 56px; }
     .resbig { font-size: 32px; }
-    #resBird svg { width: 64px; height: 64px; }
+    #resBird svg { width: 48px; height: 48px; }
     .calbig { width: 84px; height: 84px; }
     .calbig i { width: 40px; height: 40px; }
   }
@@ -269,6 +279,7 @@
     <symbol id="icEar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="7" rx="1.5" fill="currentColor"/><rect x="17" y="14" width="4" height="7" rx="1.5" fill="currentColor"/></g></symbol>
     <symbol id="icSound" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5a4 4 0 0 1 0 6"/><path d="M7.5 2.5a7.5 7.5 0 0 1 0 11"/><circle cx="1.8" cy="8" r="1.2" fill="currentColor" stroke="none"/></g></symbol>
     <symbol id="icFinger" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="10" r="3.2" fill="currentColor" stroke="none"/><path d="M8 1.8v2.4M3 3.6l1.5 1.8M13 3.6l-1.5 1.8"/></g></symbol>
+    <symbol id="icRewind" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4 3.5v4.2h4.2"/></g><path d="M10.5 9v6l4.6-3z" fill="currentColor"/></symbol>
     <symbol id="icNote" viewBox="0 0 12 12"><path d="M4.2 9.4a1.9 1.6 0 1 1-1.2-1.5V1.6h1.2c.6 1.4 2.4 1.8 3.6 1.9v1.3c-1.3 0-2.6-.5-3.6-1.2z" fill="currentColor"/></symbol>
     <g id="teacherArt">
       <ellipse class="b-shadow" cx="60" cy="113" rx="32" ry="4.5"/>
@@ -386,12 +397,13 @@
       <h2 id="resTitle">클리어!</h2>
       <b class="num resbig" id="resScore">0</b>
       <span class="badge" id="newRec" hidden>새 최고 기록</span>
-      <p id="resLine"></p>
+      <span class="retrypill" id="retryPill" role="img" aria-label="이어하기 0번" hidden><svg aria-hidden="true"><use href="#icRewind"/></svg><span>이어하기</span><b class="num" id="retryNum">0</b></span>
       <div class="reslist" id="resList"></div>
-      <button class="small hl" id="calSuggest" type="button" hidden><svg aria-hidden="true"><use href="#icEar"/></svg>박자 맞추기</button>
-      <div class="row">
+      <div class="row resbtns">
+        <button class="primary" id="retryBtn" type="button" hidden><svg aria-hidden="true"><use href="#icRewind"/></svg>틀린 곳부터</button>
         <button class="primary" id="againBtn" type="button">다시 하기</button>
         <button class="secondary" id="menuBtn" type="button">처음으로</button>
+        <button class="small hl" id="calSuggest" type="button" hidden><svg aria-hidden="true"><use href="#icEar"/></svg>박자 맞추기</button>
       </div>
     </div>
 
@@ -1222,7 +1234,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     ovStart: $('ovStart'), ovPause: $('ovPause'), ovResult: $('ovResult'), ovCal: $('ovCal'),
     startBtn: $('startBtn'), calBtn: $('calBtn'), bestTxt: $('bestTxt'), resumeBtn: $('resumeBtn'), restartBtn: $('restartBtn'),
     againBtn: $('againBtn'), menuBtn: $('menuBtn'), calSuggest: $('calSuggest'), resTitle: $('resTitle'), resScore: $('resScore'),
-    newRec: $('newRec'), resLine: $('resLine'), resList: $('resList'), resBirdSvg: $('resBirdSvg'),
+    newRec: $('newRec'), resList: $('resList'), resBirdSvg: $('resBirdSvg'),
+    retryBtn: $('retryBtn'), retryPill: $('retryPill'), retryNum: $('retryNum'),
     calRun: $('calRun'), calDone: $('calDone'), calDot: $('calDot'), calDots: $('calDots'), calVal: $('calVal'), calMsg: $('calMsg'),
     calAgain: $('calAgain'), calOk: $('calOk'), calZero: $('calZero'), calBack: $('calBack'), live: $('live')
   };
@@ -1251,7 +1264,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     phase: 'menu', g: null, program: [], bars: [], rounds: [], lastTapT: -1e9, pendingStage: 0,
     clockPending: null, resumePoint: null, pauseCtx: 0, lastHeard: null, disp: null, fade: null, fadeAt: 0,
     auto: null, lastJudge: null, hud: { stage: 1, score: -1, hearts: -1, combo: -1, dots: '' },
-    resultLockUntil: 0, endTimer: null, suspendTimer: null, seed: 0, startStage: 1, grid: 8, lastBeatKey: '', lastStepKey: ''
+    resultLockUntil: 0, endTimer: null, suspendTimer: null, seed: 0, startStage: 1, grid: 8, lastBeatKey: '', lastStepKey: '',
+    retries: 0, failPoint: null, failRd: null
   };
   function bpmOf(s) { return Rules.BPMS[clamp(s, 1, MAXS) - 1]; }
   function gridOf(s) { return Rules.POOLS[s - 1].some(function (p) { return /x/.test(p.charAt(1) + p.charAt(3) + p.charAt(5) + p.charAt(7) + p.charAt(9) + p.charAt(11) + p.charAt(13) + p.charAt(15)); }) ? 16 : 8; }
@@ -1350,6 +1364,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     stage = clamp(stage | 0 || 1, 1, MAXS);
     G.g = Rules.newGame({ seed: seed, stage: stage });
     G.seed = G.g.seed; G.startStage = stage;
+    G.retries = 0; G.failPoint = null; G.failRd = null;
     G.rounds = []; G.bars = []; G.lastTapT = -1e9; G.lastHeard = null; G.disp = null; G.fade = null; G.lastJudge = null; G.pendingStage = 0;
     G.hud = { stage: stage, score: -1, hearts: -1, combo: -1, dots: '' };
     G.grid = gridOf(stage);
@@ -1449,6 +1464,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     }
     if (ev.heartGain) Sound.play('heartGain');
     if (ev.bonus) bumpScore();
+    if (g.over && !ev.cleared) { G.failPoint = { stage: rd.stage, round: rd.round, pattern: rd.pattern }; G.failRd = rd; }
     if (g.over) endGame(ev.cleared);
   }
 
@@ -1460,9 +1476,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     else { Sound.play('gameOver'); Sound.stopMusic(0.8); }
     clearTimeout(G.endTimer);
     G.endTimer = setTimeout(function () { Beat.stop(); }, 800);
-    var best = loadBest(), isNew = g.score > best.score;
-    var nb = { score: Math.max(best.score, g.score), stage: Math.max(best.stage, cleared ? MAXS : g.stageReached), cleared: best.cleared || cleared };
-    saveBest(nb);
+    // 이어 하기를 1번이라도 쓴 판은 최고 기록을 갱신하지 않는다(design.md 「틀린 곳부터」)
+    var best = loadBest(), isNew = G.retries === 0 && g.score > best.score;
+    if (G.retries === 0) {
+      var nb = { score: Math.max(best.score, g.score), stage: Math.max(best.stage, cleared ? MAXS : g.stageReached), cleared: best.cleared || cleared };
+      saveBest(nb);
+    }
     G.result = { cleared: cleared, isNew: isNew && g.score > 0 };
     setTimeout(function () { if (G.phase === 'over') showResult(); }, cleared ? 1300 : 1100);
   }
@@ -1473,21 +1492,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     el.resTitle.textContent = r.cleared ? '클리어!' : '';
     if (!r.cleared) { el.resTitle.innerHTML = '<span><span class="num">' + g.stageReached + '</span>단계까지</span>'; }
     el.resScore.textContent = String(g.score);
-    show(el.newRec, r.isNew);
-    el.resLine.innerHTML = '최고 연속 <span class="num">' + g.maxCombo + '</span>';
+    show(el.newRec, r.isNew && G.retries === 0);
+    show(el.retryPill, G.retries > 0);
+    el.retryNum.textContent = String(G.retries);
+    el.retryPill.setAttribute('aria-label', '이어하기 ' + G.retries + '번');
     el.resList.innerHTML = '<span>딱!<b class="num">' + g.counts.perfect + '</b></span><span>좋아<b class="num">' + g.counts.good +
-      '</b></span><span>놓침<b class="num">' + g.counts.miss + '</b></span><span>헛박<b class="num">' + g.counts.stray + '</b></span>';
+      '</b></span><span>놓침<b class="num">' + g.counts.miss + '</b></span><span>헛박<b class="num">' + g.counts.stray +
+      '</b></span><span>최고 연속<b class="num">' + g.maxCombo + '</b></span>';
     var med = median(g.errs);
     show(el.calSuggest, g.errs.length >= 16 && Math.abs(med) >= 0.06);
+    var canRetry = !r.cleared && !!G.failPoint;
+    show(el.retryBtn, canRetry);
+    el.againBtn.classList.toggle('as-secondary', canRetry);
     setEyes(el.resBirdSvg, r.cleared ? 'shut' : '');
     show(el.ovResult, true);
     el.pauseBtn.disabled = true;
     if (r.isNew) Sound.play('newBest');
     G.resultLockUntil = performance.now() + 800;
-    el.againBtn.disabled = true; el.menuBtn.disabled = true; el.calSuggest.disabled = true;
+    el.againBtn.disabled = true; el.menuBtn.disabled = true; el.calSuggest.disabled = true; el.retryBtn.disabled = true;
     setTimeout(function () {
-      el.againBtn.disabled = false; el.menuBtn.disabled = false; el.calSuggest.disabled = false;
-      if (G.phase === 'result') try { el.againBtn.focus({ preventScroll: true }); } catch (e) {}
+      el.againBtn.disabled = false; el.menuBtn.disabled = false; el.calSuggest.disabled = false; el.retryBtn.disabled = false;
+      if (G.phase === 'result') try { (el.retryBtn.hidden ? el.againBtn : el.retryBtn).focus({ preventScroll: true }); } catch (e) {}
     }, 800);
     announce(r.cleared ? '클리어! ' + g.score + '점' : g.stageReached + '단계까지, ' + g.score + '점');
     renderBest();
@@ -1500,6 +1525,47 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     el.stage.classList.add('idle'); el.pauseBtn.disabled = false;
     renderBest(); syncHUD(true);
     try { el.startBtn.focus({ preventScroll: true }); } catch (e) {}
+  }
+  // 틀린 곳부터: 게임 오버를 만든 라운드(같은 단계·라운드·패턴·BPM)부터 카운트인 1마디 → 부르기
+  function canRetryNow() { return G.phase === 'result' && !!G.g && !!G.result && !G.result.cleared && !!G.failPoint && !!G.failRd; }
+  function retryFromFail() {
+    if (!canRetryNow()) return false;
+    var g = G.g, fp = G.failPoint, rd = G.failRd, s = fp.stage, r = fp.round;
+    Sound.unlock();
+    clearTimeout(G.endTimer); clearTimeout(G.suspendTimer);
+    Beat.stop(true);
+    if (Beat.isPaused()) Beat.resume();
+    // 그 라운드만 없던 일로: 점수·판정 수·오차 기록·단계 실패 1회·라운드 결과
+    var a = rd.add;
+    g.score -= a.score; g.counts.perfect -= a.perfect; g.counts.good -= a.good; g.counts.miss -= a.miss; g.counts.stray -= a.stray;
+    var nErr = a.perfect + a.good; if (nErr > 0) g.errs.splice(Math.max(0, g.errs.length - nErr), nErr);
+    if (g.stageFails[s]) g.stageFails[s]--;
+    delete g.results[s + ':' + r];
+    rd.invalid = true;
+    // 게임 오버 뒤 미리 정해진 다음 라운드 출제는 취소(이어 한 결과로 다시 정함). 그 라운드 패턴(g.chosen[s:r])은 그대로
+    for (var k = r + 1; k < Rules.CFG.rounds; k++) {
+      var key = s + ':' + k;
+      delete g.chosen[key];
+      if (g.guides && g.guides[key]) { if (g.guides[key].off) g.seenOff = false; if (g.guides[key].rest) g.seenRest = false; delete g.guides[key]; }
+    }
+    g.hearts = Rules.CFG.hearts; g.combo = 0; g.over = false; g.cleared = false;
+    G.retries++;
+    G.failRd = null;
+    G.rounds = G.rounds.filter(function (q) { return q.finalized && !q.invalid; });
+    G.bars = []; G.lastTapT = -1e9; G.lastHeard = null; G.disp = null; G.fade = null; G.lastJudge = null; G.pendingStage = 0;
+    G.hud = { stage: s, score: -1, hearts: -1, combo: -1, dots: '' };
+    G.grid = gridOf(s);
+    G.result = null;
+    G.phase = 'play';
+    el.pauseBtn.disabled = false;
+    show(el.ovStart, false); show(el.ovPause, false); show(el.ovResult, false); show(el.ovCal, false);
+    el.stage.classList.remove('idle');
+    setEyes(el.mBird, ''); setEyes(el.tBird, '');
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+    Sound.play('start');
+    requestClock(s, r, false, 0.12);
+    syncHUD(true);
+    return true;
   }
   function renderBest() {
     var b = loadBest();
@@ -2109,7 +2175,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     }
     if (G.phase === 'result' || G.phase === 'over') {
       if (G.phase === 'over' || performance.now() < G.resultLockUntil) { e.preventDefault(); return; }
-      if ((k === 'Enter' || k === ' ') && !onBtn && !e.repeat) { e.preventDefault(); startGame(1); }
+      if ((k === 'Enter' || k === ' ') && !onBtn && !e.repeat) { e.preventDefault(); if (!retryFromFail()) startGame(1); }
     }
   });
   document.addEventListener('keyup', function (e) {
@@ -2127,6 +2193,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   el.resumeBtn.addEventListener('click', resumeGame);
   el.restartBtn.addEventListener('click', function () { startGame(G.startStage || 1); });
   el.againBtn.addEventListener('click', function () { if (el.againBtn.disabled || performance.now() < G.resultLockUntil) return; startGame(1); });
+  el.retryBtn.addEventListener('click', function () { if (el.retryBtn.disabled || performance.now() < G.resultLockUntil) return; retryFromFail(); });
   el.menuBtn.addEventListener('click', function () { if (el.menuBtn.disabled || performance.now() < G.resultLockUntil) return; Sound.play('button'); toMenu(); });
   el.pauseBtn.addEventListener('click', function () {
     Sound.unlock();
@@ -2219,7 +2286,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
       combo: g ? g.combo : 0, maxCombo: g ? g.maxCombo : 0, counts: g ? Object.assign({}, g.counts) : { perfect: 0, good: 0, miss: 0, stray: 0 },
       pattern: rdc ? rdc.pattern : '', nextNotes: next, latency: { auto: (Beat.latency().output || Beat.latency().base || 0), offset: Beat.getOffset() },
       audioTime: now, ctxTime: Beat.ctxTime(), cleared: g ? g.cleared : false, stageReached: g ? g.stageReached : 0, lastJudge: G.lastJudge,
-      windows: { perfect: Rules.CFG.perfect * 1000, good: Rules.CFG.good * 1000 }
+      windows: { perfect: Rules.CFG.perfect * 1000, good: Rules.CFG.good * 1000 },
+      retries: G.retries, failPoint: G.failPoint ? Object.assign({}, G.failPoint) : null
     };
   }
   window.__parrot = {
@@ -2233,7 +2301,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     simulateRun: function (o) { return Rules.simulateRun(o || {}); },
     patterns: function () { return Rules.POOLS.map(function (p) { return p.slice(); }); },
     pause: function () { pauseGame(false); return copyState(); },
-    resume: function () { resumeGame(); return copyState(); }
+    resume: function () { resumeGame(); return copyState(); },
+    retryFromFail: function () { return retryFromFail() ? copyState() : null; }
   };
 
   // ---------- 시작 ----------
