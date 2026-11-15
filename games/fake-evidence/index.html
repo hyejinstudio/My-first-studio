@@ -122,8 +122,9 @@
   /* 무대 + 보드 */
   .stage { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; }
   .board { position: absolute; inset: 0; display: grid; gap: var(--gap, 12px); }
-  body.lay-wide .board { grid-template-columns: var(--lcol, 340px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 28px;
-    grid-template-areas: "case grid" "panel grid" "panel status"; }
+  /* 와이드(PC·iPad 가로): 왼쪽은 사건 파일 전체 높이, 오른쪽은 그리드 → 상태 줄 → 패널(지목 직후 이유 4개가 보이게) */
+  body.lay-wide .board { grid-template-columns: var(--lcol, 340px) minmax(0, 1fr); grid-template-rows: var(--gh, 400px) 28px minmax(0, 1fr);
+    grid-template-areas: "case grid" "case status" "case panel"; }
   body.lay-tall .board { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto var(--gh, 400px) 28px minmax(0, 1fr);
     grid-template-areas: "case" "grid" "status" "panel"; }
   body.lay-phone .board { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 28px;
@@ -327,21 +328,21 @@
   .opt[aria-checked="true"] .ock { visibility: visible; }
   .pmini { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 14px; }
   body.lay-short .opt { min-height: 48px; font-size: 14px; }
-  /* 세로 태블릿: 세부를 줄이고 이유를 2×2로 놓아 지목 직후 이유 4개가 패널 안에 다 보이게 */
-  body.lay-tall .pbody { padding: 12px 16px; }
-  body.lay-tall .pfoot { padding: 8px 16px 10px; }
-  body.lay-tall .dthead { gap: 10px; }
-  body.lay-tall .dthead .tile { width: 36px; height: 36px; border-radius: 10px; }
-  body.lay-tall .dthead .tile .ic { width: 22px; height: 22px; }
-  body.lay-tall .dthead h4 { font-size: 17px; }
-  body.lay-tall .dtchips { display: none; }
-  body.lay-tall .dttext { margin-top: 8px; padding: 8px 0 0; font-size: 15px; line-height: 1.5; }
-  body.lay-tall .rq { margin: 10px 0 8px; font-size: 16px; }
-  body.lay-tall .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  body.lay-tall .opt { min-height: 52px; font-size: 14.5px; line-height: 1.4; padding: 8px 10px 8px 8px; gap: 8px; }
-  body.lay-tall .opt[aria-checked="true"] { padding: 7px 9px 7px 7px; }
-  body.lay-tall .opt .ock { display: none; }
-  body.lay-tall .pmini { margin-top: 10px; }
+  /* 세로 태블릿·와이드: 세부를 줄이고 이유를 2×2로 놓아 지목 직후 이유 4개가 패널 안에 다 보이게 */
+  body.lay-tall .pbody, body.lay-wide .pbody { padding: 12px 16px; }
+  body.lay-tall .pfoot, body.lay-wide .pfoot { padding: 8px 16px 10px; }
+  body.lay-tall .dthead, body.lay-wide .dthead { gap: 10px; }
+  body.lay-tall .dthead .tile, body.lay-wide .dthead .tile { width: 36px; height: 36px; border-radius: 10px; }
+  body.lay-tall .dthead .tile .ic, body.lay-wide .dthead .tile .ic { width: 22px; height: 22px; }
+  body.lay-tall .dthead h4, body.lay-wide .dthead h4 { font-size: 17px; }
+  body.lay-tall .dtchips, body.lay-wide .dtchips { display: none; }
+  body.lay-tall .dttext, body.lay-wide .dttext { margin-top: 8px; padding: 8px 0 0; font-size: 15px; line-height: 1.5; }
+  body.lay-tall .rq, body.lay-wide .rq { margin: 10px 0 8px; font-size: 16px; }
+  body.lay-tall .opts, body.lay-wide .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.lay-tall .opt, body.lay-wide .opt { min-height: 52px; font-size: 14.5px; line-height: 1.4; padding: 8px 10px 8px 8px; gap: 8px; }
+  body.lay-tall .opt[aria-checked="true"], body.lay-wide .opt[aria-checked="true"] { padding: 7px 9px 7px 7px; }
+  body.lay-tall .opt .ock, body.lay-wide .opt .ock { display: none; }
+  body.lay-tall .pmini, body.lay-wide .pmini { margin-top: 10px; }
 
   /* 판정 */
   .vhead { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
@@ -1702,11 +1703,11 @@ const Sound = (function () {
     G.picked = slot; G.viewed.add(slot);
     Sound.play('select');
     updateCards(); renderPanel(); renderStatus();
-    if (sheetMode()) openSheet(); else if (document.body.classList.contains('lay-tall')) revealReasons();
+    if (sheetMode()) openSheet(); else revealReasons();
     const e = G.c.evidence[G.order[slot]];
     if (changed) announce(`증거 ${slot + 1} ${e.name} 지목. 이유를 고르세요.`);
   }
-  // 세로 태블릿 제자리 패널: 이유 4개가 안 보이면 이유 쪽으로 스크롤 (세부 글은 가능한 만큼 위에 남김)
+  // 제자리 패널(세로 태블릿·와이드): 이유 4개가 안 보이면 이유 쪽으로 스크롤 (세부 글은 가능한 만큼 위에 남김)
   function revealReasons() {
     const pb = el.pbody, opts = pb.querySelector('.opts'), rq = $('rq');
     if (!opts || !rq) return;
@@ -2163,7 +2164,15 @@ const Sound = (function () {
     rs.setProperty('--tb', TB + 'px');
     const boardH = H - TB - 8;
     let gap = 12, caseMax = boardH;
-    if (mode === 'wide') { rs.setProperty('--lcol', (vw >= 1280 ? 380 : 340) + 'px'); caseMax = Math.round(boardH * .45); }
+    if (mode === 'wide') {
+      // 오른쪽 열: 패널(세부 + 이유 2×2)을 먼저 확보하고 남는 높이를 그리드에 (그리드는 스크롤 없음, 카드 높이 ≥ 120)
+      const lcol = W < 1040 ? 300 : vw >= 1280 ? 380 : 340;
+      rs.setProperty('--lcol', lcol + 'px');
+      const avail = boardH - 28 - 24;
+      const gh = Math.max(2 * 120 + 12, Math.min(532, avail - 340));
+      rs.setProperty('--gh', gh + 'px');
+      caseMax = boardH;
+    }
     else if (mode === 'tall') {
       // 세로 태블릿: 아래 패널이 '세부 + 이유 4개'를 담을 수 있게 먼저 확보하고, 남는 높이로 그리드를 정한다 (그리드는 스크롤 없음)
       // 사건 파일이 상한보다 짧으면 남는 높이는 그리드가 쓴다(사건마다 다시 계산, 지목 중에는 그리드가 움직이지 않음)
