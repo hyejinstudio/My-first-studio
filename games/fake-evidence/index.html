@@ -150,6 +150,7 @@
     font-size: 11px; font-weight: 700; color: var(--folder-ink); background: var(--folder); border: 1px solid var(--folder-edge); border-radius: 999px; padding: 1px 8px 1px 9px; opacity: 0; transition: opacity 150ms; }
   .casebox .cmore .ic { width: 12px; height: 12px; stroke-width: 2.4; }
   .casebox.more::after, .casebox.more .cmore { opacity: 1; }
+  body.lay-phone .casebox.more::after, body.lay-phone .casebox.more .cmore { opacity: 0; } /* 폰 세로는 「펼치기」가 있음 */
   .guide { font-size: 13px; font-weight: 700; color: var(--pick); background: var(--pick-tint); border-radius: 8px; padding: 5px 9px; margin: 0 0 8px; line-height: 1.4; }
   .chead { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .chead .ic { width: 20px; height: 20px; color: var(--folder-ink); }
@@ -184,6 +185,10 @@
   body.lay-phone .case { padding: 6px 10px 8px; }
   body.lay-phone .chead h2 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   body.lay-phone .expbtn { display: inline-flex; }
+  /* 펼치기: 터치 영역 44px(버튼 상자 자체), 보이는 테두리는 32px (줄 높이는 그대로) */
+  .expbtn { z-index: 1; height: 44px; margin: -6px -4px -6px 0; padding: 0 14px 0 10px; border: 0; background: transparent; }
+  .expbtn::after { display: none; }
+  .expbtn::before { content: ""; position: absolute; left: 0; right: 4px; top: 6px; bottom: 6px; border: 1px solid var(--folder-edge); border-radius: 10px; pointer-events: none; }
   body.lay-phone .case .story, body.lay-phone .case .facthead { display: none; }
   body.lay-phone .case .facts { margin-top: 4px; }
   body.lay-phone .case .fact { min-height: 0; padding: 2px 4px; font-size: 12.5px; gap: 6px; line-height: 1.4; }
@@ -391,6 +396,9 @@
   .vnote .vnn b { color: var(--thread); }
   .vnote.hint { color: var(--muted); display: flex; align-items: center; gap: 8px; background: transparent; border-style: dashed; }
   .vnote.hint .ic { width: 18px; height: 18px; }
+  .vnote.hint .h-sh { display: none; }
+  body.lay-phone .vnote.hint .h-in, body.lay-short .vnote.hint .h-in { display: none; }
+  body.lay-phone .vnote.hint .h-sh, body.lay-short .vnote.hint .h-sh { display: inline; }
   .vend { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--thread); }
 
   /* 폰 시트 */
@@ -488,6 +496,11 @@
   body.tb-420 .scorev { font-size: 17px; }
   body.tb-420 .top { gap: 6px; }
   body.tb-420 .btns { gap: 2px; }
+  /* 아주 좁은 폭(320px, iPhone SE 1세대): 일시정지 버튼이 화면 밖으로 밀리지 않게 */
+  body.tb-340 .top { gap: 4px; }
+  body.tb-340 .lives .ic { width: 14px; height: 14px; }
+  body.tb-340 .scorev { min-width: 3.2ch; }
+  body.tb-340 .casepill { padding: 0 6px; }
   @media (max-height: 520px) {
     .overlay h2 { font-size: 20px; }
     .overlay { gap: 6px; padding: 8px; }
@@ -690,10 +703,10 @@
       ],
       "fake": 5,
       "reasons": [
-        { "text": "오후 8시엔 해가 졌고, 비까지 내리고 있었다.", "correct": true },
-        { "text": "미술실이 잠긴 뒤라 사진을 찍을 수 없다.", "correct": false, "why": "사진은 바깥 운동장에서 찍었다. 잠긴 문과 상관없다." },
-        { "text": "출입증이 오전에 발급돼 저녁 사건과 맞지 않는다.", "correct": false, "why": "출입증은 하루 종일 쓸 수 있다." },
-        { "text": "미술실이 잠긴 뒤라 CCTV에 사람이 찍힐 수 없다.", "correct": false, "why": "정문 CCTV다. 미술실이 잠겨도 정문엔 사람이 다닌다." }
+        { "text": "8시는 해가 진 뒤였고, 비까지 내리고 있었다.", "correct": true },
+        { "text": "열쇠는 경비실에 있었으니 안에 발자국이 생길 수 없다.", "correct": false, "why": "발자국은 창문에서 시작한다. 문 열쇠는 필요 없었다." },
+        { "text": "미술실이 잠긴 뒤라 CCTV에 사람이 찍힐 수 없다.", "correct": false, "why": "정문 CCTV다. 미술실이 잠겨도 정문엔 사람이 다닌다." },
+        { "text": "출입증이 오전에 발급돼 저녁 사건과 맞지 않는다.", "correct": false, "why": "출입증은 하루 종일 쓸 수 있다." }
       ],
       "explain": "8시 사진의 '강한 햇빛'은 해 진 시각(6:10)과 비(6시부터)에 모두 어긋난다.",
       "link": { "facts": ["f1", "f3"], "evidence": [] }
@@ -707,19 +720,19 @@
         { "id": "f3", "text": "가게 앞 CCTV는 길 쪽만 찍는다." }
       ],
       "evidence": [
-        { "name": "뒷문 자물쇠 긁힘", "icon": "🔒", "detail": "뒷문 자물쇠에 새로 생긴 긁힌 자국.", "note": "억지로 연 흔적. 어떤 정보와도 부딪치지 않는다." },
+        { "name": "뒷문 자물쇠 긁힘", "icon": "🔒", "detail": "뒷문 자물쇠에 새로 생긴 긁힌 자국.", "note": "억지로 연 흔적. 뒷문은 길 쪽 CCTV에 안 보인다." },
         { "name": "젖은 우산", "icon": "☂️", "detail": "우산꽂이에 빗물이 뚝뚝 떨어지는 우산. '어젯밤 쓴 것'이라는 진술.", "note": "조작: 어제는 비가 오지 않았다." },
-        { "name": "금고 앞 장갑", "icon": "🧤", "detail": "금고 앞에 떨어진 면장갑 한 짝.", "note": "범인이 흘린 것. 모순 없음." },
+        { "name": "금고 앞 장갑", "icon": "🧤", "detail": "금고 앞 면장갑 한 짝. 손끝에 젖은 흙이 묻었다.", "note": "깨진 화분의 젖은 흙이 묻었다. 비와 상관없다." },
         { "name": "밤 9시 40분 CCTV", "icon": "📹", "detail": "가게 앞 길을 서성이는 사람. 오후 9:40.", "note": "가게가 닫혀도 길에는 사람이 다닌다." },
         { "name": "마지막 영수증", "icon": "🧾", "detail": "마지막 손님 영수증. 오후 8:55.", "note": "문 닫기 전 시각이다." },
-        { "name": "깨진 화분", "icon": "🪴", "detail": "바닥에 깨진 화분과 흙이 흩어져 있다.", "note": "꽃집이라 흙은 자연스럽다. 범인이 부딪쳐 깼다." }
+        { "name": "깨진 화분", "icon": "🪴", "detail": "바닥에 깨진 화분. 매일 물 주는 흙이라 축축하다.", "note": "꽃집은 매일 화분에 물을 준다. 범인이 부딪쳐 깼다." }
       ],
       "fake": 1,
       "reasons": [
-        { "text": "어제는 비가 오지 않았는데 빗물에 젖어 있다.", "correct": true },
-        { "text": "문 닫은 뒤라 CCTV에 사람이 찍힐 수 없다.", "correct": false, "why": "길을 찍는 카메라다. 길에는 사람이 다닌다." },
-        { "text": "마지막 영수증이 문 닫기 직전이라 수상하다.", "correct": false, "why": "영업시간 안이다. 모순이 아니다." },
-        { "text": "꽃집 바닥에 흙이 있을 리 없다.", "correct": false, "why": "꽃집엔 흙이 많다." }
+        { "text": "맑기만 한 날이었으니 밤사이 빗물이 생길 수 없다.", "correct": true },
+        { "text": "비가 안 왔으니 젖은 흙이 묻을 일이 없다.", "correct": false, "why": "화분 흙은 물을 줘서 늘 젖어 있다. 장갑엔 그 흙이 묻었다." },
+        { "text": "9시에 문을 닫았으니 9시 40분엔 가게 앞에 사람이 없다.", "correct": false, "why": "CCTV는 길을 찍는다. 문을 닫아도 길에는 사람이 다닌다." },
+        { "text": "뒷문으로 들었다면 가게 앞 CCTV에 찍혔어야 한다.", "correct": false, "why": "CCTV는 길 쪽만 찍는다. 뒷문은 보이지 않는다." }
       ],
       "explain": "하루 종일 맑았던 날, '어젯밤 빗물에 젖은 우산'은 있을 수 없다.",
       "link": { "facts": ["f1"], "evidence": [] }
@@ -734,18 +747,18 @@
       ],
       "evidence": [
         { "name": "깨진 유리 조각", "icon": "🪟", "detail": "희귀본실 유리문 조각이 안쪽 바닥에 흩어져 있다.", "note": "밖에서 깨면 조각이 안쪽으로 떨어진다. 자연스럽다." },
-        { "name": "관장 카드키 기록", "icon": "💳", "detail": "관장 카드키 사용. 월요일 오후 2:50, 정문.", "note": "관장은 휴관일에도 출근한다." },
+        { "name": "관장 카드키 기록", "icon": "💳", "detail": "관장 카드키 사용. 월요일 오후 2:50, 정문.", "note": "관장 본인 카드다. 관장은 휴관일에도 출근한다." },
         { "name": "창구 대출 기록", "icon": "📄", "detail": "옛 책 대출 처리. 월요일 오후 3:10, 창구 담당 사서.", "note": "조작: 월요일엔 창구가 닫혀 있다." },
         { "name": "미지근한 커피", "icon": "☕", "detail": "희귀본실 창가에 반쯤 남은 커피. 아직 미지근하다.", "note": "출근한 관장이 마시던 것. 모순 없음." },
         { "name": "오후 3시 20분 경보", "icon": "🚨", "detail": "희귀본실 경보가 오후 3:20에 울렸다.", "note": "유리가 깨질 때 울린 경보. 사건 시각과 맞다." },
-        { "name": "책장의 장갑 자국", "icon": "🧤", "detail": "책장 먼지 위에 남은 장갑 자국.", "note": "범인 흔적. 모순 없음." }
+        { "name": "반납함 속 책", "icon": "📥", "detail": "정문 밖 무인 반납함. 월요일 오후에 넣은 책 3권.", "note": "무인 반납함은 창구가 아니라서 휴관일에도 쓸 수 있다." }
       ],
       "fake": 2,
       "reasons": [
-        { "text": "휴관일이라 대출 창구가 열리지 않았다.", "correct": true },
-        { "text": "휴관일엔 관장 카드키를 쓸 수 없다.", "correct": false, "why": "관장은 휴관일에도 출근한다." },
-        { "text": "유리 조각이 안쪽에 있으니 안에서 깬 것이다.", "correct": false, "why": "밖에서 깨야 조각이 안쪽으로 떨어진다." },
-        { "text": "경보가 울렸는데 아무도 안 온 게 수상하다.", "correct": false, "why": "수상할 순 있어도 어떤 정보와도 부딪치지 않는다." }
+        { "text": "월요일엔 창구가 닫혀 사서가 처리할 수 없다.", "correct": true },
+        { "text": "월요일엔 반납 창구가 닫혀 책을 반납할 수 없다.", "correct": false, "why": "반납함은 정문 밖 무인 함이다. 창구가 닫혀도 넣을 수 있다." },
+        { "text": "휴관일엔 관장 혼자라 다른 사람 카드키 기록은 없어야 한다.", "correct": false, "why": "기록은 관장 본인 카드키다. 관장은 휴관일에도 출근한다." },
+        { "text": "유리 조각이 안쪽에 있으니 안에서 깬 것이다.", "correct": false, "why": "밖에서 깨야 조각이 안쪽으로 떨어진다." }
       ],
       "explain": "월요일은 창구가 닫힌다. '창구 대출 기록'은 생길 수 없다.",
       "link": { "facts": ["f1", "f3"], "evidence": [] }
@@ -761,17 +774,17 @@
       "evidence": [
         { "name": "찢긴 텐트", "icon": "⛺", "detail": "텐트 지퍼 옆 천이 칼로 찢겨 있다.", "note": "범인 흔적. 모순 없음." },
         { "name": "눈 위 발자국", "icon": "👣", "detail": "호수 쪽으로 이어진 발자국. 위에 눈이 살짝 덮였다.", "note": "눈이 그치기 전에 찍혀 살짝 덮였다. 자연스럽다." },
-        { "name": "빈 코코아 컵", "icon": "☕", "detail": "버너 옆에 다 마신 코코아 컵.", "note": "추운 밤 캠핑에 자연스럽다." },
+        { "name": "빈 코코아 컵", "icon": "☕", "detail": "버너 옆에 다 마신 코코아 컵. 버너로 데워 마셨다.", "note": "버너로 데워 바로 마셨다. 추운 밤 캠핑에 자연스럽다." },
         { "name": "밤 11시 무전 기록", "icon": "📻", "detail": "관리소 무전 밤 11:05. '호숫가에 불빛이 보인다.'", "note": "관리소는 밤새 순찰한다." },
         { "name": "자정의 보트 사진", "icon": "🚣", "detail": "자정에 찍힌 사진. 호수에서 노 젓는 사람, 물결이 출렁인다.", "note": "조작: 언 호수엔 물결이 없다." },
         { "name": "얼음 위 장갑", "icon": "🧤", "detail": "얼어붙은 호수 한가운데 떨어진 장갑.", "note": "언 호수는 걸어갈 수 있다." }
       ],
       "fake": 4,
       "reasons": [
-        { "text": "호수가 꽁꽁 얼어 노를 저을 물결이 없다.", "correct": true },
-        { "text": "눈이 내리는 중엔 발자국이 남지 않는다.", "correct": false, "why": "발자국은 남고, 그 위에 눈이 살짝 덮였을 뿐이다." },
-        { "text": "호수 한가운데엔 장갑이 떨어질 수 없다.", "correct": false, "why": "언 호수 위는 걸어갈 수 있다." },
-        { "text": "밤엔 관리소가 무전을 하지 않는다.", "correct": false, "why": "관리소는 밤새 순찰한다." }
+        { "text": "꽁꽁 언 호수 위에선 물결이 일 수 없다.", "correct": true },
+        { "text": "새벽 1시에 눈이 그쳤으니 발자국이 덮일 수 없다.", "correct": false, "why": "눈이 그치기 전에 찍힌 발자국이라 살짝 덮였다." },
+        { "text": "영하 8도면 코코아가 금방 얼어 마실 수 없다.", "correct": false, "why": "버너로 데워 바로 마셨다. 얼 틈이 없다." },
+        { "text": "언 호수 한가운데엔 장갑이 떨어질 수 없다.", "correct": false, "why": "언 호수 위는 걸어갈 수 있다." }
       ],
       "explain": "영하 8도에 꽁꽁 언 호수에서 '출렁이는 물결'은 나올 수 없다.",
       "link": { "facts": ["f1"], "evidence": [] }
@@ -782,22 +795,22 @@
       "facts": [
         { "id": "f1", "text": "새벽 2시~6시, 동네 전체가 정전됐다." },
         { "id": "f2", "text": "빵집 오븐은 전기 오븐이다." },
-        { "id": "f3", "text": "금전등록기는 손잡이로 여는 옛날 방식이다." }
+        { "id": "f3", "text": "가게는 밤 10시에 문을 닫았다." }
       ],
       "evidence": [
-        { "name": "떨어진 손전등", "icon": "🔦", "detail": "카운터 아래 켜진 채 굴러다니는 손전등.", "note": "정전이라 손전등이 필요했다." },
-        { "name": "열린 금전등록기", "icon": "💰", "detail": "손잡이가 당겨진 채 텅 비어 있다.", "note": "손잡이식이라 전기 없이 열린다." },
+        { "name": "떨어진 손전등", "icon": "🔦", "detail": "카운터 아래 켜진 채 굴러다니는 손전등.", "note": "건전지로 켜진다. 정전이라 손전등이 필요했다." },
+        { "name": "열린 금전등록기", "icon": "💰", "detail": "옆 손잡이를 당겨 여는 옛날 기계. 텅 비어 있다.", "note": "손잡이식이라 전기 없이 열린다." },
         { "name": "밀가루 위 발자국", "icon": "👣", "detail": "바닥 밀가루에 찍힌 운동화 자국.", "note": "밝기와 상관없이 발자국은 찍힌다." },
         { "name": "배달 기사 진술", "icon": "🛵", "detail": "새벽 5시: '가게 안이 깜깜했어요.'", "note": "정전 중이었다. 맞다." },
         { "name": "갓 구운 빵 사진", "icon": "🍞", "detail": "새벽 4시 사진. 오븐 불이 켜져 있고 빵이 부풀어 있다.", "note": "조작: 정전 중엔 전기 오븐이 켜질 수 없다." },
-        { "name": "새벽 4시 반 문자", "icon": "💬", "detail": "사장님 휴대폰에 온 문자 '가게 괜찮아?' 새벽 4:30.", "note": "휴대폰은 배터리로 켜진다. 정전과 상관없다." }
+        { "name": "새벽 4시 반 문자", "icon": "💬", "detail": "새벽 4:30 사장님 휴대폰에 온 문자 '가게 괜찮아?'", "note": "문자는 휴대폰 통신망으로 온다. 휴대폰은 배터리로 켜진다." }
       ],
       "fake": 4,
       "reasons": [
-        { "text": "정전이라 전기 오븐이 켜질 수 없었다.", "correct": true },
-        { "text": "정전 중엔 휴대폰 문자를 받을 수 없다.", "correct": false, "why": "휴대폰은 배터리로 켜진다." },
-        { "text": "정전이면 금전등록기를 열 수 없다.", "correct": false, "why": "손잡이로 여는 방식이다." },
-        { "text": "깜깜한 데선 발자국이 찍히지 않는다.", "correct": false, "why": "밝기와 상관없이 찍힌다." }
+        { "text": "4시엔 정전이라 콘센트 전기가 끊겨 있었다.", "correct": true },
+        { "text": "정전이면 와이파이가 꺼져 문자를 받을 수 없다.", "correct": false, "why": "문자는 와이파이가 아니라 휴대폰 통신망으로 온다." },
+        { "text": "정전이면 금전등록기 서랍이 열리지 않는다.", "correct": false, "why": "손잡이를 당겨 여는 기계라 전기가 필요 없다." },
+        { "text": "5시면 정전이 끝나 가게 안이 밝았어야 한다.", "correct": false, "why": "정전은 6시까지였다. 5시엔 아직 깜깜했다." }
       ],
       "explain": "정전(2~6시) 한가운데인 새벽 4시에 전기 오븐이 켜져 있을 수 없다.",
       "link": { "facts": ["f1", "f2"], "evidence": [] }
@@ -812,18 +825,18 @@
       ],
       "evidence": [
         { "name": "열차표", "icon": "🎫", "detail": "오전 7:00 출발, 5호차 12번 좌석.", "note": "출발 시각과 맞다." },
-        { "name": "커피 영수증", "icon": "🧾", "detail": "열차 카페 칸, 오전 8:15.", "note": "카페 칸이 있다. 운행 중 시각." },
+        { "name": "커피 영수증", "icon": "🧾", "detail": "열차 카페 칸, 오전 8:15.", "note": "5호차 옆 카페 칸에서 샀다. 운행 중 시각." },
         { "name": "선반 위 가방 사진", "icon": "📸", "detail": "오전 8:40, 선반에 놓인 가방.", "note": "운행 중 찍은 사진. 맞다." },
         { "name": "개찰구 CCTV", "icon": "📹", "detail": "종착역 개찰구, 오전 9:00. 피해자가 가방을 들고 나간다.", "note": "조작: 9시엔 아직 열차 안이었다." },
-        { "name": "교통카드 기록", "icon": "🚪", "detail": "피해자 교통카드, 종착역 개찰구 오전 9:32.", "note": "9:30 도착 직후. 맞다." },
-        { "name": "분실 신고", "icon": "📝", "detail": "역무실 접수, 오전 9:45.", "note": "내린 뒤 신고. 순서가 맞다." }
+        { "name": "교통카드 기록", "icon": "🚪", "detail": "피해자 교통카드, 종착역 개찰구 오전 9:32.", "note": "9:30 도착 2분 뒤. 걸어 나가기에 충분하다." },
+        { "name": "분실 신고", "icon": "📝", "detail": "역무실 접수, 오전 9:45.", "note": "내린 직후 알고 역무실을 찾아가 신고. 순서가 맞다." }
       ],
       "fake": 3,
       "reasons": [
-        { "text": "9시엔 아직 열차 안이었다. 도착은 9시 30분.", "correct": true },
-        { "text": "열차 안에선 커피를 살 수 없다.", "correct": false, "why": "카페 칸이 있다." },
-        { "text": "도착 15분 뒤 신고는 너무 늦다.", "correct": false, "why": "늦을 순 있지만 모순은 아니다." },
-        { "text": "선반 사진 시각엔 열차가 이미 도착했다.", "correct": false, "why": "8:40은 아직 운행 중이다." }
+        { "text": "2시간 30분을 달려야 하니 9시엔 아직 열차 안이다.", "correct": true },
+        { "text": "중간 정차가 없으니 8:15에 커피를 살 곳이 없다.", "correct": false, "why": "열차 안 카페 칸에서 샀다. 5호차 바로 옆이다." },
+        { "text": "내린 직후 알았다면 15분 뒤 신고는 앞뒤가 안 맞는다.", "correct": false, "why": "알아챈 건 내린 직후, 신고는 역무실을 찾아가서 했다." },
+        { "text": "9:30 도착인데 2분 만에 개찰구를 나갈 순 없다.", "correct": false, "why": "2분이면 개찰구까지 걸어갈 수 있다. 모순이 아니다." }
       ],
       "explain": "7:00 출발 + 2시간 30분 = 9:30 도착. 9:00에 개찰구를 나갈 수 없다.",
       "link": { "facts": ["f1"], "evidence": [4] }
@@ -839,18 +852,18 @@
       ],
       "evidence": [
         { "name": "설치 작업일지", "icon": "📋", "detail": "3월 9일 밤 10시, 진열장 설치 완료.", "note": "개막 전날 밤. 맞다." },
-        { "name": "유리의 지문", "icon": "🖐️", "detail": "진열장 유리에 경비원 지문.", "note": "매일 닦으니 남는 게 당연하다." },
+        { "name": "유리의 지문", "icon": "🖐️", "detail": "진열장 유리에 경비원 지문.", "note": "닦는 사람 손이 닿으니 남는 게 당연하다." },
         { "name": "비상문 기록", "icon": "🚪", "detail": "3월 12일 밤 11:14, 비상문 열림.", "note": "도난 시각과 맞다." },
-        { "name": "관람객 방명록", "icon": "📖", "detail": "3월 11일, '푸른 이슬 너무 예뻐요.'", "note": "개막 다음 날. 볼 수 있었다." },
+        { "name": "관람객 방명록", "icon": "📖", "detail": "3월 11일, '푸른 이슬 너무 예뻐요.'", "note": "개막 둘째 날. 도난 전이라 볼 수 있었다." },
         { "name": "경비원 셀카", "icon": "🤳", "detail": "3월 8일 촬영. 진열장 속 보석 앞에서 찍은 사진.", "note": "조작: 3월 8일엔 진열장이 아직 없었다." },
         { "name": "바닥의 공구", "icon": "🔧", "detail": "3월 13일 아침 발견. 유리 자르는 칼.", "note": "도난 다음 날 아침에 발견했을 뿐." }
       ],
       "fake": 4,
       "reasons": [
-        { "text": "3월 8일엔 진열장이 아직 설치되지 않았다.", "correct": true },
-        { "text": "경비원 지문이 유리에 있으면 안 된다.", "correct": false, "why": "매일 닦으니 지문이 남는다." },
-        { "text": "개막 다음 날 보석을 칭찬하는 건 이르다.", "correct": false, "why": "개막 뒤라 볼 수 있었다." },
-        { "text": "공구가 도난 다음 날 발견돼 시간이 안 맞는다.", "correct": false, "why": "다음 날 아침에 발견했을 뿐이다." }
+        { "text": "진열장은 개막 전날 밤에야 들어왔다.", "correct": true },
+        { "text": "유리를 매일 닦으니 지문이 남아 있을 수 없다.", "correct": false, "why": "닦는 사람 손이 닿는다. 경비원 지문은 남는 게 당연하다." },
+        { "text": "개막 사흘째 밤이 도난이면 11일엔 이미 보석이 없었다.", "correct": false, "why": "10일이 첫날이라 사흘째는 12일이다. 11일엔 보석이 있었다." },
+        { "text": "도난은 12일 밤인데 공구는 13일에 나와 날짜가 안 맞는다.", "correct": false, "why": "도난 다음 날 아침에 발견했을 뿐이다." }
       ],
       "explain": "진열장은 개막 전날인 3월 9일 밤 설치. 3월 8일엔 보석이 진열장에 있을 수 없다.",
       "link": { "facts": ["f1", "f2"], "evidence": [0] }
@@ -859,7 +872,7 @@
       "id": "c08", "tier": 2, "title": "섬 등대 금고", "icon": "🗼",
       "story": "작은 섬 등대 금고에서 옛 금화가 사라졌다. 용의자는 B.",
       "facts": [
-        { "id": "f1", "text": "섬 배편: 육지 출발 오전 8:00, 섬 출발 오후 4:00. 각 30분. 다른 배는 없다." },
+        { "id": "f1", "text": "배는 육지→섬 오전 8:00, 섬→육지 오후 4:00뿐. 각 30분." },
         { "id": "f2", "text": "B는 오전 8시 배로 섬에 왔다(승선 명단)." },
         { "id": "f3", "text": "도난은 오후 2시쯤." }
       ],
@@ -868,41 +881,41 @@
         { "name": "매점 영수증", "icon": "🧾", "detail": "섬 매점, 오후 1:40, B의 카드.", "note": "B는 섬에 있었다. 맞다." },
         { "name": "금고 긁힘", "icon": "🔐", "detail": "금고 문에 드라이버 자국.", "note": "억지로 연 흔적. 모순 없음." },
         { "name": "항구 카페 CCTV", "icon": "📹", "detail": "육지 항구 카페, 오후 3:00. 커피를 사는 B.", "note": "조작: 4시 배 전엔 섬을 떠날 수 없다." },
-        { "name": "오후 4시 승선 명단", "icon": "📋", "detail": "섬 출발 오후 4:00 배 명단에 B.", "note": "섬을 떠나는 유일한 배. 맞다." },
+        { "name": "오후 4시 승선 명단", "icon": "📋", "detail": "섬 출발 오후 4:00 배 명단에 B.", "note": "아침 배와 다른, 섬을 떠나는 유일한 배. 맞다." },
         { "name": "전당포 기록", "icon": "💰", "detail": "육지 전당포, 오후 5:10. 금화 한 닢 거래.", "note": "4:30 도착 뒤라 가능하다." }
       ],
       "fake": 3,
       "reasons": [
-        { "text": "오후 4시 배 전에는 섬을 떠날 수 없었다.", "correct": true },
-        { "text": "전당포 거래가 배 도착보다 먼저다.", "correct": false, "why": "4:30 도착, 5:10 거래. 순서가 맞다." },
-        { "text": "B가 승선 명단에 두 번 있을 리 없다.", "correct": false, "why": "들어올 때, 나갈 때 두 번 타는 게 맞다." },
+        { "text": "섬을 떠나는 배는 오후 4시 배 하나뿐이다.", "correct": true },
+        { "text": "4시에 섬을 떠났다면 5시 10분엔 아직 바다 위다.", "correct": false, "why": "30분 걸려 4:30에 도착한다. 5:10엔 육지다." },
+        { "text": "B는 아침 배를 탔으니 4시 배 명단에 있을 수 없다.", "correct": false, "why": "아침엔 섬에 들어왔고 4시엔 섬을 나갔다. 다른 배다." },
         { "text": "금고는 드라이버로 열 수 없다.", "correct": false, "why": "그렇게 단정할 정보가 없다." }
       ],
       "explain": "B는 8시 배로 섬에 왔고, 섬을 떠나는 배는 4시뿐. 3시에 육지 카페에 있을 수 없다.",
       "link": { "facts": ["f1", "f2"], "evidence": [4] }
     },
     {
-      "id": "c09", "tier": 2, "title": "멈춘 시계탑", "icon": "🕰️",
+      "id": "c09", "tier": 2, "title": "조용한 시계탑", "icon": "🕰️",
       "story": "광장 시계탑 아래 기념품 가게에서 오르골이 사라졌다.",
       "facts": [
         { "id": "f1", "text": "시계탑 종은 매 정시에 울린다." },
-        { "id": "f2", "text": "어제 오후 2시~5시, 수리 때문에 종을 멈췄다." },
+        { "id": "f2", "text": "어제 오후 2시~5시, 종 수리 때문에 종을 멈췄다." },
         { "id": "f3", "text": "도난은 어제 오후 3시쯤." }
       ],
       "evidence": [
         { "name": "수리 작업표", "icon": "📋", "detail": "작업 시간 오후 2:00~5:00, 종 정지.", "note": "주어진 정보와 같다." },
         { "name": "6시 종소리 영상", "icon": "🔔", "detail": "관광객 영상, 오후 6:00 종소리.", "note": "수리가 끝난 뒤다. 맞다." },
         { "name": "기름 묻은 장갑", "icon": "🧤", "detail": "탑 계단에 떨어진 기름 장갑.", "note": "수리 기사 것. 자연스럽다." },
-        { "name": "카페 영수증", "icon": "🧾", "detail": "광장 카페, 오후 3:20.", "note": "모순 없음." },
+        { "name": "3시 반 시계탑 사진", "icon": "🕞", "detail": "관광객 사진, 오후 3:30. 시곗바늘이 3시 30분을 가리킨다.", "note": "수리로 멈춘 건 종이다. 시곗바늘은 그대로 돌았다." },
         { "name": "목격자 진술", "icon": "🗣️", "detail": "'오후 3시 종이 울릴 때 가게에서 나오는 사람을 봤어요.'", "note": "조작: 3시엔 종이 멈춰 있었다." },
         { "name": "새 자물쇠 긁힘", "icon": "🔒", "detail": "어제 아침 새로 단 자물쇠에 긁힌 자국.", "note": "억지로 열면 새것도 긁힌다." }
       ],
       "fake": 4,
       "reasons": [
-        { "text": "3시엔 수리 중이라 종이 울리지 않았다.", "correct": true },
-        { "text": "6시에도 종이 울릴 수 없다.", "correct": false, "why": "수리는 5시에 끝났다." },
-        { "text": "수리 중엔 계단에 기름이 있을 수 없다.", "correct": false, "why": "수리하면 기름이 묻는다." },
-        { "text": "새 자물쇠엔 긁힌 자국이 생길 수 없다.", "correct": false, "why": "억지로 열면 새것도 긁힌다." }
+        { "text": "2시~5시엔 종이 한 번도 울리지 않았다.", "correct": true },
+        { "text": "수리로 멈춘 탑이 3시 반을 가리킬 수 없다.", "correct": false, "why": "멈춘 건 종이다. 시곗바늘은 그대로 돌았다." },
+        { "text": "어제 종을 멈췄으니 6시 종소리 영상은 거짓이다.", "correct": false, "why": "종은 5시까지만 멈췄다. 6시엔 다시 울렸다." },
+        { "text": "어제 아침 단 새 자물쇠가 벌써 긁혔을 리 없다.", "correct": false, "why": "억지로 열면 새것도 긁힌다." }
       ],
       "explain": "종은 2~5시 멈춰 있었다. '3시 종소리'를 들었다는 진술은 거짓이다.",
       "link": { "facts": ["f2", "f3"], "evidence": [0] }
@@ -913,22 +926,22 @@
       "facts": [
         { "id": "f1", "text": "사건일은 5월 5일 어린이날, 공휴일이다." },
         { "id": "f2", "text": "은행 창구는 주말·공휴일에 열지 않는다." },
-        { "id": "f3", "text": "ATM은 365일 24시간 쓸 수 있다." }
+        { "id": "f3", "text": "사장님은 그날 오후 1시~4시 가게를 비웠다." }
       ],
       "evidence": [
-        { "name": "ATM 출금 영수증", "icon": "🏧", "detail": "5월 5일 오후 1:00, 사장님 계좌.", "note": "ATM은 공휴일에도 된다." },
+        { "name": "ATM 출금 영수증", "icon": "🏧", "detail": "'365일 코너' ATM, 5월 5일 오후 1:00, 사장님 계좌.", "note": "365일 쓰는 ATM이라 공휴일에도 된다." },
         { "name": "창구 입금증", "icon": "🏦", "detail": "5월 5일 오후 2:00, 창구 직원 도장.", "note": "조작: 공휴일엔 창구가 닫힌다." },
-        { "name": "셔터 긁힘", "icon": "🔩", "detail": "셔터 아래쪽에 쇠막대 자국.", "note": "억지로 연 흔적. 모순 없음." },
+        { "name": "셔터 긁힘", "icon": "🔩", "detail": "셔터 아래쪽에 쇠막대 자국.", "note": "가게를 비운 사이 억지로 연 흔적. 모순 없음." },
         { "name": "놀이공원 입장권", "icon": "🎡", "detail": "5월 5일 오후 3:00, 아르바이트생 A.", "note": "공휴일에 놀이공원이 쉰다는 정보는 없다." },
         { "name": "금고 비밀번호 메모", "icon": "📝", "detail": "금고 옆에 붙어 있던 메모.", "note": "허술하지만 모순은 아니다." },
-        { "name": "택시 결제 기록", "icon": "🚕", "detail": "5월 5일 오후 4:00, 문구점 앞.", "note": "모순 없음." }
+        { "name": "앱 이체 내역", "icon": "📲", "detail": "5월 5일 오후 2:10, 사장님 휴대폰 은행 앱 이체.", "note": "앱 이체는 창구가 아니라 공휴일에도 된다." }
       ],
       "fake": 1,
       "reasons": [
-        { "text": "공휴일엔 은행 창구가 열지 않는다.", "correct": true },
-        { "text": "공휴일엔 ATM을 쓸 수 없다.", "correct": false, "why": "ATM은 365일 쓸 수 있다." },
-        { "text": "어린이날엔 놀이공원이 쉰다.", "correct": false, "why": "그런 정보는 없다. 오히려 붐비는 날이다." },
-        { "text": "사건 뒤 택시를 탄 기록은 수상하다.", "correct": false, "why": "수상할 순 있지만 모순은 아니다." }
+        { "text": "공휴일엔 창구 직원이 일하지 않는다.", "correct": true },
+        { "text": "공휴일엔 은행이 쉬어 현금을 뽑을 수 없다.", "correct": false, "why": "365일 코너 ATM이다. 공휴일에도 쓸 수 있다." },
+        { "text": "은행이 쉬는 날엔 계좌 이체 기록이 남을 수 없다.", "correct": false, "why": "휴대폰 앱 이체는 공휴일에도 된다. 창구와 다르다." },
+        { "text": "사건 날 놀이공원에 간 A는 수상하다.", "correct": false, "why": "수상할 순 있지만 어떤 정보와도 부딪치지 않는다." }
       ],
       "explain": "공휴일엔 창구가 닫힌다. 창구 직원 도장이 찍힐 수 없다.",
       "link": { "facts": ["f1", "f2"], "evidence": [] }
@@ -943,19 +956,19 @@
         { "id": "f4", "text": "그림은 8:05쯤 사라졌다." }
       ],
       "evidence": [
-        { "name": "CCTV 영상", "icon": "📹", "detail": "8:05, 비상등 아래 흐릿한 사람이 액자 쪽으로 간다.", "note": "비상 전원으로 녹화됐다. 맞다." },
-        { "name": "손전등 사진", "icon": "📸", "detail": "손님 휴대폰 8:03. 손전등 불빛에 그림 7번이 걸려 있다.", "note": "8:05쯤 사라졌으니 8:03엔 있었다." },
+        { "name": "CCTV 영상", "icon": "📹", "detail": "8:05, 비상등 아래 흐릿한 사람이 액자 쪽으로 간다.", "note": "비상 전원으로 녹화됐고 비상등 아래 흐릿하게 찍혔다." },
+        { "name": "손전등 사진", "icon": "📸", "detail": "손님 휴대폰 8:03. 손전등 불빛에 그림 7번이 걸려 있다.", "note": "휴대폰 시계는 경매장 시계와 따로 간다. 8:03엔 그림이 있었다." },
         { "name": "벽시계 사진", "icon": "🕗", "detail": "손님 휴대폰 8:07. 벽 전자시계가 '8:07'을 가리킨다.", "note": "조작: 정전 중 전자시계는 꺼져 있었다." },
-        { "name": "경비원 무전", "icon": "📻", "detail": "8:12, '시계가 전부 12시로 깜빡여요.'", "note": "정전 뒤 시계 상태와 맞다." },
+        { "name": "경비원 무전", "icon": "📻", "detail": "8:12, '시계가 전부 12시로 깜빡여요.'", "note": "다시 맞추기 전까지 깜빡인다. 정전 뒤 시계 상태와 맞다." },
         { "name": "액자의 검은 실", "icon": "🧶", "detail": "빈 액자 모서리에 걸린 검은 실 몇 가닥.", "note": "범인 장갑 섬유. 모순 없음." },
         { "name": "낙찰 도장", "icon": "🔨", "detail": "경매 목록 7번에 '7:50 낙찰' 도장.", "note": "낙찰 뒤에도 그림은 벽에 걸려 있었다." }
       ],
       "fake": 2,
       "reasons": [
-        { "text": "정전 중 전자시계는 꺼져 있었다. 시각이 보일 수 없다.", "correct": true },
-        { "text": "정전 중엔 CCTV가 녹화되지 않는다.", "correct": false, "why": "비상 전원으로 녹화됐다." },
-        { "text": "깜깜해서 사진을 찍을 수 없었다.", "correct": false, "why": "비상등과 손전등이 있었다." },
-        { "text": "낙찰된 그림은 도난당할 수 없다.", "correct": false, "why": "낙찰 뒤에도 벽에 걸려 있었다." }
+        { "text": "정전 동안 경매장 전자시계는 꺼져 있었다.", "correct": true },
+        { "text": "시계가 모두 12시로 바뀌었으니 8:03 사진 시각은 틀렸다.", "correct": false, "why": "사진 시각은 손님 휴대폰 시계다. 경매장 시계와 따로 간다." },
+        { "text": "정전은 8:10에 끝났으니 8:12엔 깜빡일 리 없다.", "correct": false, "why": "전기가 돌아오면 다시 맞출 때까지 12:00으로 깜빡인다." },
+        { "text": "비상등만 켜진 어둠 속이라 CCTV에 사람이 안 찍힌다.", "correct": false, "why": "비상 전원으로 녹화됐고, 비상등 아래 흐릿하게 찍혔다." }
       ],
       "explain": "8:07은 정전 한가운데. 전자시계는 꺼졌다가 정전 뒤 '12:00'으로 깜빡였다.",
       "link": { "facts": ["f1", "f2"], "evidence": [3] }
@@ -970,20 +983,20 @@
       ],
       "evidence": [
         { "name": "SNS 사진", "icon": "📱", "detail": "오후 3:00, 선내 와이파이로 올린 갑판 사진.", "note": "3시엔 와이파이가 됐다." },
-        { "name": "받은 메시지", "icon": "💬", "detail": "오후 4:15, 피해자 휴대폰에 '선실 열쇠 나한테 맡겨.'", "note": "조작: 4:15엔 통신도 와이파이도 안 됐다." },
+        { "name": "받은 메시지", "icon": "💬", "detail": "오후 4:15 수신. 피해자 휴대폰에 '선실 열쇠 나한테 맡겨.'", "note": "조작: 4:15엔 통신도 와이파이도 안 돼 받을 수 없었다." },
         { "name": "매점 카드 결제", "icon": "💳", "detail": "오후 4:20 결제. '오프라인 결제, 귀항 후 6:05 승인'.", "note": "인터넷 없이 결제하고 나중에 전송했다." },
         { "name": "바다 사진", "icon": "🌊", "detail": "오후 5:00, 사방이 수평선.", "note": "운항 중이다. 맞다." },
-        { "name": "복사한 열쇠", "icon": "🔑", "detail": "선실 열쇠 복사본. 매점 옆 쓰레기통에서 발견.", "note": "범인이 버린 것. 모순 없음." },
+        { "name": "복사한 열쇠", "icon": "🔑", "detail": "선실 열쇠 복사본. 매점 옆 쓰레기통에서 발견.", "note": "배를 타기 전 육지에서 미리 복사해 올 수 있다. 모순 없음." },
         { "name": "택시 승차 기록", "icon": "🚕", "detail": "항구 앞, 오후 6:10.", "note": "귀항 뒤다. 맞다." }
       ],
       "fake": 1,
       "reasons": [
-        { "text": "4:15엔 와이파이가 고장이었고 바다 위라 통신도 안 됐다.", "correct": true },
-        { "text": "와이파이 고장 중엔 카드 결제를 할 수 없다.", "correct": false, "why": "오프라인 결제였다. 승인은 귀항 뒤." },
-        { "text": "바다 위에선 SNS에 사진을 올릴 수 없다.", "correct": false, "why": "3시엔 선내 와이파이가 됐다." },
-        { "text": "6시 귀항인데 6시 10분 택시는 너무 빠르다.", "correct": false, "why": "10분이면 충분하다. 모순 아니다." }
+        { "text": "4시~4시 반엔 와이파이도 통신도 안 돼 받을 수 없었다.", "correct": true },
+        { "text": "와이파이가 고장 난 4:20엔 카드 결제를 할 수 없다.", "correct": false, "why": "오프라인 결제였다. 승인은 귀항 뒤 6:05." },
+        { "text": "통신이 안 되는 바다 위에선 SNS에 사진을 올릴 수 없다.", "correct": false, "why": "3시엔 선내 와이파이가 됐다." },
+        { "text": "배 위엔 열쇠 가게가 없어 열쇠를 복사할 수 없다.", "correct": false, "why": "배를 타기 전 육지에서 미리 복사할 수 있다." }
       ],
-      "explain": "4:15에 메시지가 오려면 통신이나 와이파이가 필요하다. 그때는 둘 다 안 됐다.",
+      "explain": "4:15에 메시지를 받으려면 통신이나 와이파이가 필요하다. 그때는 둘 다 안 됐다.",
       "link": { "facts": ["f2", "f3"], "evidence": [] }
     },
     {
@@ -997,18 +1010,18 @@
       ],
       "evidence": [
         { "name": "정원의 그림자", "icon": "🌲", "detail": "새벽 4:30 사진. 정원 눈밭을 걸어 나가는 그림자.", "note": "조작: 3시 이후 눈밭을 걸으면 발자국이 남는다." },
-        { "name": "열린 창문", "icon": "🪟", "detail": "거실 창문이 열려 있다. 걸쇠는 안쪽에서 풀렸다.", "note": "안에서 연 것. 모순 없음." },
-        { "name": "녹은 창틀 눈", "icon": "💧", "detail": "창틀의 눈이 녹아 물이 고였다.", "note": "벽난로 열기로 녹았다." },
+        { "name": "열린 창문", "icon": "🪟", "detail": "거실 창문이 열려 있다. 걸쇠는 안쪽에서 풀렸다.", "note": "안에서 열기만 했다. 누가 나간 흔적이 아니다." },
+        { "name": "녹은 창틀 눈", "icon": "💧", "detail": "거실 창틀의 눈이 녹아 물이 고였다.", "note": "거실 벽난로 열기로 녹았다." },
         { "name": "젖은 장화", "icon": "🥾", "detail": "현관의 관리인 장화가 젖어 있다.", "note": "아침에 눈을 밟고 왔다." },
         { "name": "현관 센서 기록", "icon": "🚪", "detail": "새벽 2:10, 현관문 열림.", "note": "3시까지 눈이 와 발자국이 덮였다." },
         { "name": "열쇠 구멍 긁힘", "icon": "🗝️", "detail": "보석함 열쇠 구멍에 핀 자국.", "note": "억지로 연 흔적. 모순 없음." }
       ],
       "fake": 0,
       "reasons": [
-        { "text": "눈이 3시에 그쳤으니 4:30에 걸었다면 발자국이 남아야 한다.", "correct": true },
-        { "text": "새벽 2시에 문이 열렸다면 발자국이 남아야 한다.", "correct": false, "why": "3시까지 눈이 와서 덮였다." },
-        { "text": "관리인은 아침에 왔으니 장화가 젖을 수 없다.", "correct": false, "why": "눈을 밟고 오면 젖는다." },
-        { "text": "한겨울 밤에 창틀 눈이 녹을 수 없다.", "correct": false, "why": "벽난로가 밤새 켜져 있었다." }
+        { "text": "3시 뒤 눈밭을 걸었다면 발자국이 남아 있어야 한다.", "correct": true },
+        { "text": "2:10에 현관이 열렸다면 아침까지 발자국이 남아야 한다.", "correct": false, "why": "3시까지 눈이 와서 발자국이 덮였다." },
+        { "text": "창문으로 나갔다면 창밖 눈에 발자국이 남아야 한다.", "correct": false, "why": "창문은 안에서 열기만 했다. 누가 나간 흔적이 아니다." },
+        { "text": "눈 오는 추운 밤에 창틀 눈이 녹을 수 없다.", "correct": false, "why": "거실 벽난로가 밤새 켜져 있었다." }
       ],
       "explain": "3시 뒤 눈밭을 걸으면 발자국이 남는다. 아침에 남은 건 관리인 발자국 한 줄뿐.",
       "link": { "facts": ["f1", "f2"], "evidence": [] }
@@ -1027,14 +1040,14 @@
         { "name": "우체국 판매 대장", "icon": "📒", "detail": "'2019.1.7 새해 기념 우표 첫 판매.'", "note": "1월 1일 화요일 → 첫 월요일은 7일. 맞다." },
         { "name": "싼 구매 영수증", "icon": "🧾", "detail": "2021년 수집가가 산 영수증. 값이 아주 싸다.", "note": "싸게 샀을 뿐. 모순 없음." },
         { "name": "뒷면 연필 메모", "icon": "✏️", "detail": "우표 뒷면에 연필로 '19'.", "note": "2019년 표시. 맞다." },
-        { "name": "확대경 지문", "icon": "🔍", "detail": "앨범 옆 확대경에 수집가 지문.", "note": "본인 물건이다." }
+        { "name": "1월 2일 소인 엽서", "icon": "📮", "detail": "새해 인사 엽서. 일반 우표, 소인 '2019.1.2'.", "note": "일반 우표다. 새해 기념 우표와 상관없다." }
       ],
       "fake": 0,
       "reasons": [
-        { "text": "1월 3일은 첫 판매일(1월 7일)보다 앞선다.", "correct": true },
-        { "text": "1월 8일 소인은 첫 판매일과 달라 맞지 않는다.", "correct": false, "why": "판매 다음 날 보낸 편지일 뿐이다." },
-        { "text": "귀한 우표를 그렇게 싸게 살 수 없다.", "correct": false, "why": "운이 좋았을 뿐, 정보와 부딪치지 않는다." },
-        { "text": "뒷면 '19'는 19번째 우표라는 뜻이라 맞지 않는다.", "correct": false, "why": "그렇게 볼 근거가 없다." }
+        { "text": "새 우표는 1월 7일에야 처음 팔렸다.", "correct": true },
+        { "text": "1일이 화요일이면 첫 월요일은 6일, 7일 기록은 틀렸다.", "correct": false, "why": "1일이 화요일이면 6일은 일요일, 7일이 월요일이다." },
+        { "text": "새 우표가 없던 1월 2일엔 소인이 찍힐 수 없다.", "correct": false, "why": "그 엽서엔 일반 우표가 붙어 있다. 새 우표와 상관없다." },
+        { "text": "새해 기념 우표라면 1월 1일에 팔았어야 한다.", "correct": false, "why": "첫 판매는 '첫 월요일'이었다. 1일이 아니다." }
       ],
       "explain": "1월 1일이 화요일이면 첫 월요일은 1월 7일. 그보다 앞선 1월 3일 소인은 있을 수 없다.",
       "link": { "facts": ["f1", "f2"], "evidence": [2] }
@@ -1050,18 +1063,18 @@
       ],
       "evidence": [
         { "name": "결승 기록증", "icon": "🏅", "detail": "D의 완주 기록증. 결승 통과 오전 11:00.", "note": "조작: 남은 21km를 30분에 달릴 수 없다." },
-        { "name": "스마트워치 기록", "icon": "⌚", "detail": "D의 시계. 32km 지점 오전 11:40.", "note": "반환점 뒤 11km에 70분. 자연스럽다." },
-        { "name": "결승선 단체 사진", "icon": "📸", "detail": "낮 12:20, 땀에 젖은 D가 결승선에 있다.", "note": "3시간 남짓 완주. 맞다." },
+        { "name": "스마트워치 기록", "icon": "⌚", "detail": "D의 시계. 32km 지점 오전 11:40.", "note": "반환점 뒤 11km에 70분. 후반에 느려지는 건 흔하다." },
+        { "name": "결승선 단체 사진", "icon": "📸", "detail": "낮 12:45, 땀에 젖은 D가 결승선에 있다.", "note": "32km 뒤 10km에 65분. 3시간 45분쯤 완주. 맞다." },
         { "name": "호텔 카드키", "icon": "💳", "detail": "D의 방 카드키, 오전 8:20 사용.", "note": "출발 전이다. 맞다." },
-        { "name": "금고 앞 물병", "icon": "🧴", "detail": "금고 앞에 놓인 대회 물병.", "note": "대회 날 손님 누구나 가졌다. 모순 없음." },
-        { "name": "프런트 진술", "icon": "🛎️", "detail": "'11시쯤 운동복 손님이 지나갔어요.'", "note": "대회 날엔 운동복 손님이 많다. 모순 없음." }
+        { "name": "금고 앞 물병", "icon": "🧴", "detail": "금고 앞 대회 물병. 호텔 로비에서 손님에게 준 것.", "note": "로비에서 누구나 받았다. 모순 없음." },
+        { "name": "프런트 진술", "icon": "🛎️", "detail": "'11시쯤 운동복 차림 손님이 로비를 지나갔어요.'", "note": "대회 날엔 응원객도 운동복을 많이 입는다. 모순 없음." }
       ],
       "fake": 0,
       "reasons": [
-        { "text": "반환점이 10:30인데 남은 21km를 30분에 달릴 수 없다.", "correct": true },
-        { "text": "32km 지점이 11:40이면 너무 느려 맞지 않는다.", "correct": false, "why": "11km에 70분, 평범한 속도다." },
-        { "text": "출발 전에 카드키를 쓴 건 수상하다.", "correct": false, "why": "출발 전이라 문제없다." },
-        { "text": "물병이 금고 앞에 있으니 선수가 범인이다.", "correct": false, "why": "범인 추측일 뿐, 어떤 증거가 가짜인지와 상관없다." }
+        { "text": "반환점부터 남은 21km는 아무리 빨라도 1시간 가까이 걸린다.", "correct": true },
+        { "text": "반환점까지 속도라면 32km는 11:20 전이어야 한다.", "correct": false, "why": "속도는 늘 같지 않다. 후반엔 느려지는 게 보통이다." },
+        { "text": "11시엔 선수들이 코스에 있어 운동복 손님이 없었다.", "correct": false, "why": "운동복은 선수만 입지 않는다. 응원객도 많다." },
+        { "text": "대회 물병은 코스에서만 주니 금고 앞에 있을 수 없다.", "correct": false, "why": "이 물병은 호텔 로비에서 손님에게 준 것이다." }
       ],
       "explain": "반환점 10:30 → 결승 11:00이면 21km를 30분에 달린 셈. 가장 빠른 선수도 불가능하다.",
       "link": { "facts": ["f2", "f3"], "evidence": [1, 2] }
@@ -1689,11 +1702,11 @@ const Sound = (function () {
     G.picked = slot; G.viewed.add(slot);
     Sound.play('select');
     updateCards(); renderPanel(); renderStatus();
-    if (sheetMode()) openSheet(); else revealReasons();
+    if (sheetMode()) openSheet(); else if (document.body.classList.contains('lay-tall')) revealReasons();
     const e = G.c.evidence[G.order[slot]];
     if (changed) announce(`증거 ${slot + 1} ${e.name} 지목. 이유를 고르세요.`);
   }
-  // 제자리 패널(와이드·세로 태블릿): 이유 4개가 안 보이면 이유 쪽으로 스크롤 (세부 글은 가능한 만큼 위에 남김)
+  // 세로 태블릿 제자리 패널: 이유 4개가 안 보이면 이유 쪽으로 스크롤 (세부 글은 가능한 만큼 위에 남김)
   function revealReasons() {
     const pb = el.pbody, opts = pb.querySelector('.opts'), rq = $('rq');
     if (!opts || !rq) return;
@@ -1992,7 +2005,7 @@ const Sound = (function () {
   function renderNote() {
     const box = $('vnote');
     if (!box) return;
-    if (G.noteSlot < 0) { box.className = 'vnote hint'; box.innerHTML = `${ic('tap')}<span>카드를 누르면 그 증거가 왜 진짜/가짜인지 보여요.</span>`; return; }
+    if (G.noteSlot < 0) { box.className = 'vnote hint'; box.innerHTML = `${ic('tap')}<span class="h-in">카드를 누르면 그 증거가 왜 진짜/가짜인지 보여요.</span><span class="h-sh">시트를 닫고 카드를 누르면 그 증거가 왜 진짜/가짜인지 보여요.</span>`; return; }
     const d = G.order[G.noteSlot], e = G.c.evidence[d], fake = d === G.c.fake;
     box.className = 'vnote';
     box.innerHTML = `<div class="vnh">${tile(iconKey(e.icon))}<span>${G.noteSlot + 1}번 ${esc(e.name)}${fake ? ' · <span style="color:var(--thread)">조작</span>' : ' · 진짜'}</span></div>
@@ -2166,7 +2179,7 @@ const Sound = (function () {
     rs.setProperty('--gap', gap + 'px'); rs.setProperty('--ggap', (mode === 'wide' || mode === 'tall' ? 12 : mode === 'phone' ? 10 : 8) + 'px');
     rs.setProperty('--case-max', Math.max(60, caseMax - 18) + 'px');
     B.toggle('ov-full', H < 460 || W < 600);
-    B.toggle('tb-760', W < 760); B.toggle('tb-640', W < 640); B.toggle('tb-420', W < 420);
+    B.toggle('tb-760', W < 760); B.toggle('tb-640', W < 640); B.toggle('tb-420', W < 420); B.toggle('tb-340', W < 340);
     if (mode !== lastMode) {
       if (!sheetMode()) { B.remove('sheet-open'); show(el.scrim, !el.caseSheet.hidden); }
       if (mode !== 'phone') { show(el.caseSheet, false); if (!B.contains('sheet-open')) show(el.scrim, false); }
