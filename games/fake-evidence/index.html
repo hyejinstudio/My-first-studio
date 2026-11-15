@@ -1,0 +1,2332 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>증거 조작범</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="증거 조작범">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  /* 숫자 전용 글꼴: 원본 ExtraBold(SIL OFL 1.1)의 0-9 + / : 서브셋. 수정본이라 내부 이름은 CaseDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "CaseDigits"; src: url("fonts/case-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+0030-0039, U+002B, U+002F, U+003A; }
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --num-font: "CaseDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --grid: #e7e2d8; --well: #fbfaf7;
+    --accent: #e4572e; --gold: #f2b134;
+    --folder: #ece3cf; --folder-edge: #d8c9a8; --folder-ink: #6b5a3a; --card: #fffdf8;
+    --pick: #3d5d86; --pick-tint: #e9eef6; --view: #8a94a6;
+    --thread: #b0503c; --thread-tint: #f6e7e1; --ok: #2f7350; --ok-tint: #e3f1e7; --miss: #6b7280;
+    --t-trace: #f1e7d6; --t-record: #e6ebf2; --t-item: #e7eee5; --t-env: #ece9f2; --icon: #3a4150;
+    --scrim: rgba(31,36,48,.32); --chip-bg: var(--bg);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+      --accent: #ff7a50; --gold: #ffc94d;
+      --folder: #262219; --folder-edge: #3a3326; --folder-ink: #cdb991; --card: #20232c;
+      --pick: #9db7e0; --pick-tint: #1e2635; --view: #6b7488;
+      --thread: #e48f78; --thread-tint: #3a2622; --ok: #7cc596; --ok-tint: #1b2b21; --miss: #a0a6b2;
+      --t-trace: #2c261d; --t-record: #1f2531; --t-item: #1e2820; --t-env: #24212c; --icon: #d5d9e2;
+      --scrim: rgba(0,0,0,.55); --chip-bg: var(--well);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+    --accent: #ff7a50; --gold: #ffc94d;
+    --folder: #262219; --folder-edge: #3a3326; --folder-ink: #cdb991; --card: #20232c;
+    --pick: #9db7e0; --pick-tint: #1e2635; --view: #6b7488;
+    --thread: #e48f78; --thread-tint: #3a2622; --ok: #7cc596; --ok-tint: #1b2b21; --miss: #a0a6b2;
+    --t-trace: #2c261d; --t-record: #1f2531; --t-item: #1e2820; --t-env: #24212c; --icon: #d5d9e2;
+    --scrim: rgba(0,0,0,.55); --chip-bg: var(--well);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+    overflow-wrap: anywhere; word-break: keep-all;
+  }
+  .num { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; }
+  svg [hidden] { display: none; }
+  svg.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  /* .app과 조상에는 transform/filter 금지 (ov-full의 position:fixed가 깨짐) */
+  .app { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 1400px; flex: 1 1 auto; min-height: 0; touch-action: manipulation; }
+
+  /* 상단 바 (박자 앵무새·붕어빵 눈싸움과 같은 구조) */
+  .top { flex: none; height: var(--tb, 52px); width: 100%; display: flex; align-items: center; gap: 8px; }
+  .home {
+    flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px; white-space: nowrap;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home .short { display: none; }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .title { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .spacer { flex: 1; min-width: 0; }
+  .casepill {
+    flex: none; height: 32px; padding: 0 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; gap: 6px; color: var(--muted);
+  }
+  .casepill .ic { width: 16px; height: 16px; }
+  .casepill .lbl { font-size: 12px; font-weight: 700; }
+  .casepill .cn { font-size: 16px; color: var(--ink); }
+  .cdots { display: inline-flex; gap: 4px; }
+  .cdots i { width: 10px; height: 10px; border-radius: 50%; background: var(--grid); box-sizing: border-box; }
+  .cdots i.ok { background: var(--ok); }
+  .cdots i.half { background: linear-gradient(90deg, var(--ok) 50%, transparent 50%); border: 1.5px solid var(--ok); }
+  .cdots i.miss { background: transparent; border: 1.5px solid var(--miss); }
+  .cdots i.cur { background: transparent; border: 2px solid var(--ink); }
+  .lives { flex: none; display: inline-flex; gap: 1px; color: var(--pick); }
+  .lives .ic { width: 20px; height: 20px; stroke-width: 2.2; }
+  .lives .ic.lost { color: var(--grid); }
+  .scorev { flex: none; font-size: 20px; min-width: 4.2ch; text-align: right; color: var(--ink); display: inline-block; }
+  .scorev.bump { animation: bump 140ms ease-out; }
+  @keyframes bump { 50% { transform: scale(1.08); } }
+  .btns { display: flex; gap: 6px; flex: none; }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out;
+  }
+  button:active { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 20px; height: 20px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.primary:disabled { background: var(--grid); color: var(--muted); opacity: 1; }
+  button.primary .ic { width: 20px; height: 20px; stroke-width: 2.2; }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; text-decoration: none; flex: none;
+  }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 무대 + 보드 */
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; }
+  .board { position: absolute; inset: 0; display: grid; gap: var(--gap, 12px); }
+  body.lay-wide .board { grid-template-columns: var(--lcol, 340px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 28px;
+    grid-template-areas: "case grid" "panel grid" "panel status"; }
+  body.lay-tall .board { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto var(--gh, 400px) 28px minmax(0, 1fr);
+    grid-template-areas: "case" "grid" "status" "panel"; }
+  body.lay-phone .board { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 28px;
+    grid-template-areas: "case" "grid" "status"; }
+  body.lay-short .board { grid-template-columns: var(--lcol, 240px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "case grid" "status grid"; }
+
+  /* 사건 파일 */
+  .casebox { grid-area: case; position: relative; margin-top: 18px; min-height: 0; min-width: 0; display: flex; }
+  .ctab {
+    position: absolute; left: 0; top: -20px; height: 22px; padding: 0 12px; border-radius: 8px 8px 0 0;
+    background: var(--folder); border: 1px solid var(--folder-edge); border-bottom: 0;
+    font-size: 11px; font-weight: 700; color: var(--folder-ink); display: inline-flex; align-items: center; gap: 4px; z-index: 1;
+  }
+  .ctab .num { font-size: 12px; }
+  .case {
+    flex: 1; min-width: 0; max-height: var(--case-max, none); overflow-x: hidden; overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain;
+    background: var(--folder); border: 1px solid var(--folder-edge); border-radius: 0 14px 14px 14px; padding: 10px 12px 12px;
+  }
+  .guide { font-size: 13px; font-weight: 700; color: var(--pick); background: var(--pick-tint); border-radius: 8px; padding: 5px 9px; margin: 0 0 8px; line-height: 1.4; }
+  .chead { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .chead .ic { width: 20px; height: 20px; color: var(--folder-ink); }
+  .chead h2 { margin: 0; font-size: 20px; font-weight: 800; min-width: 0; flex: 1; line-height: 1.3; }
+  .tierchip { flex: none; font-size: 11px; font-weight: 700; color: var(--folder-ink); border: 1px solid var(--folder-edge); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  .expbtn { display: none; flex: none; position: relative; height: 32px; padding: 0 10px; font-size: 13px; font-weight: 700; color: var(--folder-ink); background: transparent; border-color: var(--folder-edge); align-items: center; gap: 2px; }
+  .expbtn::after { content: ""; position: absolute; left: -4px; right: -4px; top: -6px; bottom: -6px; }
+  .story { margin: 6px 0 0; font-size: 15px; line-height: 1.5; }
+  .facthead { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; font-size: 12px; font-weight: 700; color: var(--folder-ink); }
+  .facthead::after { content: ""; flex: 1; height: 1px; background: var(--folder-edge); }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .fact { position: relative; min-height: 40px; border-radius: 10px; padding: 6px 8px; display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.45; border-left: 3px solid transparent; }
+  .fact .ftxt { flex: 1; min-width: 0; padding-top: 4px; }
+  .fact .fno { flex: none; font-size: 11px; color: var(--folder-ink); padding-top: 6px; min-width: 12px; }
+  .tile { flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--icon); background: var(--t-env); }
+  .tile .ic { width: 18px; height: 18px; }
+  .tile.k-trace { background: var(--t-trace); } .tile.k-record { background: var(--t-record); }
+  .tile.k-item { background: var(--t-item); } .tile.k-env { background: var(--t-env); }
+  .tinl { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fact.v-link { background: var(--thread-tint); border-left-color: var(--thread); }
+  .fact .lnk { position: absolute; right: 6px; top: 8px; }
+  .fact.v-link .ftxt { padding-right: 22px; }
+  body.lay-tall .case.split .cbody { display: grid; grid-template-columns: 55% 45%; gap: 0 14px; }
+  body.lay-tall .case.split .facthead { margin-top: 0; }
+  body.lay-short .chead h2 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.lay-short .story { font-size: 13px; }
+  body.lay-short .fact { font-size: 13px; min-height: 34px; padding: 4px 6px; }
+  body.lay-short .fact .tile { width: 24px; height: 24px; }
+  body.lay-short .fact .tile .ic { width: 16px; height: 16px; }
+  body.lay-short .case { padding: 8px 8px 10px; }
+  /* 폰 세로: 사건 파일 띠 (소개 숨김, 사실 줄은 작게, 펼치기 시트) */
+  body.lay-phone .case { padding: 6px 10px 8px; }
+  body.lay-phone .chead h2 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.lay-phone .expbtn { display: inline-flex; }
+  body.lay-phone .case .story, body.lay-phone .case .facthead { display: none; }
+  body.lay-phone .case .facts { margin-top: 4px; }
+  body.lay-phone .case .fact { min-height: 0; padding: 2px 4px; font-size: 12.5px; gap: 6px; line-height: 1.4; }
+  body.lay-phone .case .fact .tile { width: 18px; height: 18px; border-radius: 5px; }
+  body.lay-phone .case .fact .tile .ic { width: 13px; height: 13px; }
+  body.lay-phone .case .fact .ftxt { padding-top: 0; }
+  body.lay-phone .case .fact .fno { padding-top: 1px; }
+  body.lay-phone .case .fact .lnk { top: 1px; right: 2px; }
+  body.lay-phone .case .guide { font-size: 12px; padding: 3px 8px; margin-bottom: 4px; }
+
+  /* 증거 그리드 (절대 스크롤하지 않음) */
+  .gridwrap { grid-area: grid; min-height: 0; min-width: 0; display: grid; place-items: center; }
+  .evgrid { list-style: none; margin: 0; padding: 0; width: 100%; height: 100%; display: grid; gap: var(--ggap, 12px); overflow: hidden;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  body.lay-wide .evgrid { max-width: 924px; max-height: 532px; }
+  body.lay-phone .evgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); max-height: 620px; }
+  .evgrid > li { min-width: 0; min-height: 0; display: flex; }
+  .ev {
+    position: relative; flex: 1; min-width: 0; min-height: 0; width: 100%; text-align: left; overflow: hidden;
+    background: var(--card); border: 1px solid var(--grid); border-radius: 14px; padding: 8px 12px 10px;
+    display: flex; flex-direction: column; justify-content: flex-start; gap: 6px;
+    transition: transform 160ms cubic-bezier(.2,.8,.2,1), border-color 120ms ease-out, background-color 120ms ease-out, opacity 200ms linear, box-shadow 120ms ease-out;
+  }
+  .ev:focus-visible { outline-offset: 3px; }
+  .ev:active { transform: scale(.98); background: var(--card); transition-duration: 80ms; }
+  .ev-top { display: flex; align-items: center; gap: 6px; height: 20px; flex: none; }
+  .ev-no { font-size: 12px; color: var(--muted); min-width: 10px; }
+  .ev-tag { font-size: 11px; font-weight: 800; color: var(--pick); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; }
+  .ev-mark { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; }
+  .ev-mark .ic { width: 14px; height: 14px; stroke-width: 2.4; }
+  .ev-head { display: flex; align-items: center; gap: 10px; min-width: 0; flex: none; }
+  .ev-head .tile { width: var(--tile, 44px); height: var(--tile, 44px); border-radius: 10px; }
+  .ev-head .tile .ic { width: calc(var(--tile, 44px) * .58); height: calc(var(--tile, 44px) * .58); }
+  .ev-title { font-size: var(--ttl, 16px); font-weight: 700; line-height: 1.3; min-width: 0;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .tchip { flex: none; align-self: flex-start; height: 24px; border-radius: 999px; padding: 0 8px; background: var(--chip-bg); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; color: var(--ink); }
+  .tchip .ic { width: 14px; height: 14px; color: var(--muted); }
+  .tchip span { font-family: var(--num-font); font-variant-numeric: tabular-nums; }
+  .ev-sum { font-size: 13px; line-height: 1.45; color: var(--muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lines, 2); overflow: hidden; flex: none; }
+  .ev-sum.off { display: none; }
+  .evgrid[data-sz="m"] { --tile: 36px; --ttl: 15px; }
+  .evgrid[data-sz="s"] { --tile: 30px; --ttl: 14px; }
+  .evgrid[data-sz="s"] .ev { padding: 6px 8px 8px; gap: 4px; }
+  .evgrid[data-sz="s"] .ev-head { gap: 6px; }
+  .evgrid[data-sz="s"] .tchip { height: 22px; font-size: 12px; padding: 0 6px; }
+  .evgrid[data-sz="s"] .tchip .ic { width: 12px; height: 12px; }
+  .ev.viewed .ev-mark { color: var(--muted); }
+  .ev.picked { border: 2.5px solid var(--pick); background: var(--pick-tint); transform: translateY(-2px); }
+  .ev.picked .ev-mark { background: var(--pick); color: #fff; animation: pop 160ms cubic-bezier(.2,.8,.2,1); }
+  :root[data-theme="dark"] .ev.picked .ev-mark { color: #12141a; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ev.picked .ev-mark { color: #12141a; } }
+  @keyframes pop { from { transform: scale(.6); } }
+  .ev.viewing { border: 2px solid var(--view); }
+  .ev .stamp {
+    position: absolute; right: 10px; bottom: 10px; font-size: 16px; font-weight: 800; letter-spacing: .12em; color: var(--thread);
+    border: 2px solid var(--thread); outline: 1px solid var(--thread); outline-offset: -5px; border-radius: 6px; padding: 4px 10px 4px 12px;
+    background: color-mix(in srgb, var(--card) 85%, transparent); transform: rotate(-8deg); display: none; pointer-events: none;
+  }
+  .evgrid[data-sz="s"] .ev .stamp, .evgrid[data-sz="m"] .ev .stamp { font-size: 13px; padding: 3px 8px 3px 10px; right: 6px; bottom: 6px; }
+  .ev.v-fake .stamp, .ev.v-ok .stamp { display: block; animation: stamp 220ms cubic-bezier(.2,.8,.2,1); }
+  @keyframes stamp { from { transform: scale(1.25) rotate(-14deg); opacity: 0; } }
+  .lnk { width: 20px; height: 20px; border-radius: 50%; background: var(--thread); color: #fff; font-size: 12px; display: none; place-items: center; line-height: 1;
+    font-family: var(--num-font); font-weight: 800; animation: lnkIn 160ms ease-out 680ms both; flex: none; }
+  :root[data-theme="dark"] .lnk { color: #12141a; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lnk { color: #12141a; } }
+  .lnk .ic { width: 14px; height: 14px; stroke-width: 2.2; }
+  @keyframes lnkIn { from { transform: scale(.6); opacity: 0; } }
+  .v-link > .lnk, .v-fake > .lnk, .v-ok > .lnk, .fact.v-link .lnk { display: grid; }
+  .ev > .lnk { position: absolute; right: 8px; top: 8px; }
+  .ev.v-ok, .ev.v-fake, .ev.v-link { transform: none; }
+  .ev.v-ok { border: 2.5px solid var(--ok); background: var(--card); }
+  .ev.v-ok .ev-mark { background: var(--ok); color: #fff; }
+  .ev.v-fake { border: 2.5px solid var(--thread); background: var(--card); }
+  .ev.v-miss { border: 2px dashed var(--miss); background: var(--card); transform: none; }
+  .ev.v-miss .ev-mark { border: 1.5px solid var(--miss); color: var(--miss); background: transparent; }
+  .ev.v-link { border: 2px solid color-mix(in srgb, var(--thread) 70%, transparent); background: var(--thread-tint); }
+  .ev.v-dim { opacity: .55; }
+  .ev.v-dim.viewing { opacity: 1; }
+  .ev.v-ok .ev-mark, .ev.v-fake .ev-mark, .ev.v-link .ev-mark { margin-right: 26px; }
+  .ev.v-fake .ev-mark { display: none; }
+  .ev.v-ok .ev-tag, .ev.v-fake .ev-tag { color: var(--thread); }
+  .ev.v-miss .ev-tag { color: var(--miss); }
+  .board.enter .ev { animation: evIn 200ms ease-out both; animation-delay: calc(var(--i, 0) * 30ms); }
+  @keyframes evIn { from { opacity: 0; transform: translateY(6px); } }
+
+  /* 상태 줄 */
+  .status { grid-area: status; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .status .ic { width: 14px; height: 14px; }
+  .seen { display: inline-flex; align-items: center; gap: 5px; }
+  .seendots { display: inline-flex; gap: 3px; }
+  .seendots i { width: 6px; height: 6px; border-radius: 50%; background: var(--grid); transition: background-color 200ms; }
+  .seendots i.on { background: color-mix(in srgb, var(--ink) 70%, transparent); }
+  .seendots.all i { background: var(--pick); }
+  .clock { display: inline-flex; align-items: center; gap: 4px; }
+  .pickinfo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; color: var(--ink); }
+  .stbtn { display: none; position: relative; height: 32px; padding: 0 12px; font-size: 13px; font-weight: 700; color: var(--ink); flex: none; align-items: center; gap: 4px; }
+  .stbtn::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
+  body.lay-phone .stbtn.on, body.lay-short .stbtn.on { display: inline-flex; }
+  body.lay-phone .pickinfo, body.lay-short .pickinfo { display: none; }
+  body.lay-phone .status .spacer, body.lay-short .status .spacer { display: block; }
+  .status .spacer { display: none; }
+  body.lay-short .status { flex-wrap: wrap; gap: 4px 10px; padding-bottom: 2px; }
+  body.lay-short .status .stbtn { width: 100%; justify-content: center; }
+  body.lay-short .seen .lbl, body.lay-short .seendots { display: none; }
+
+  /* 세부 / 이유 / 판정 패널 (와이드·세로 태블릿은 제자리, 폰은 시트) */
+  .panel { grid-area: panel; min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--grid); border-radius: 14px; overflow: hidden; }
+  .sheethead { display: none; flex: none; position: relative; height: 44px; align-items: center; padding: 0 4px 0 16px; }
+  .sheethead .grip { position: absolute; left: 50%; top: 6px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--grid); }
+  .sheethead h3 { margin: 0; font-size: 15px; font-weight: 800; flex: 1; outline: none; }
+  .pbody { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; padding: 14px 16px; }
+  .pfoot { flex: none; padding: 10px 16px 14px; border-top: 1px solid var(--grid); background: var(--panel); }
+  .pfoot button.primary { width: 100%; }
+  .empty { height: 100%; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px; text-align: center; line-height: 1.5; }
+  .empty .ic { width: 32px; height: 32px; }
+  .dt { animation: dtIn 120ms ease-out; }
+  @keyframes dtIn { from { opacity: 0; transform: translateY(4px); } }
+  .dthead { display: flex; align-items: center; gap: 12px; }
+  .dthead .tile { width: 48px; height: 48px; border-radius: 12px; }
+  .dthead .tile .ic { width: 28px; height: 28px; }
+  .dthead h4 { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.3; flex: 1; min-width: 0; }
+  .dthead .dno { font-size: 12px; color: var(--muted); display: block; font-weight: 700; }
+  .dtchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .dttext { margin: 10px 0 0; padding: 10px 0; border-top: 1px solid var(--grid); font-size: 16px; line-height: 1.55; }
+  .rq { margin: 6px 0 8px; font-size: 18px; font-weight: 800; }
+  .opts { display: grid; gap: 8px; }
+  .opt { min-height: 56px; width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 10px; border-radius: 12px; font-size: 15px; line-height: 1.4;
+    transition: border-color 120ms ease-out, background-color 120ms ease-out; }
+  .opt:active { transform: scale(.98); }
+  .opt .ono { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--grid); display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--muted); transition: background-color 120ms; }
+  .opt .otx { flex: 1; min-width: 0; }
+  .opt .ock { flex: none; width: 20px; height: 20px; color: var(--pick); visibility: hidden; stroke-width: 2.4; }
+  .opt[aria-checked="true"] { border: 2px solid var(--pick); background: var(--pick-tint); padding: 9px 11px 9px 9px; }
+  .opt[aria-checked="true"] .ono { background: var(--pick); border-color: var(--pick); color: var(--panel); }
+  .opt[aria-checked="true"] .ock { visibility: visible; }
+  .pmini { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 14px; }
+  body.lay-short .opt { min-height: 48px; font-size: 14px; }
+
+  /* 판정 */
+  .vhead { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
+  .vhead .vic { width: 26px; height: 26px; flex: none; }
+  .vhead .vt { flex: 1; min-width: 0; }
+  .vhead .vpts { font-size: 20px; color: var(--ok); }
+  .vhead.miss .vic, .vhead.miss .vpts { color: var(--miss); }
+  .vhead.ok .vic, .vhead.half .vic { color: var(--ok); }
+  .vrows { margin: 10px 0 0; display: grid; gap: 6px; }
+  .vrow { border-radius: 10px; padding: 8px 10px; display: grid; grid-template-columns: 20px 66px minmax(0, 1fr); gap: 2px 6px; align-items: start; background: var(--panel); border: 1px solid var(--grid); font-size: 14px; line-height: 1.4; animation: fadeIn 200ms ease-out 120ms both; }
+  .vrow.ok { background: var(--ok-tint); border-color: transparent; }
+  .vrow .ic { width: 18px; height: 18px; stroke-width: 2.4; margin-top: 1px; }
+  .vrow.ok .ic { color: var(--ok); } .vrow.no .ic { color: var(--miss); }
+  .vrow .vk { font-weight: 700; color: var(--muted); font-size: 13px; }
+  .vrow .va { min-width: 0; }
+  .vrow.no .va { color: var(--muted); }
+  .vrow .vc { grid-column: 2 / 4; color: var(--ink); font-size: 14px; }
+  .vrow .vc b { color: var(--ok); }
+  @keyframes fadeIn { from { opacity: 0; } }
+  .vsec { margin-top: 14px; font-size: 12px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .vsec::after { content: ""; flex: 1; height: 1px; background: var(--grid); }
+  .links { position: relative; margin-top: 8px; }
+  .links .lsvg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .links .lsvg path { fill: none; stroke: var(--thread); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0;
+    animation: draw 420ms ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  .links .lbadge { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; display: grid; }
+  .lnode { position: relative; z-index: 1; border-radius: 10px; padding: 8px 10px; background: var(--panel); font-size: 13px; line-height: 1.45; min-width: 0; }
+  .lnode .lh { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+  .lnode .lh .tile { width: 28px; height: 28px; }
+  .lnode .lh span.nm { flex: 1; min-width: 0; }
+  .lnode .lq { margin-top: 4px; }
+  .lnode.fake { border: 2px solid var(--thread); background: var(--card); }
+  .lnode .ministamp { flex: none; font-size: 11px; font-weight: 800; color: var(--thread); border: 1.5px solid var(--thread); border-radius: 4px; padding: 0 4px; transform: rotate(-6deg); letter-spacing: .08em; }
+  .lnode.tgt { background: var(--thread-tint); border: 1px solid color-mix(in srgb, var(--thread) 50%, transparent); }
+  .lnode .ltag { display: block; font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+  .ltargets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .links.h { display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr); align-items: center; }
+  .links.h .lnode.fake { grid-column: 1; }
+  .links.h .ltargets { grid-column: 3; }
+  .links.v .ltargets { margin: 12px 0 0 30px; }
+  mark.hl { background: var(--thread-tint); color: var(--ink); text-decoration: underline; text-decoration-color: var(--thread); text-decoration-thickness: 2px; text-underline-offset: 3px; border-radius: 3px; padding: 0 1px; }
+  .vexp { margin: 12px 0 0; font-size: 15px; line-height: 1.55; animation: fadeIn 200ms ease-out 760ms both; }
+  .vwhy { margin-top: 10px; display: grid; gap: 6px; }
+  .vwhy p { margin: 0; font-size: 14px; line-height: 1.5; padding: 8px 10px; border-radius: 10px; background: var(--chip-bg); border: 1px solid var(--grid); }
+  .vwhy p b { display: block; font-size: 12px; color: var(--muted); }
+  .vnote { margin-top: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--grid); background: var(--card); font-size: 14px; line-height: 1.5; }
+  .vnote .vnh { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  .vnote .vnh .tile { width: 28px; height: 28px; }
+  .vnote .vnd { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+  .vnote .vnn { margin: 6px 0 0; }
+  .vnote .vnn b { color: var(--thread); }
+  .vnote.hint { color: var(--muted); display: flex; align-items: center; gap: 8px; background: transparent; border-style: dashed; }
+  .vnote.hint .ic { width: 18px; height: 18px; }
+  .vend { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--thread); }
+
+  /* 폰 시트 */
+  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 6; animation: fadeIn 180ms ease-out; }
+  .scrim[hidden] { display: none; }
+  body.lay-phone .panel, body.lay-short .panel {
+    position: fixed; z-index: 7; border-radius: 16px 16px 0 0; border: 0; border-top: 1px solid var(--grid); visibility: hidden;
+    transition: transform 180ms ease-in, visibility 0s linear 180ms;
+  }
+  body.lay-phone .panel { left: 0; right: 0; bottom: 0; max-height: calc(var(--app-h) * .86); transform: translateY(100%);
+    padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+  body.lay-short .panel { top: 0; right: 0; bottom: 0; width: min(460px, 64vw); border-radius: 16px 0 0 16px; border-top: 0; border-left: 1px solid var(--grid);
+    transform: translateX(100%); padding-right: env(safe-area-inset-right); }
+  body.sheet-open.lay-phone .panel, body.sheet-open.lay-short .panel { visibility: visible; transform: none; transition: transform 240ms cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  body.lay-phone.v-sheet .panel { max-height: calc(var(--app-h) * .62); }
+  body.lay-phone .sheethead, body.lay-short .sheethead { display: flex; }
+  body.lay-phone .pbody, body.lay-short .pbody { padding-top: 4px; }
+  body.lay-phone .pfoot { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  body.lay-short .pbody { padding: 4px 14px 10px; }
+  body.lay-short .pfoot { padding: 8px 14px 10px; }
+  body.lay-short .dthead h4 { font-size: 17px; }
+  body.lay-short .dttext { font-size: 15px; }
+  /* 사건 파일 펼치기 시트 (폰 세로) */
+  .casesheet { position: fixed; z-index: 7; left: 0; right: 0; top: 0; max-height: calc(var(--app-h) * .7); display: flex; flex-direction: column;
+    background: var(--folder); border-bottom: 1px solid var(--folder-edge); border-radius: 0 0 16px 16px;
+    padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left)); animation: dropIn 240ms cubic-bezier(.2,.8,.2,1); }
+  .casesheet[hidden] { display: none; }
+  @keyframes dropIn { from { transform: translateY(-100%); } }
+  .casesheet .cshead { display: flex; align-items: center; gap: 8px; flex: none; }
+  .casesheet .cshead h3 { margin: 0; flex: 1; font-size: 12px; font-weight: 700; color: var(--folder-ink); outline: none; }
+  .casesheet .csbody { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; min-height: 0; }
+
+  /* 오버레이 (박자 앵무새와 같은 CSS) */
+  .overlay {
+    position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: safe center; text-align: center;
+    background: color-mix(in srgb, var(--well) 94%, transparent); line-height: 1.4; z-index: 8;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; flex: none; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  #ovPause, #ovResult, #ovStart { background: color-mix(in srgb, var(--well) 97%, transparent); }
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .overlay .ov-home { display: none; }
+  body.ov-full .overlay .ov-home { display: inline-flex; position: absolute; margin: 0; animation: none;
+    top: max(4px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .small { font-size: 12px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay [hidden] { display: none !important; }
+  .startart { width: 96px; height: 96px; }
+  .steps { display: flex; align-items: center; gap: 6px; justify-content: center; }
+  .step { width: 84px; height: 70px; background: var(--panel); border: 1px solid var(--grid); border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--ink); }
+  .step .ic { width: 24px; height: 24px; color: var(--icon); }
+  .steps .sep { color: var(--muted); font-size: 12px; }
+  .badge { background: var(--gold); color: #1f2430; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 3px 10px; }
+  /* 사건 카드 */
+  #ovCase { cursor: pointer; }
+  .ccard { width: min(560px, 100%); text-align: left; background: var(--folder); border: 1px solid var(--folder-edge); border-radius: 0 14px 14px 14px; padding: 14px 16px 16px; position: relative; margin-top: 18px; }
+  .ccard .ctab { top: -21px; left: -1px; }
+  .ccard .chead .ic { width: 28px; height: 28px; }
+  .ccard .chead h2 { font-size: 22px; justify-content: flex-start; }
+  .ccard .story { font-size: 16px; }
+  .ccard .guide { margin: 10px 0 0; }
+  .tapnote { font-size: 12px; color: var(--muted); }
+  /* 결과 */
+  .resbig { font-size: 40px; line-height: 1.05; }
+  .chips { display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap; }
+  .casechip { width: 52px; height: 30px; border-radius: 8px; background: var(--panel); border: 1px solid var(--grid); display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+  .casechip .num { font-size: 12px; color: var(--muted); margin-right: 1px; }
+  .casechip .ic { width: 14px; height: 14px; stroke-width: 2.6; }
+  .casechip .ic.y { color: var(--ok); } .casechip .ic.n { color: var(--miss); }
+  .casechip.perfect { border-color: var(--ok); }
+  .casechip.skip { opacity: .5; }
+  .casechip .dash { color: var(--muted); font-size: 12px; }
+  .resstat { font-size: 14px; color: var(--muted); display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .resstat .num { color: var(--ink); }
+  .reslist { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); display: none; }
+  .overlay .resbtns { gap: 8px 10px; }
+  @media (pointer: coarse) { .hint-key { display: none !important; } }
+
+  /* 상단 바 너비 구간 (JS가 body 클래스로 지정) */
+  body.tb-760 .title { display: none; }
+  body.tb-640 .home .full { display: none; }
+  body.tb-640 .home .short { display: inline; }
+  body.tb-420 .casepill > .ic, body.tb-420 .casepill .lbl, body.tb-420 .cdots { display: none; }
+  body.tb-420 .casepill { padding: 0 8px; }
+  body.tb-420 .lives .ic { width: 16px; height: 16px; }
+  body.tb-420 .scorev { font-size: 17px; }
+  body.tb-420 .top { gap: 6px; }
+  body.tb-420 .btns { gap: 2px; }
+  @media (max-height: 520px) {
+    .overlay h2 { font-size: 20px; }
+    .overlay { gap: 6px; padding: 8px; }
+    body.ov-full .overlay { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+    .resbig { font-size: 32px; }
+    .startart { width: 56px; height: 56px; }
+    .step { width: 76px; height: 52px; }
+    .step .ic { width: 20px; height: 20px; }
+    .ccard { padding: 10px 14px 12px; }
+    .ccard .story { font-size: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .overlay > *, .board.enter .ev, .dt, .casesheet { animation: none; }
+    .ev.picked { transform: none; }
+    .ev.picked .ev-mark { animation: none; }
+    .ev.v-fake .stamp, .ev.v-ok .stamp { animation: fadeIn 120ms ease-out; }
+    .links .lsvg path { animation: none; }
+    .lnk, .vrow, .vexp { animation: fadeIn 120ms ease-out both; }
+    .scorev.bump { animation: none; }
+    button:active, .ev:active, .opt:active { transform: none; }
+    body.lay-phone .panel, body.lay-short .panel, body.sheet-open.lay-phone .panel, body.sheet-open.lay-short .panel { transition: opacity 150ms, visibility 0s; transform: none; opacity: 0; }
+    body.sheet-open.lay-phone .panel, body.sheet-open.lay-short .panel { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-mud" viewBox="0 0 24 24"><path d="M5 15c-1.5-2 0-4.5 2.5-4 .5-2.5 3.5-3.5 5.5-2 2-1.5 5 0 4.5 2.5 2.5.5 2.5 4 0 4.5-1 2-4 2.5-6 1.5-2 1-5.5.5-6.5-2.5z"/><circle cx="19" cy="7" r="1.2"/><circle cx="4.5" cy="8.5" r="1"/></symbol>
+    <symbol id="i-foot" viewBox="0 0 24 24"><path d="M8 3c2 0 3 2.2 3 5s-1 4.5-3 4.5S5 10.8 5 8s1-5 3-5z"/><path d="M6.2 15h3.6v2.2a1.8 1.8 0 0 1-3.6 0z"/><path d="M16 6.5c2 0 3 2.2 3 5s-1 4.5-3 4.5-3-1.7-3-4.5 1-5 3-5z"/><path d="M14.2 18.5h3.6v.7a1.8 1.8 0 0 1-3.6 0z"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 19c-1.5-2-2-4.3-2-7a7 7 0 0 1 14 0"/><path d="M9.5 20c-1-2-1.5-4.5-1.5-8a4 4 0 0 1 8 0c0 2 .2 3.5.5 5"/><path d="M12 12c0 3.5.5 6 1.8 8.5"/><path d="M19 15.5c-.2 1.3-.5 2.5-1 3.5"/></symbol>
+    <symbol id="i-puddle" viewBox="0 0 24 24"><path d="M3 17c0-2 4-3 9-3s9 1 9 3-4 3-9 3-9-1-9-3z"/><path d="M12 4c1.8 2.4 3 4 3 5.5a3 3 0 0 1-6 0C9 8 10.2 6.4 12 4z"/></symbol>
+    <symbol id="i-cctv" viewBox="0 0 24 24"><path d="M3 7l12-3 1.5 5L4.5 12z"/><path d="M15.8 6.5l3.7-1 1 3.6-3.6 1"/><path d="M8 11.2V15H4"/><path d="M4 12.5v5"/></symbol>
+    <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L6 21z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></symbol>
+    <symbol id="i-badge" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M10 6V3.5h4V6"/><circle cx="9.5" cy="12.5" r="2"/><path d="M6.8 17.5a3 3 0 0 1 5.4 0"/><path d="M14.5 11.5h3M14.5 14.5h3"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12.5" rx="2"/><path d="M2.5 10h19M6 15h4"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7.5h6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+    <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M3.5 17l5-4.5 3.5 3 3-2.5 5.5 4.5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2.5"/></symbol>
+    <symbol id="i-umbrella" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6.5a2 2 0 0 1-4 0"/></symbol>
+    <symbol id="i-letter" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 15.5h7M9 9h3"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24"><path d="M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5v2M11 3v2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1-.4-8A5.5 5.5 0 0 1 17 6.6a3.7 3.7 0 0 1 .5 7.4z"/><path d="M8 18l-1 2.5M12.5 18l-1 2.5M17 18l-1 2.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></symbol>
+    <symbol id="i-door" viewBox="0 0 24 24"><path d="M5 21V4.5A1.5 1.5 0 0 1 6.5 3h11A1.5 1.5 0 0 1 19 4.5V21M3 21h18"/><circle cx="15" cy="12.5" r="1"/></symbol>
+    <symbol id="i-window" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/></symbol>
+    <symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 9v7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-magnifier" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-check2" viewBox="0 0 24 24"><path d="M2.5 13l4 4 8.5-9.5"/><path d="M10.5 16.2l1 .8L21.5 7.5"/></symbol>
+    <symbol id="i-checko" viewBox="0 0 24 24"><path d="M3 12.5l4 4L15.5 7"/><circle cx="18.5" cy="15.5" r="3.5"/></symbol>
+    <symbol id="i-xo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-tap" viewBox="0 0 24 24"><circle cx="12" cy="9" r="2.5"/><path d="M12 14v7M8.5 5.5a5 5 0 0 1 7 0"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <a class="home" href="../../"><span class="full">← 게임 목록</span><span class="short">← 목록</span></a>
+    <h1 class="title">증거 조작범</h1>
+    <div class="spacer"></div>
+    <div class="casepill" id="casePill" role="img" aria-label="사건 1 / 5">
+      <svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg>
+      <span class="lbl">사건</span>
+      <b class="cn num" id="caseNum">1/5</b>
+      <span class="cdots" id="cdots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    </div>
+    <div class="lives" id="lives" role="img" aria-label="기회 3번 남음">
+      <svg class="ic" aria-hidden="true"><use href="#i-magnifier"/></svg><svg class="ic" aria-hidden="true"><use href="#i-magnifier"/></svg><svg class="ic" aria-hidden="true"><use href="#i-magnifier"/></svg>
+    </div>
+    <b class="scorev num" id="score" aria-label="점수 0">0</b>
+    <div class="btns">
+      <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
+        <svg id="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg id="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" type="button" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="board" id="board">
+      <div class="casebox">
+        <div class="ctab" id="ctab">사건 파일 <span class="num" id="ctabNo">01</span></div>
+        <div class="case" id="case"></div>
+      </div>
+      <div class="gridwrap"><ul class="evgrid" id="evgrid" role="list" aria-label="증거 6개"></ul></div>
+      <div class="status" id="status">
+        <span class="seen"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span class="lbl">본 증거</span><span class="seendots" id="seendots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b class="num" id="seenNum">0/6</b></span>
+        <span class="clock" aria-label="경과 시간"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><b class="num" id="clock">0:00</b></span>
+        <span class="pickinfo" id="pickInfo"></span>
+        <span class="spacer"></span>
+        <button class="stbtn" id="stBtn" type="button"></button>
+      </div>
+      <section class="panel" id="panel" role="region" aria-label="증거 자세히" aria-live="polite">
+        <div class="sheethead"><span class="grip" aria-hidden="true"></span><h3 id="sheetTitle" tabindex="-1">증거 자세히</h3>
+          <button class="icon" id="sheetClose" type="button" aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+        <div class="pbody" id="pbody"></div>
+        <div class="pfoot"><button class="primary" id="mainBtn" type="button" disabled>고발하기</button></div>
+      </section>
+    </div>
+
+    <div class="overlay" id="ovStart">
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <svg class="startart" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="6" y="52" width="52" height="7" rx="3.5" fill="#dcd8e3"/>
+        <path d="M8 18 h16 l4 4 h26 a2 2 0 0 1 2 2 v26 a2 2 0 0 1 -2 2 H10 a2 2 0 0 1 -2 -2 Z" fill="#e2cfa6" stroke="#b89a62" stroke-width="1.5"/>
+        <g transform="rotate(-6 23 35)"><rect x="14" y="24" width="18" height="22" rx="2" fill="#fffdf8" stroke="#9aa1ae" stroke-width="1"/><rect x="16.5" y="27" width="13" height="10" rx="1" fill="#d9dfe8"/></g>
+        <g transform="rotate(5 42 36)"><rect x="34" y="26" width="16" height="20" rx="2" fill="#fffdf8" stroke="#9aa1ae" stroke-width="1"/><path d="M37 33h10 M37 37h7" stroke="#b8bec9" stroke-width="1.2"/></g>
+        <path d="M23 25 Q33 31 42 27" fill="none" stroke="#b0503c" stroke-width="1.4"/>
+        <circle cx="23" cy="25" r="2.2" fill="#b0503c"/><circle cx="42" cy="27" r="2.2" fill="#b0503c"/>
+        <circle cx="44" cy="41" r="7" fill="#ffffff" fill-opacity=".35" stroke="#3d5d86" stroke-width="2.4"/>
+        <path d="M49 46 L55 52" stroke="#3d5d86" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <h2>증거 조작범</h2>
+      <p>증거 6개 중 조작된 하나를 찾아요</p>
+      <div class="steps" aria-hidden="true">
+        <div class="step"><svg class="ic"><use href="#i-eye"/></svg>살펴보기</div><span class="sep">›</span>
+        <div class="step"><svg class="ic"><use href="#i-magnifier"/></svg>가짜 지목</div><span class="sep">›</span>
+        <div class="step"><svg class="ic"><use href="#i-link"/></svg>이유 고르기</div>
+      </div>
+      <p class="small">사건 5건 · 기회 3번 · 제한 시간 없음</p>
+      <button class="primary" id="startBtn" type="button">수사 시작</button>
+      <p class="small" id="bestTxt" hidden></p>
+      <p class="small hint-key">키보드: 1~6 증거 · A~D 이유 · Enter 고발</p>
+    </div>
+
+    <div class="overlay" id="ovCase" hidden>
+      <div class="ccard" id="ccard"></div>
+      <p class="tapnote">화면을 누르면 바로 시작해요</p>
+    </div>
+
+    <div class="overlay" id="ovPause" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2>일시정지</h2>
+      <p>수사 시계가 멈춰 있어요</p>
+      <button class="primary" id="resumeBtn" type="button">계속하기</button>
+      <div class="row">
+        <button class="secondary" id="restartBtn" type="button">처음부터</button>
+        <a class="secondary" href="../../">← 게임 목록</a>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovResult" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2 id="resTitle">수사 완료</h2>
+      <b class="num resbig" id="resScore">0</b>
+      <div class="chips" id="resChips"></div>
+      <div class="resstat" id="resStat"></div>
+      <div id="lbSlot"></div>
+      <div class="row resbtns">
+        <button class="primary" id="againBtn" type="button">다시 수사</button>
+        <a class="secondary" href="../../">← 게임 목록</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="casesheet" id="caseSheet" role="dialog" aria-modal="true" aria-labelledby="csTitle" hidden>
+  <div class="cshead"><h3 id="csTitle" tabindex="-1">사건 파일</h3><button class="icon" id="csClose" type="button" aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+  <div class="csbody" id="csBody"></div>
+</div>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script type="application/json" id="cases">
+{
+  "version": 1,
+  "note": "증거 조작범 사건 데이터. fake·reasons.correct·link는 정답 정보. 게임은 evidence/reasons 표시 순서를 매번 섞는다(데이터 순서 고정). tier 1=쉬움, 2=복합, 3=함정.",
+  "cases": [
+    {
+      "id": "c01", "tier": 1, "title": "잠긴 미술실", "icon": "🎨",
+      "story": "밤사이 잠긴 미술실에서 그림 한 점이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "오후 6시부터 밤새 비가 내렸다." },
+        { "id": "f2", "text": "미술실은 오후 5시에 잠갔다. 열쇠는 경비실에 있다." },
+        { "id": "f3", "text": "이날 해는 오후 6시 10분에 졌다." }
+      ],
+      "evidence": [
+        { "name": "창문에 남은 진흙", "icon": "🟤", "detail": "미술실 바깥 창틀에 젖은 진흙이 묻어 있다.", "note": "비로 땅이 질었다. 범인이 잠긴 문 대신 창문으로 들어온 흔적." },
+        { "name": "바닥의 젖은 발자국", "icon": "👣", "detail": "창문에서 그림 쪽으로 이어진 젖은 발자국.", "note": "비 맞은 신발 자국. 창문으로 들어왔다는 것과 맞다." },
+        { "name": "오후 7시 CCTV 기록", "icon": "📹", "detail": "정문 CCTV 오후 7:02. 우산 쓴 사람이 운동장 쪽으로 간다.", "note": "정문은 잠기지 않았다. 비 오던 시각이라 우산도 맞다." },
+        { "name": "피해자의 휴대폰", "icon": "📱", "detail": "그림 주인인 미술 선생님 휴대폰. 마지막 통화 오후 4:50.", "note": "미술실을 잠그기 전 시각이다. 이상한 점 없음." },
+        { "name": "오전 10시 발급된 출입증", "icon": "🪪", "detail": "오늘 오전 10:00 발급된 방문객 출입증. 하루 종일 쓸 수 있다.", "note": "건물 출입용이라 하루 내내 유효. 미술실 열쇠와 상관없다." },
+        { "name": "오후 8시 촬영된 사진", "icon": "📷", "detail": "운동장에서 찍은 미술실 창문. 햇빛이 강하게 비친다. 촬영 오후 8:00.", "note": "조작: 해 진 뒤, 비 오는 밤에 강한 햇빛은 있을 수 없다." }
+      ],
+      "fake": 5,
+      "reasons": [
+        { "text": "오후 8시엔 해가 졌고, 비까지 내리고 있었다.", "correct": true },
+        { "text": "미술실이 잠긴 뒤라 사진을 찍을 수 없다.", "correct": false, "why": "사진은 바깥 운동장에서 찍었다. 잠긴 문과 상관없다." },
+        { "text": "출입증이 오전에 발급돼 저녁 사건과 맞지 않는다.", "correct": false, "why": "출입증은 하루 종일 쓸 수 있다." },
+        { "text": "미술실이 잠긴 뒤라 CCTV에 사람이 찍힐 수 없다.", "correct": false, "why": "정문 CCTV다. 미술실이 잠겨도 정문엔 사람이 다닌다." }
+      ],
+      "explain": "8시 사진의 '강한 햇빛'은 해 진 시각(6:10)과 비(6시부터)에 모두 어긋난다.",
+      "link": { "facts": ["f1", "f3"], "evidence": [] }
+    },
+    {
+      "id": "c02", "tier": 1, "title": "꽃집 금고", "icon": "💐",
+      "story": "꽃집 금고에서 어제 매출이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "어제는 하루 종일 맑았다. 비는 오지 않았다." },
+        { "id": "f2", "text": "꽃집은 오후 9시에 문을 닫는다." },
+        { "id": "f3", "text": "가게 앞 CCTV는 길 쪽만 찍는다." }
+      ],
+      "evidence": [
+        { "name": "뒷문 자물쇠 긁힘", "icon": "🔒", "detail": "뒷문 자물쇠에 새로 생긴 긁힌 자국.", "note": "억지로 연 흔적. 어떤 정보와도 부딪치지 않는다." },
+        { "name": "젖은 우산", "icon": "☂️", "detail": "우산꽂이에 빗물이 뚝뚝 떨어지는 우산. '어젯밤 쓴 것'이라는 진술.", "note": "조작: 어제는 비가 오지 않았다." },
+        { "name": "금고 앞 장갑", "icon": "🧤", "detail": "금고 앞에 떨어진 면장갑 한 짝.", "note": "범인이 흘린 것. 모순 없음." },
+        { "name": "밤 9시 40분 CCTV", "icon": "📹", "detail": "가게 앞 길을 서성이는 사람. 오후 9:40.", "note": "가게가 닫혀도 길에는 사람이 다닌다." },
+        { "name": "마지막 영수증", "icon": "🧾", "detail": "마지막 손님 영수증. 오후 8:55.", "note": "문 닫기 전 시각이다." },
+        { "name": "깨진 화분", "icon": "🪴", "detail": "바닥에 깨진 화분과 흙이 흩어져 있다.", "note": "꽃집이라 흙은 자연스럽다. 범인이 부딪쳐 깼다." }
+      ],
+      "fake": 1,
+      "reasons": [
+        { "text": "어제는 비가 오지 않았는데 빗물에 젖어 있다.", "correct": true },
+        { "text": "문 닫은 뒤라 CCTV에 사람이 찍힐 수 없다.", "correct": false, "why": "길을 찍는 카메라다. 길에는 사람이 다닌다." },
+        { "text": "마지막 영수증이 문 닫기 직전이라 수상하다.", "correct": false, "why": "영업시간 안이다. 모순이 아니다." },
+        { "text": "꽃집 바닥에 흙이 있을 리 없다.", "correct": false, "why": "꽃집엔 흙이 많다." }
+      ],
+      "explain": "하루 종일 맑았던 날, '어젯밤 빗물에 젖은 우산'은 있을 수 없다.",
+      "link": { "facts": ["f1"], "evidence": [] }
+    },
+    {
+      "id": "c03", "tier": 1, "title": "휴관일의 도서관", "icon": "📚",
+      "story": "월요일 오후, 도서관 희귀본실에서 옛 책 한 권이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "도서관은 매주 월요일 휴관. 대출·반납 창구도 닫는다." },
+        { "id": "f2", "text": "관장은 휴관일에도 혼자 출근해 정리한다." },
+        { "id": "f3", "text": "사건은 월요일 오후 3시쯤 일어났다." }
+      ],
+      "evidence": [
+        { "name": "깨진 유리 조각", "icon": "🪟", "detail": "희귀본실 유리문 조각이 안쪽 바닥에 흩어져 있다.", "note": "밖에서 깨면 조각이 안쪽으로 떨어진다. 자연스럽다." },
+        { "name": "관장 카드키 기록", "icon": "💳", "detail": "관장 카드키 사용. 월요일 오후 2:50, 정문.", "note": "관장은 휴관일에도 출근한다." },
+        { "name": "창구 대출 기록", "icon": "📄", "detail": "옛 책 대출 처리. 월요일 오후 3:10, 창구 담당 사서.", "note": "조작: 월요일엔 창구가 닫혀 있다." },
+        { "name": "미지근한 커피", "icon": "☕", "detail": "희귀본실 창가에 반쯤 남은 커피. 아직 미지근하다.", "note": "출근한 관장이 마시던 것. 모순 없음." },
+        { "name": "오후 3시 20분 경보", "icon": "🚨", "detail": "희귀본실 경보가 오후 3:20에 울렸다.", "note": "유리가 깨질 때 울린 경보. 사건 시각과 맞다." },
+        { "name": "책장의 장갑 자국", "icon": "🧤", "detail": "책장 먼지 위에 남은 장갑 자국.", "note": "범인 흔적. 모순 없음." }
+      ],
+      "fake": 2,
+      "reasons": [
+        { "text": "휴관일이라 대출 창구가 열리지 않았다.", "correct": true },
+        { "text": "휴관일엔 관장 카드키를 쓸 수 없다.", "correct": false, "why": "관장은 휴관일에도 출근한다." },
+        { "text": "유리 조각이 안쪽에 있으니 안에서 깬 것이다.", "correct": false, "why": "밖에서 깨야 조각이 안쪽으로 떨어진다." },
+        { "text": "경보가 울렸는데 아무도 안 온 게 수상하다.", "correct": false, "why": "수상할 순 있어도 어떤 정보와도 부딪치지 않는다." }
+      ],
+      "explain": "월요일은 창구가 닫힌다. '창구 대출 기록'은 생길 수 없다.",
+      "link": { "facts": ["f1", "f3"], "evidence": [] }
+    },
+    {
+      "id": "c04", "tier": 1, "title": "겨울 캠핑장", "icon": "🏕️",
+      "story": "캠핑장 텐트에서 카메라 가방이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "어젯밤 기온 영하 8도. 호수가 꽁꽁 얼었다." },
+        { "id": "f2", "text": "밤 10시부터 새벽 1시까지 눈이 내렸다." },
+        { "id": "f3", "text": "관리소는 밤새 불을 켜고 무전으로 순찰한다." }
+      ],
+      "evidence": [
+        { "name": "찢긴 텐트", "icon": "⛺", "detail": "텐트 지퍼 옆 천이 칼로 찢겨 있다.", "note": "범인 흔적. 모순 없음." },
+        { "name": "눈 위 발자국", "icon": "👣", "detail": "호수 쪽으로 이어진 발자국. 위에 눈이 살짝 덮였다.", "note": "눈이 그치기 전에 찍혀 살짝 덮였다. 자연스럽다." },
+        { "name": "빈 코코아 컵", "icon": "☕", "detail": "버너 옆에 다 마신 코코아 컵.", "note": "추운 밤 캠핑에 자연스럽다." },
+        { "name": "밤 11시 무전 기록", "icon": "📻", "detail": "관리소 무전 밤 11:05. '호숫가에 불빛이 보인다.'", "note": "관리소는 밤새 순찰한다." },
+        { "name": "자정의 보트 사진", "icon": "🚣", "detail": "자정에 찍힌 사진. 호수에서 노 젓는 사람, 물결이 출렁인다.", "note": "조작: 언 호수엔 물결이 없다." },
+        { "name": "얼음 위 장갑", "icon": "🧤", "detail": "얼어붙은 호수 한가운데 떨어진 장갑.", "note": "언 호수는 걸어갈 수 있다." }
+      ],
+      "fake": 4,
+      "reasons": [
+        { "text": "호수가 꽁꽁 얼어 노를 저을 물결이 없다.", "correct": true },
+        { "text": "눈이 내리는 중엔 발자국이 남지 않는다.", "correct": false, "why": "발자국은 남고, 그 위에 눈이 살짝 덮였을 뿐이다." },
+        { "text": "호수 한가운데엔 장갑이 떨어질 수 없다.", "correct": false, "why": "언 호수 위는 걸어갈 수 있다." },
+        { "text": "밤엔 관리소가 무전을 하지 않는다.", "correct": false, "why": "관리소는 밤새 순찰한다." }
+      ],
+      "explain": "영하 8도에 꽁꽁 언 호수에서 '출렁이는 물결'은 나올 수 없다.",
+      "link": { "facts": ["f1"], "evidence": [] }
+    },
+    {
+      "id": "c05", "tier": 1, "title": "정전된 빵집", "icon": "🥐",
+      "story": "새벽에 빵집 금전등록기가 털렸다.",
+      "facts": [
+        { "id": "f1", "text": "새벽 2시~6시, 동네 전체가 정전됐다." },
+        { "id": "f2", "text": "빵집 오븐은 전기 오븐이다." },
+        { "id": "f3", "text": "금전등록기는 손잡이로 여는 옛날 방식이다." }
+      ],
+      "evidence": [
+        { "name": "떨어진 손전등", "icon": "🔦", "detail": "카운터 아래 켜진 채 굴러다니는 손전등.", "note": "정전이라 손전등이 필요했다." },
+        { "name": "열린 금전등록기", "icon": "💰", "detail": "손잡이가 당겨진 채 텅 비어 있다.", "note": "손잡이식이라 전기 없이 열린다." },
+        { "name": "밀가루 위 발자국", "icon": "👣", "detail": "바닥 밀가루에 찍힌 운동화 자국.", "note": "밝기와 상관없이 발자국은 찍힌다." },
+        { "name": "배달 기사 진술", "icon": "🛵", "detail": "새벽 5시: '가게 안이 깜깜했어요.'", "note": "정전 중이었다. 맞다." },
+        { "name": "갓 구운 빵 사진", "icon": "🍞", "detail": "새벽 4시 사진. 오븐 불이 켜져 있고 빵이 부풀어 있다.", "note": "조작: 정전 중엔 전기 오븐이 켜질 수 없다." },
+        { "name": "새벽 4시 반 문자", "icon": "💬", "detail": "사장님 휴대폰에 온 문자 '가게 괜찮아?' 새벽 4:30.", "note": "휴대폰은 배터리로 켜진다. 정전과 상관없다." }
+      ],
+      "fake": 4,
+      "reasons": [
+        { "text": "정전이라 전기 오븐이 켜질 수 없었다.", "correct": true },
+        { "text": "정전 중엔 휴대폰 문자를 받을 수 없다.", "correct": false, "why": "휴대폰은 배터리로 켜진다." },
+        { "text": "정전이면 금전등록기를 열 수 없다.", "correct": false, "why": "손잡이로 여는 방식이다." },
+        { "text": "깜깜한 데선 발자국이 찍히지 않는다.", "correct": false, "why": "밝기와 상관없이 찍힌다." }
+      ],
+      "explain": "정전(2~6시) 한가운데인 새벽 4시에 전기 오븐이 켜져 있을 수 없다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [] }
+    },
+    {
+      "id": "c06", "tier": 2, "title": "남쪽행 열차", "icon": "🚄",
+      "story": "열차에서 내린 승객의 서류 가방이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "열차는 오전 7:00 출발, 2시간 30분 뒤 종착역 도착. 중간 정차 없음." },
+        { "id": "f2", "text": "피해자는 종착역에서 내린 직후 가방이 없는 걸 알았다." },
+        { "id": "f3", "text": "열차 5호차 옆에 카페 칸이 있다." }
+      ],
+      "evidence": [
+        { "name": "열차표", "icon": "🎫", "detail": "오전 7:00 출발, 5호차 12번 좌석.", "note": "출발 시각과 맞다." },
+        { "name": "커피 영수증", "icon": "🧾", "detail": "열차 카페 칸, 오전 8:15.", "note": "카페 칸이 있다. 운행 중 시각." },
+        { "name": "선반 위 가방 사진", "icon": "📸", "detail": "오전 8:40, 선반에 놓인 가방.", "note": "운행 중 찍은 사진. 맞다." },
+        { "name": "개찰구 CCTV", "icon": "📹", "detail": "종착역 개찰구, 오전 9:00. 피해자가 가방을 들고 나간다.", "note": "조작: 9시엔 아직 열차 안이었다." },
+        { "name": "교통카드 기록", "icon": "🚪", "detail": "피해자 교통카드, 종착역 개찰구 오전 9:32.", "note": "9:30 도착 직후. 맞다." },
+        { "name": "분실 신고", "icon": "📝", "detail": "역무실 접수, 오전 9:45.", "note": "내린 뒤 신고. 순서가 맞다." }
+      ],
+      "fake": 3,
+      "reasons": [
+        { "text": "9시엔 아직 열차 안이었다. 도착은 9시 30분.", "correct": true },
+        { "text": "열차 안에선 커피를 살 수 없다.", "correct": false, "why": "카페 칸이 있다." },
+        { "text": "도착 15분 뒤 신고는 너무 늦다.", "correct": false, "why": "늦을 순 있지만 모순은 아니다." },
+        { "text": "선반 사진 시각엔 열차가 이미 도착했다.", "correct": false, "why": "8:40은 아직 운행 중이다." }
+      ],
+      "explain": "7:00 출발 + 2시간 30분 = 9:30 도착. 9:00에 개찰구를 나갈 수 없다.",
+      "link": { "facts": ["f1"], "evidence": [4] }
+    },
+    {
+      "id": "c07", "tier": 2, "title": "개막 사흘째 박물관", "icon": "💎",
+      "story": "박물관 개막 사흘째 밤, 보석 '푸른 이슬'이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "전시는 3월 10일에 개막했다." },
+        { "id": "f2", "text": "보석 진열장은 개막 전날 밤에 설치했다." },
+        { "id": "f3", "text": "경비원은 매일 진열장 유리를 닦는다." },
+        { "id": "f4", "text": "도난은 3월 12일 밤." }
+      ],
+      "evidence": [
+        { "name": "설치 작업일지", "icon": "📋", "detail": "3월 9일 밤 10시, 진열장 설치 완료.", "note": "개막 전날 밤. 맞다." },
+        { "name": "유리의 지문", "icon": "🖐️", "detail": "진열장 유리에 경비원 지문.", "note": "매일 닦으니 남는 게 당연하다." },
+        { "name": "비상문 기록", "icon": "🚪", "detail": "3월 12일 밤 11:14, 비상문 열림.", "note": "도난 시각과 맞다." },
+        { "name": "관람객 방명록", "icon": "📖", "detail": "3월 11일, '푸른 이슬 너무 예뻐요.'", "note": "개막 다음 날. 볼 수 있었다." },
+        { "name": "경비원 셀카", "icon": "🤳", "detail": "3월 8일 촬영. 진열장 속 보석 앞에서 찍은 사진.", "note": "조작: 3월 8일엔 진열장이 아직 없었다." },
+        { "name": "바닥의 공구", "icon": "🔧", "detail": "3월 13일 아침 발견. 유리 자르는 칼.", "note": "도난 다음 날 아침에 발견했을 뿐." }
+      ],
+      "fake": 4,
+      "reasons": [
+        { "text": "3월 8일엔 진열장이 아직 설치되지 않았다.", "correct": true },
+        { "text": "경비원 지문이 유리에 있으면 안 된다.", "correct": false, "why": "매일 닦으니 지문이 남는다." },
+        { "text": "개막 다음 날 보석을 칭찬하는 건 이르다.", "correct": false, "why": "개막 뒤라 볼 수 있었다." },
+        { "text": "공구가 도난 다음 날 발견돼 시간이 안 맞는다.", "correct": false, "why": "다음 날 아침에 발견했을 뿐이다." }
+      ],
+      "explain": "진열장은 개막 전날인 3월 9일 밤 설치. 3월 8일엔 보석이 진열장에 있을 수 없다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [0] }
+    },
+    {
+      "id": "c08", "tier": 2, "title": "섬 등대 금고", "icon": "🗼",
+      "story": "작은 섬 등대 금고에서 옛 금화가 사라졌다. 용의자는 B.",
+      "facts": [
+        { "id": "f1", "text": "섬 배편: 육지 출발 오전 8:00, 섬 출발 오후 4:00. 각 30분. 다른 배는 없다." },
+        { "id": "f2", "text": "B는 오전 8시 배로 섬에 왔다(승선 명단)." },
+        { "id": "f3", "text": "도난은 오후 2시쯤." }
+      ],
+      "evidence": [
+        { "name": "계단의 모래 발자국", "icon": "👣", "detail": "등대 계단에 모래 묻은 발자국.", "note": "섬 흙길 흔적. 모순 없음." },
+        { "name": "매점 영수증", "icon": "🧾", "detail": "섬 매점, 오후 1:40, B의 카드.", "note": "B는 섬에 있었다. 맞다." },
+        { "name": "금고 긁힘", "icon": "🔐", "detail": "금고 문에 드라이버 자국.", "note": "억지로 연 흔적. 모순 없음." },
+        { "name": "항구 카페 CCTV", "icon": "📹", "detail": "육지 항구 카페, 오후 3:00. 커피를 사는 B.", "note": "조작: 4시 배 전엔 섬을 떠날 수 없다." },
+        { "name": "오후 4시 승선 명단", "icon": "📋", "detail": "섬 출발 오후 4:00 배 명단에 B.", "note": "섬을 떠나는 유일한 배. 맞다." },
+        { "name": "전당포 기록", "icon": "💰", "detail": "육지 전당포, 오후 5:10. 금화 한 닢 거래.", "note": "4:30 도착 뒤라 가능하다." }
+      ],
+      "fake": 3,
+      "reasons": [
+        { "text": "오후 4시 배 전에는 섬을 떠날 수 없었다.", "correct": true },
+        { "text": "전당포 거래가 배 도착보다 먼저다.", "correct": false, "why": "4:30 도착, 5:10 거래. 순서가 맞다." },
+        { "text": "B가 승선 명단에 두 번 있을 리 없다.", "correct": false, "why": "들어올 때, 나갈 때 두 번 타는 게 맞다." },
+        { "text": "금고는 드라이버로 열 수 없다.", "correct": false, "why": "그렇게 단정할 정보가 없다." }
+      ],
+      "explain": "B는 8시 배로 섬에 왔고, 섬을 떠나는 배는 4시뿐. 3시에 육지 카페에 있을 수 없다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [4] }
+    },
+    {
+      "id": "c09", "tier": 2, "title": "멈춘 시계탑", "icon": "🕰️",
+      "story": "광장 시계탑 아래 기념품 가게에서 오르골이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "시계탑 종은 매 정시에 울린다." },
+        { "id": "f2", "text": "어제 오후 2시~5시, 수리 때문에 종을 멈췄다." },
+        { "id": "f3", "text": "도난은 어제 오후 3시쯤." }
+      ],
+      "evidence": [
+        { "name": "수리 작업표", "icon": "📋", "detail": "작업 시간 오후 2:00~5:00, 종 정지.", "note": "주어진 정보와 같다." },
+        { "name": "6시 종소리 영상", "icon": "🔔", "detail": "관광객 영상, 오후 6:00 종소리.", "note": "수리가 끝난 뒤다. 맞다." },
+        { "name": "기름 묻은 장갑", "icon": "🧤", "detail": "탑 계단에 떨어진 기름 장갑.", "note": "수리 기사 것. 자연스럽다." },
+        { "name": "카페 영수증", "icon": "🧾", "detail": "광장 카페, 오후 3:20.", "note": "모순 없음." },
+        { "name": "목격자 진술", "icon": "🗣️", "detail": "'오후 3시 종이 울릴 때 가게에서 나오는 사람을 봤어요.'", "note": "조작: 3시엔 종이 멈춰 있었다." },
+        { "name": "새 자물쇠 긁힘", "icon": "🔒", "detail": "어제 아침 새로 단 자물쇠에 긁힌 자국.", "note": "억지로 열면 새것도 긁힌다." }
+      ],
+      "fake": 4,
+      "reasons": [
+        { "text": "3시엔 수리 중이라 종이 울리지 않았다.", "correct": true },
+        { "text": "6시에도 종이 울릴 수 없다.", "correct": false, "why": "수리는 5시에 끝났다." },
+        { "text": "수리 중엔 계단에 기름이 있을 수 없다.", "correct": false, "why": "수리하면 기름이 묻는다." },
+        { "text": "새 자물쇠엔 긁힌 자국이 생길 수 없다.", "correct": false, "why": "억지로 열면 새것도 긁힌다." }
+      ],
+      "explain": "종은 2~5시 멈춰 있었다. '3시 종소리'를 들었다는 진술은 거짓이다.",
+      "link": { "facts": ["f2", "f3"], "evidence": [0] }
+    },
+    {
+      "id": "c10", "tier": 2, "title": "어린이날 문구점", "icon": "✏️",
+      "story": "어린이날, 문구점 금고에서 현금이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "사건일은 5월 5일 어린이날, 공휴일이다." },
+        { "id": "f2", "text": "은행 창구는 주말·공휴일에 열지 않는다." },
+        { "id": "f3", "text": "ATM은 365일 24시간 쓸 수 있다." }
+      ],
+      "evidence": [
+        { "name": "ATM 출금 영수증", "icon": "🏧", "detail": "5월 5일 오후 1:00, 사장님 계좌.", "note": "ATM은 공휴일에도 된다." },
+        { "name": "창구 입금증", "icon": "🏦", "detail": "5월 5일 오후 2:00, 창구 직원 도장.", "note": "조작: 공휴일엔 창구가 닫힌다." },
+        { "name": "셔터 긁힘", "icon": "🔩", "detail": "셔터 아래쪽에 쇠막대 자국.", "note": "억지로 연 흔적. 모순 없음." },
+        { "name": "놀이공원 입장권", "icon": "🎡", "detail": "5월 5일 오후 3:00, 아르바이트생 A.", "note": "공휴일에 놀이공원이 쉰다는 정보는 없다." },
+        { "name": "금고 비밀번호 메모", "icon": "📝", "detail": "금고 옆에 붙어 있던 메모.", "note": "허술하지만 모순은 아니다." },
+        { "name": "택시 결제 기록", "icon": "🚕", "detail": "5월 5일 오후 4:00, 문구점 앞.", "note": "모순 없음." }
+      ],
+      "fake": 1,
+      "reasons": [
+        { "text": "공휴일엔 은행 창구가 열지 않는다.", "correct": true },
+        { "text": "공휴일엔 ATM을 쓸 수 없다.", "correct": false, "why": "ATM은 365일 쓸 수 있다." },
+        { "text": "어린이날엔 놀이공원이 쉰다.", "correct": false, "why": "그런 정보는 없다. 오히려 붐비는 날이다." },
+        { "text": "사건 뒤 택시를 탄 기록은 수상하다.", "correct": false, "why": "수상할 순 있지만 모순은 아니다." }
+      ],
+      "explain": "공휴일엔 창구가 닫힌다. 창구 직원 도장이 찍힐 수 없다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [] }
+    },
+    {
+      "id": "c11", "tier": 3, "title": "정전된 경매장", "icon": "🖼️",
+      "story": "경매 도중 정전. 불이 들어오자 그림 7번이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "오후 8:00~8:10 정전. 비상등만 켜졌다." },
+        { "id": "f2", "text": "경매장 시계는 모두 전자시계. 정전이 끝나자 전부 '12:00'으로 깜빡였다." },
+        { "id": "f3", "text": "CCTV는 비상 전원으로 계속 녹화됐다." },
+        { "id": "f4", "text": "그림은 8:05쯤 사라졌다." }
+      ],
+      "evidence": [
+        { "name": "CCTV 영상", "icon": "📹", "detail": "8:05, 비상등 아래 흐릿한 사람이 액자 쪽으로 간다.", "note": "비상 전원으로 녹화됐다. 맞다." },
+        { "name": "손전등 사진", "icon": "📸", "detail": "손님 휴대폰 8:03. 손전등 불빛에 그림 7번이 걸려 있다.", "note": "8:05쯤 사라졌으니 8:03엔 있었다." },
+        { "name": "벽시계 사진", "icon": "🕗", "detail": "손님 휴대폰 8:07. 벽 전자시계가 '8:07'을 가리킨다.", "note": "조작: 정전 중 전자시계는 꺼져 있었다." },
+        { "name": "경비원 무전", "icon": "📻", "detail": "8:12, '시계가 전부 12시로 깜빡여요.'", "note": "정전 뒤 시계 상태와 맞다." },
+        { "name": "액자의 검은 실", "icon": "🧶", "detail": "빈 액자 모서리에 걸린 검은 실 몇 가닥.", "note": "범인 장갑 섬유. 모순 없음." },
+        { "name": "낙찰 도장", "icon": "🔨", "detail": "경매 목록 7번에 '7:50 낙찰' 도장.", "note": "낙찰 뒤에도 그림은 벽에 걸려 있었다." }
+      ],
+      "fake": 2,
+      "reasons": [
+        { "text": "정전 중 전자시계는 꺼져 있었다. 시각이 보일 수 없다.", "correct": true },
+        { "text": "정전 중엔 CCTV가 녹화되지 않는다.", "correct": false, "why": "비상 전원으로 녹화됐다." },
+        { "text": "깜깜해서 사진을 찍을 수 없었다.", "correct": false, "why": "비상등과 손전등이 있었다." },
+        { "text": "낙찰된 그림은 도난당할 수 없다.", "correct": false, "why": "낙찰 뒤에도 벽에 걸려 있었다." }
+      ],
+      "explain": "8:07은 정전 한가운데. 전자시계는 꺼졌다가 정전 뒤 '12:00'으로 깜빡였다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [3] }
+    },
+    {
+      "id": "c12", "tier": 3, "title": "유람선 선실", "icon": "🛳️",
+      "story": "유람선 관광 중 선실에서 손목시계가 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "배는 오후 2시 출항, 6시 귀항. 중간에 멈추지 않는다." },
+        { "id": "f2", "text": "바다 위에선 휴대폰 통신이 안 된다. 선내 와이파이만 된다." },
+        { "id": "f3", "text": "선내 와이파이는 오후 4:00~4:30 고장 났다." }
+      ],
+      "evidence": [
+        { "name": "SNS 사진", "icon": "📱", "detail": "오후 3:00, 선내 와이파이로 올린 갑판 사진.", "note": "3시엔 와이파이가 됐다." },
+        { "name": "받은 메시지", "icon": "💬", "detail": "오후 4:15, 피해자 휴대폰에 '선실 열쇠 나한테 맡겨.'", "note": "조작: 4:15엔 통신도 와이파이도 안 됐다." },
+        { "name": "매점 카드 결제", "icon": "💳", "detail": "오후 4:20 결제. '오프라인 결제, 귀항 후 6:05 승인'.", "note": "인터넷 없이 결제하고 나중에 전송했다." },
+        { "name": "바다 사진", "icon": "🌊", "detail": "오후 5:00, 사방이 수평선.", "note": "운항 중이다. 맞다." },
+        { "name": "복사한 열쇠", "icon": "🔑", "detail": "선실 열쇠 복사본. 매점 옆 쓰레기통에서 발견.", "note": "범인이 버린 것. 모순 없음." },
+        { "name": "택시 승차 기록", "icon": "🚕", "detail": "항구 앞, 오후 6:10.", "note": "귀항 뒤다. 맞다." }
+      ],
+      "fake": 1,
+      "reasons": [
+        { "text": "4:15엔 와이파이가 고장이었고 바다 위라 통신도 안 됐다.", "correct": true },
+        { "text": "와이파이 고장 중엔 카드 결제를 할 수 없다.", "correct": false, "why": "오프라인 결제였다. 승인은 귀항 뒤." },
+        { "text": "바다 위에선 SNS에 사진을 올릴 수 없다.", "correct": false, "why": "3시엔 선내 와이파이가 됐다." },
+        { "text": "6시 귀항인데 6시 10분 택시는 너무 빠르다.", "correct": false, "why": "10분이면 충분하다. 모순 아니다." }
+      ],
+      "explain": "4:15에 메시지가 오려면 통신이나 와이파이가 필요하다. 그때는 둘 다 안 됐다.",
+      "link": { "facts": ["f2", "f3"], "evidence": [] }
+    },
+    {
+      "id": "c13", "tier": 3, "title": "눈 덮인 별장", "icon": "❄️",
+      "story": "산속 별장에서 새벽에 보석함이 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "밤새 내리던 눈이 새벽 3시에 그쳤다." },
+        { "id": "f2", "text": "아침 7시, 별장 주변 눈 위 발자국은 한 줄뿐. 관리인이 들어온 발자국이다." },
+        { "id": "f3", "text": "주인이 새벽 4시에 보석함을 확인했다. 5시엔 없었다." },
+        { "id": "f4", "text": "거실 벽난로는 밤새 켜져 있었다." }
+      ],
+      "evidence": [
+        { "name": "정원의 그림자", "icon": "🌲", "detail": "새벽 4:30 사진. 정원 눈밭을 걸어 나가는 그림자.", "note": "조작: 3시 이후 눈밭을 걸으면 발자국이 남는다." },
+        { "name": "열린 창문", "icon": "🪟", "detail": "거실 창문이 열려 있다. 걸쇠는 안쪽에서 풀렸다.", "note": "안에서 연 것. 모순 없음." },
+        { "name": "녹은 창틀 눈", "icon": "💧", "detail": "창틀의 눈이 녹아 물이 고였다.", "note": "벽난로 열기로 녹았다." },
+        { "name": "젖은 장화", "icon": "🥾", "detail": "현관의 관리인 장화가 젖어 있다.", "note": "아침에 눈을 밟고 왔다." },
+        { "name": "현관 센서 기록", "icon": "🚪", "detail": "새벽 2:10, 현관문 열림.", "note": "3시까지 눈이 와 발자국이 덮였다." },
+        { "name": "열쇠 구멍 긁힘", "icon": "🗝️", "detail": "보석함 열쇠 구멍에 핀 자국.", "note": "억지로 연 흔적. 모순 없음." }
+      ],
+      "fake": 0,
+      "reasons": [
+        { "text": "눈이 3시에 그쳤으니 4:30에 걸었다면 발자국이 남아야 한다.", "correct": true },
+        { "text": "새벽 2시에 문이 열렸다면 발자국이 남아야 한다.", "correct": false, "why": "3시까지 눈이 와서 덮였다." },
+        { "text": "관리인은 아침에 왔으니 장화가 젖을 수 없다.", "correct": false, "why": "눈을 밟고 오면 젖는다." },
+        { "text": "한겨울 밤에 창틀 눈이 녹을 수 없다.", "correct": false, "why": "벽난로가 밤새 켜져 있었다." }
+      ],
+      "explain": "3시 뒤 눈밭을 걸으면 발자국이 남는다. 아침에 남은 건 관리인 발자국 한 줄뿐.",
+      "link": { "facts": ["f1", "f2"], "evidence": [] }
+    },
+    {
+      "id": "c14", "tier": 3, "title": "새해 기념 우표", "icon": "✉️",
+      "story": "수집가의 앨범에서 '새해 기념 우표'가 사라졌다.",
+      "facts": [
+        { "id": "f1", "text": "새해 기념 우표는 2019년 '첫 월요일'에 처음 팔렸다." },
+        { "id": "f2", "text": "2019년 1월 1일은 화요일이었다." },
+        { "id": "f3", "text": "소인에는 우체국이 편지를 받은 날짜가 찍힌다." }
+      ],
+      "evidence": [
+        { "name": "1월 3일 소인 편지", "icon": "✉️", "detail": "같은 우표가 붙은 편지. 소인 '2019.1.3'.", "note": "조작: 첫 판매일(1월 7일)보다 앞선다." },
+        { "name": "1월 8일 소인 편지", "icon": "📨", "detail": "같은 우표가 붙은 다른 편지. 소인 '2019.1.8'.", "note": "첫 판매 다음 날. 맞다." },
+        { "name": "우체국 판매 대장", "icon": "📒", "detail": "'2019.1.7 새해 기념 우표 첫 판매.'", "note": "1월 1일 화요일 → 첫 월요일은 7일. 맞다." },
+        { "name": "싼 구매 영수증", "icon": "🧾", "detail": "2021년 수집가가 산 영수증. 값이 아주 싸다.", "note": "싸게 샀을 뿐. 모순 없음." },
+        { "name": "뒷면 연필 메모", "icon": "✏️", "detail": "우표 뒷면에 연필로 '19'.", "note": "2019년 표시. 맞다." },
+        { "name": "확대경 지문", "icon": "🔍", "detail": "앨범 옆 확대경에 수집가 지문.", "note": "본인 물건이다." }
+      ],
+      "fake": 0,
+      "reasons": [
+        { "text": "1월 3일은 첫 판매일(1월 7일)보다 앞선다.", "correct": true },
+        { "text": "1월 8일 소인은 첫 판매일과 달라 맞지 않는다.", "correct": false, "why": "판매 다음 날 보낸 편지일 뿐이다." },
+        { "text": "귀한 우표를 그렇게 싸게 살 수 없다.", "correct": false, "why": "운이 좋았을 뿐, 정보와 부딪치지 않는다." },
+        { "text": "뒷면 '19'는 19번째 우표라는 뜻이라 맞지 않는다.", "correct": false, "why": "그렇게 볼 근거가 없다." }
+      ],
+      "explain": "1월 1일이 화요일이면 첫 월요일은 1월 7일. 그보다 앞선 1월 3일 소인은 있을 수 없다.",
+      "link": { "facts": ["f1", "f2"], "evidence": [2] }
+    },
+    {
+      "id": "c15", "tier": 3, "title": "마라톤 날의 호텔", "icon": "🏃",
+      "story": "마라톤 날 오전, 호텔 금고가 털렸다. 출전 선수 D가 의심받는다.",
+      "facts": [
+        { "id": "f1", "text": "출발 오전 9:00. 코스 42km, 반환점 21km." },
+        { "id": "f2", "text": "D의 반환점 공식 기록: 오전 10:30." },
+        { "id": "f3", "text": "가장 빠른 선수도 21km에 1시간 가까이 걸린다." },
+        { "id": "f4", "text": "금고는 오전 10:40~11:20 사이 털렸다." }
+      ],
+      "evidence": [
+        { "name": "결승 기록증", "icon": "🏅", "detail": "D의 완주 기록증. 결승 통과 오전 11:00.", "note": "조작: 남은 21km를 30분에 달릴 수 없다." },
+        { "name": "스마트워치 기록", "icon": "⌚", "detail": "D의 시계. 32km 지점 오전 11:40.", "note": "반환점 뒤 11km에 70분. 자연스럽다." },
+        { "name": "결승선 단체 사진", "icon": "📸", "detail": "낮 12:20, 땀에 젖은 D가 결승선에 있다.", "note": "3시간 남짓 완주. 맞다." },
+        { "name": "호텔 카드키", "icon": "💳", "detail": "D의 방 카드키, 오전 8:20 사용.", "note": "출발 전이다. 맞다." },
+        { "name": "금고 앞 물병", "icon": "🧴", "detail": "금고 앞에 놓인 대회 물병.", "note": "대회 날 손님 누구나 가졌다. 모순 없음." },
+        { "name": "프런트 진술", "icon": "🛎️", "detail": "'11시쯤 운동복 손님이 지나갔어요.'", "note": "대회 날엔 운동복 손님이 많다. 모순 없음." }
+      ],
+      "fake": 0,
+      "reasons": [
+        { "text": "반환점이 10:30인데 남은 21km를 30분에 달릴 수 없다.", "correct": true },
+        { "text": "32km 지점이 11:40이면 너무 느려 맞지 않는다.", "correct": false, "why": "11km에 70분, 평범한 속도다." },
+        { "text": "출발 전에 카드키를 쓴 건 수상하다.", "correct": false, "why": "출발 전이라 문제없다." },
+        { "text": "물병이 금고 앞에 있으니 선수가 범인이다.", "correct": false, "why": "범인 추측일 뿐, 어떤 증거가 가짜인지와 상관없다." }
+      ],
+      "explain": "반환점 10:30 → 결승 11:00이면 21km를 30분에 달린 셈. 가장 빠른 선수도 불가능하다.",
+      "link": { "facts": ["f2", "f3"], "evidence": [1, 2] }
+    }
+  ]
+}
+</script>
+<script>
+/* ===== 증거 조작범 (fake-evidence) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
+ * AudioContext 미지원·생성 실패 시 모든 호출은 조용히 무시된다(게임은 소리 없이 정상 진행).
+ * 사용법: 사용자 제스처(click/touchend/pointerup/keydown) 핸들러 맨 앞에서 Sound.unlock() →
+ *         Sound.play('cardOpen'), Sound.play('link', { step: 1 }) 등.
+ * 톤: 글을 읽는 추리 게임. 모든 소리는 짧고 부드럽게, 고음역은 필터로 깎는다.
+ * 신호 경로: [sfxBus, musicBus(+echo)] → master(음소거/볼륨) → limiter(DynamicsCompressor) → destination
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'fake-evidence-muted';
+  var MUSIC_KEY = 'fake-evidence-music-off';   // 선택 기능: 배경음악만 끄기
+  var MASTER_VOL = 0.55;   // 전체
+  var MUSIC_VOL = 0.09;    // 배경음악 버스 (최종 약 -42 dBFS RMS, 효과음보다 확실히 뒤에)
+  var DUCK = 0.45;         // 판정음이 날 때 음악을 이 비율로 잠시 낮춤
+
+  var ctx = null, master = null, limiter = null, sfxBus = null, sfxTone = null;
+  var musicBus = null, musicDuck = null, echoIn = null, noiseBuf = null;
+  var muted = false, musicOff = false, offline = false;
+  var last = {};
+  var music = { on: false, timer: null, ev: 0, loop: 0, origin: 0, nodes: [], stopTimer: null };
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+  try { musicOff = localStorage.getItem(MUSIC_KEY) === '1'; } catch (e) { musicOff = false; }
+
+  function build(c) {
+    ctx = c;
+    limiter = ctx.createDynamicsCompressor();          // 마스터 리미터: -6 dBFS 이상만 강하게 누름
+    limiter.threshold.value = -6; limiter.knee.value = 2; limiter.ratio.value = 20;
+    limiter.attack.value = 0.002; limiter.release.value = 0.15;
+    limiter.connect(ctx.destination);
+
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER_VOL;
+    master.connect(limiter);
+
+    // 효과음: 6.5kHz 위를 완만히 깎아 귀 피로를 줄인다
+    sfxTone = ctx.createBiquadFilter();
+    sfxTone.type = 'lowpass'; sfxTone.frequency.value = 6500; sfxTone.Q.value = 0.5;
+    sfxTone.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(sfxTone);
+
+    // 음악: musicBus(트랙 볼륨/페이드) → musicDuck(판정음 덕킹) → master
+    musicDuck = ctx.createGain(); musicDuck.gain.value = 1; musicDuck.connect(master);
+    musicBus = ctx.createGain(); musicBus.gain.value = musicOff ? 0 : MUSIC_VOL; musicBus.connect(musicDuck);
+
+    // 피아노용 짧은 잔향(피드백 딜레이 0.43s, 피드백 0.28, 2.2kHz 로우패스)
+    echoIn = ctx.createGain(); echoIn.gain.value = 0.35;
+    var dl = ctx.createDelay(1.0); dl.delayTime.value = 0.43;
+    var fb = ctx.createGain(); fb.gain.value = 0.28;
+    var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200;
+    echoIn.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(musicBus);
+
+    var len = Math.floor(ctx.sampleRate * 0.6);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = noiseBuf.getChannelData(0), seed = 20261115;
+    for (var j = 0; j < len; j++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; d[j] = seed / 0x3fffffff - 1; }
+  }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var c;
+      try { c = new AC({ latencyHint: 'interactive' }); } catch (e1) { c = new AC(); }
+      build(c);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function running() { return !!ctx && (offline || ctx.state === 'running'); }
+  function ready() { return running() && !muted; }
+
+  function throttled(key, t, gap) {
+    if (last[key] !== undefined && t - last[key] < gap && t >= last[key]) return true;
+    last[key] = t;
+    return false;
+  }
+
+  // ---------- 음원 기본 블록 ----------
+  // 단순 음: 파형, 주파수(시작→끝), 시작, 길이, 피크, 어택
+  function tone(type, f0, f1, t, dur, vol, attack, dest) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+      var a = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.03);
+      return o;
+    } catch (e) { return null; }
+  }
+
+  // 필터 노이즈: 시작, 길이, 피크, 필터 종류, 주파수(시작→끝), Q, 어택
+  function noise(t, dur, vol, ftype, f0, f1, q, attack, dest) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = ftype; f.Q.value = q || 0.8;
+      f.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      var a = attack || 0.004;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(dest || sfxBus);
+      s.start(t, Math.random() * 0.2); s.stop(t + dur + 0.03);
+      return s;
+    } catch (e) { return null; }
+  }
+
+  // 부드러운 피아노/벨 느낌: 사인 기음 + 약한 2·3배음, 빠른 어택, 지수 감쇠, 2.5kHz 로우패스
+  function pluck(f, t, dur, vol, dest, track) {
+    try {
+      var g = ctx.createGain(), lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.setValueAtTime(2500, t);
+      lp.frequency.exponentialRampToValueAtTime(900, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(vol * 0.35, t + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      lp.connect(g); g.connect(dest || sfxBus);
+      var parts = [[1, 1], [2, 0.22], [3, 0.07]];
+      for (var i = 0; i < parts.length; i++) {
+        var o = ctx.createOscillator(), pg = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = f * parts[i][0] * (i ? 1.002 : 1);
+        pg.gain.value = parts[i][1];
+        o.connect(pg); pg.connect(lp);
+        o.start(t); o.stop(t + dur + 0.03);
+        if (track) track.push({ n: o, end: t + dur + 0.03 });
+      }
+      return g;
+    } catch (e) { return null; }
+  }
+
+  function duck(t, hold) {
+    try {
+      musicDuck.gain.cancelScheduledValues(t);
+      musicDuck.gain.setTargetAtTime(DUCK, t, 0.04);
+      musicDuck.gain.setTargetAtTime(1, t + hold, 0.35);
+    } catch (e) {}
+  }
+
+  // 음 이름 → Hz
+  var N = { A2: 110.0, Bb2: 116.54, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.0, A3: 220.0,
+            C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0, Bb4: 466.16,
+            C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.0, D6: 1174.66 };
+
+  // ---------- 효과음 ----------
+  var sfx = {
+    // 카드 열기: 종이 넘김 '스윽' (밴드패스 노이즈 상승 스윕) + 아주 작은 종이 탭
+    cardOpen: function (t) {
+      if (throttled('cardOpen', t, 0.06)) return;
+      noise(t, 0.14, 0.20, 'bandpass', 1400, 3600, 0.9, 0.025);
+      noise(t + 0.10, 0.05, 0.10, 'bandpass', 2600, 2000, 1.5, 0.003);
+    },
+    // 카드 닫기: 짧은 하강 노이즈 + 낮은 '톡'
+    cardClose: function (t) {
+      if (throttled('cardClose', t, 0.06)) return;
+      noise(t, 0.09, 0.13, 'bandpass', 2800, 1300, 0.9, 0.012);
+      tone('sine', 210, 150, t + 0.05, 0.06, 0.10, 0.003);
+    },
+    // 가짜 후보 표시: 고무 도장 '툭' (낮은 사인 낙하 + 로우패스 노이즈 짧게)
+    select: function (t) {
+      if (throttled('select', t, 0.05)) return;
+      tone('sine', 170, 85, t, 0.11, 0.42, 0.002);
+      noise(t, 0.05, 0.22, 'lowpass', 900, 400, 0.7, 0.002);
+      noise(t + 0.004, 0.03, 0.05, 'bandpass', 3000, 0, 1.2, 0.002);
+    },
+    // 이유 선택: 연필 체크 느낌의 가벼운 나무 '똑' + 짧은 긁힘
+    reason: function (t) {
+      if (throttled('reason', t, 0.05)) return;
+      tone('triangle', 620, 560, t, 0.06, 0.16, 0.002);
+      noise(t + 0.01, 0.06, 0.06, 'bandpass', 4200, 3000, 2, 0.01);
+    },
+    // 제출: 차분한 2음 (D4 → A4), 결정 '탁'
+    submit: function (t) {
+      if (throttled('submit', t, 0.15)) return;
+      noise(t, 0.04, 0.12, 'lowpass', 1200, 500, 0.7, 0.002);
+      pluck(N.D4, t, 0.35, 0.26);
+      pluck(N.A4, t + 0.09, 0.45, 0.24);
+    },
+    // 정답(가짜+이유 모두 맞음): 따뜻한 상승 아르페지오 F4-A4-D5 → D5+A5 벨, 과하지 않게
+    correct: function (t) {
+      duck(t, 1.0);
+      pluck(N.F4, t, 0.5, 0.17);
+      pluck(N.A4, t + 0.08, 0.5, 0.17);
+      pluck(N.D5, t + 0.16, 0.9, 0.20);
+      pluck(N.A5, t + 0.16, 0.9, 0.07);
+      tone('sine', N.D6, 0, t + 0.30, 0.55, 0.03, 0.02);
+    },
+    // 부분 정답(증거만 맞음): 올라가다 멈추는 미해결 2음 (A4 → D5 + E5 서스)
+    partial: function (t) {
+      duck(t, 0.8);
+      pluck(N.A4, t, 0.45, 0.20);
+      pluck(N.D5, t + 0.12, 0.7, 0.18);
+      pluck(N.E5, t + 0.12, 0.7, 0.09);
+    },
+    // 오답: 낮고 부드러운 하강 2음 (C4 → A3), 버저 없음
+    wrong: function (t) {
+      duck(t, 0.9);
+      tone('triangle', N.C4, N.C4 * 0.985, t, 0.28, 0.20, 0.01);
+      tone('triangle', N.A3, N.A3 * 0.97, t + 0.18, 0.50, 0.20, 0.01);
+      tone('sine', N.A3 / 2, 0, t + 0.18, 0.45, 0.12, 0.02);
+    },
+    // 모순 연결선: 선이 그어지는 동안 짧은 상승 글라이드. opts.step(1~)이 클수록 시작음이 한 단계씩 높아짐
+    link: function (t, opts) {
+      if (throttled('link', t, 0.08)) return;
+      var step = Math.max(0, Math.min(5, ((opts && +opts.step) || 1) - 1));
+      var f0 = 440 * Math.pow(2, step * 2 / 12);
+      tone('sine', f0, f0 * 1.5, t, 0.20, 0.13, 0.03);
+      tone('sine', f0 * 1.5, 0, t + 0.17, 0.18, 0.06, 0.005);
+      noise(t, 0.16, 0.025, 'bandpass', 3000, 5000, 3, 0.05);
+    },
+    // 다음 사건: 큰 종이 넘김 + 작은 단음
+    next: function (t) {
+      if (throttled('next', t, 0.2)) return;
+      noise(t, 0.22, 0.20, 'bandpass', 1100, 3200, 0.8, 0.04);
+      noise(t + 0.16, 0.08, 0.10, 'lowpass', 1500, 600, 0.7, 0.003);
+      pluck(N.D5, t + 0.18, 0.35, 0.12);
+    },
+    // 사건 시작: 낮은 D3+A3 울림 → F4 피아노 한 음 (수사 시작 모티프)
+    caseStart: function (t) {
+      if (throttled('caseStart', t, 0.3)) return;
+      tone('sine', N.D3, 0, t, 0.9, 0.16, 0.04);
+      tone('triangle', N.A3, 0, t, 0.8, 0.07, 0.05);
+      pluck(N.F4, t + 0.22, 0.6, 0.18);
+      pluck(N.E4, t + 0.45, 0.8, 0.15);
+    },
+    // 최종 결과: 짧은 종지 D4-F4-A4 → D5 (약 1.3초)
+    result: function (t) {
+      if (throttled('result', t, 0.5)) return;
+      duck(t, 1.4);
+      pluck(N.D4, t, 0.5, 0.18);
+      pluck(N.F4, t + 0.14, 0.5, 0.18);
+      pluck(N.A4, t + 0.28, 0.5, 0.18);
+      pluck(N.D5, t + 0.46, 1.0, 0.22);
+      tone('sine', N.D3, 0, t + 0.46, 1.0, 0.12, 0.05);
+    },
+    // 새 최고 기록: 밝은 상승 D5-F5-A5-D6 + 은은한 벨 (약 1.2초). result 뒤 약 1.0초 후 권장
+    best: function (t) {
+      if (throttled('best', t, 0.5)) return;
+      duck(t, 1.4);
+      var ns = [N.D5, N.F5, N.A5, N.D6];
+      for (var i = 0; i < ns.length; i++) pluck(ns[i], t + i * 0.09, 0.6 + i * 0.12, 0.15);
+      pluck(N.A5, t + 0.36, 0.9, 0.07);
+      noise(t + 0.30, 0.5, 0.02, 'highpass', 5000, 0, 0.7, 0.05);
+    },
+    // 일반 버튼: 아주 작은 '틱'
+    button: function (t) {
+      if (throttled('button', t, 0.04)) return;
+      tone('sine', 1150, 950, t, 0.035, 0.09, 0.002);
+    }
+  };
+
+  // ---------- 배경음악: 오리지널 D 마이너 패드 + 드문 피아노, 32초 루프 ----------
+  var CHORD_LEN = 8;  // 초
+  var CHORDS = [
+    [N.D3, N.F3, N.A3, N.E4],     // Dm(add9)
+    [N.Bb2, N.F3, N.A3, N.D4],    // Bbmaj7
+    [N.D3 * 0.75, N.D3, N.F3, N.A3], // G2-D3-F3-A3 (Gm7sus 느낌)
+    [N.A2, N.E3, N.G3, N.D4]      // A7sus4
+  ];
+  // 피아노 [루프 내 시각(초), 음, 홀수 루프에서도 연주?]
+  var PIANO = [
+    [2.0, N.E5, 1], [2.8, N.D5, 1], [6.0, N.A4, 0],
+    [11.0, N.F5, 1], [11.8, N.E5, 0], [14.0, N.C5, 1],
+    [18.0, N.D5, 1], [19.0, N.A4, 1], [22.5, N.Bb4, 0],
+    [26.0, N.E5, 1], [26.8, N.D5, 0], [29.5, N.A4, 1]
+  ];
+  // 이벤트 목록(루프 내 시간순): 패드 4 + 피아노 12
+  var EVENTS = (function () {
+    var ev = [], i;
+    for (i = 0; i < CHORDS.length; i++) ev.push({ t: i * CHORD_LEN, pad: i });
+    for (i = 0; i < PIANO.length; i++) ev.push({ t: PIANO[i][0], p: i });
+    ev.sort(function (a, b) { return a.t - b.t; });
+    return ev;
+  })();
+  var LOOP_LEN = CHORD_LEN * CHORDS.length;
+
+  function padChord(idx, t) {
+    var notes = CHORDS[idx], dur = CHORD_LEN + 3.0;
+    var lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    lp.type = 'lowpass'; lp.Q.value = 0.4;
+    lp.frequency.setValueAtTime(500, t);
+    lp.frequency.linearRampToValueAtTime(850, t + CHORD_LEN * 0.5);
+    lp.frequency.linearRampToValueAtTime(550, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(1, t + 2.5);
+    g.gain.setValueAtTime(1, t + CHORD_LEN - 0.5);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    lp.connect(g); g.connect(musicBus);
+    for (var i = 0; i < notes.length; i++) {
+      for (var k = -1; k <= 1; k += 2) {
+        var o = ctx.createOscillator(), og = ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = notes[i];
+        o.detune.value = k * 5;
+        og.gain.value = i === 0 ? 0.09 : 0.06;
+        o.connect(og); og.connect(lp);
+        o.start(t); o.stop(t + dur + 0.05);
+        music.nodes.push({ n: o, end: t + dur + 0.05 });
+      }
+    }
+  }
+
+  function pianoNote(i, t) {
+    var f = PIANO[i][1];
+    var g = pluck(f, t, 2.2, 0.22, musicBus, music.nodes);
+    if (g) { try { g.connect(echoIn); } catch (e) {} }
+  }
+
+  // until: 이 시각(ctx 시간)까지 예약
+  function pump(until) {
+    if (!music.on || !ctx) return;
+    while (true) {
+      var e = EVENTS[music.ev];
+      var at = music.origin + music.loop * LOOP_LEN + e.t;
+      if (at > until) break;
+      if (e.pad !== undefined) padChord(e.pad, at);
+      else if (music.loop % 2 === 0 || PIANO[e.p][2]) pianoNote(e.p, at);
+      music.ev++;
+      if (music.ev >= EVENTS.length) { music.ev = 0; music.loop++; }
+    }
+    // 끝난 노드 정리
+    var now = ctx.currentTime, keep = [];
+    for (var k = 0; k < music.nodes.length; k++) if (music.nodes[k].end > now) keep.push(music.nodes[k]);
+    music.nodes = keep;
+  }
+
+  function scheduleMusic() {
+    music.timer = null;
+    if (!music.on || !ctx) return;
+    try { pump(ctx.currentTime + 0.6); } catch (e) {}
+    music.timer = setTimeout(scheduleMusic, 200);
+  }
+
+  function killMusicNodes(at) {
+    for (var k = 0; k < music.nodes.length; k++) {
+      try { music.nodes[k].n.stop(at); } catch (e) {}
+    }
+    music.nodes = [];
+  }
+
+  // 탭 전환 시 일시정지 / 복귀 시 재개
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx || offline) return;
+      try {
+        if (document.hidden) {
+          var p1 = ctx.suspend(); if (p1 && p1.catch) p1.catch(function () {});
+        } else {
+          var p2 = ctx.resume(); if (p2 && p2.catch) p2.catch(function () {});
+        }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  function setMusicGain(v, tc) {
+    try {
+      var t = ctx.currentTime;
+      musicBus.gain.cancelScheduledValues(t);
+      musicBus.gain.setTargetAtTime(v, t, tc || 0.3);
+    } catch (e) {}
+  }
+
+  return {
+    // 반드시 사용자 제스처 핸들러 안에서 호출. 여러 번 호출해도 안전.
+    unlock: function () {
+      if (!ensureCtx() || offline) return;
+      try {
+        if (ctx.state !== 'running') {
+          var p = ctx.resume();
+          if (p && p.catch) p.catch(function () {});
+        }
+        // iOS: 무음 1샘플 버퍼 재생으로 출력 경로 활성화
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+    },
+    // name: cardOpen|cardClose|select|reason|submit|correct|partial|wrong|link|next|caseStart|result|best|button
+    // link만 opts { step: 1,2,3.. } 사용(연결선 순번)
+    play: function (name, opts) {
+      try {
+        if (!ready() || !sfx.hasOwnProperty(name)) return;
+        sfx[name](ctx.currentTime + 0.01, opts || {});
+      } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try {
+        if (master) {
+          var t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, t, 0.02);
+        }
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    // 배경음악 시작(이미 재생 중이면 무시). unlock 이전 호출은 무시되므로 첫 제스처 뒤에 호출.
+    startMusic: function () {
+      if (!ctx) return;
+      if (music.stopTimer) {               // 페이드아웃 도중 재시작: 페이드만 되돌림
+        clearTimeout(music.stopTimer); music.stopTimer = null;
+        if (music.on) { setMusicGain(musicOff ? 0 : MUSIC_VOL, 0.3); return; }
+      }
+      if (music.on) return;
+      try {
+        music.on = true; music.ev = 0; music.loop = 0;
+        music.origin = ctx.currentTime + 0.1;
+        setMusicGain(musicOff ? 0 : MUSIC_VOL, 0.05);
+      } catch (e) { music.on = false; return; }
+      if (offline) return;
+      scheduleMusic();
+    },
+    // 배경음악 정지(약 1.2초 페이드아웃)
+    stopMusic: function () {
+      if (!music.on || !ctx) return;
+      if (music.timer) { clearTimeout(music.timer); music.timer = null; }
+      setMusicGain(0, 0.35);
+      if (music.stopTimer) clearTimeout(music.stopTimer);
+      music.stopTimer = setTimeout(function () {
+        music.stopTimer = null; music.on = false;
+        try { killMusicNodes(ctx.currentTime + 0.02); } catch (e) {}
+      }, 1200);
+    },
+    // (선택) 배경음악만 끄기/켜기. 음소거와 별개, localStorage 'fake-evidence-music-off'
+    setMusicEnabled: function (on) {
+      musicOff = !on;
+      try { localStorage.setItem(MUSIC_KEY, musicOff ? '1' : '0'); } catch (e) {}
+      if (ctx && music.on && !music.stopTimer) setMusicGain(musicOff ? 0 : MUSIC_VOL, 0.3);
+    },
+    isMusicEnabled: function () { return !musicOff; },
+    // 테스트 전용: OfflineAudioContext에 그래프를 붙여 렌더 검사
+    _test: {
+      attach: function (c) { offline = true; last = {}; build(c); },
+      playAt: function (name, t, opts) { if (sfx.hasOwnProperty(name)) sfx[name](t, opts || {}); },
+      startMusicAt: function (t) { music.on = true; music.ev = 0; music.loop = 0; music.origin = t; music.nodes = []; },
+      pump: function (until) { pump(until); },
+      sfxNames: function () { return Object.keys(sfx); }
+    }
+  };
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const now = () => performance.now();
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+  };
+  const K_BEST = 'fake-evidence-best', K_LAST = 'fake-evidence-last';
+
+  // ---------- 데이터 ----------
+  const RAW = $('cases').textContent;
+  const DATA = JSON.parse(RAW);
+  const CASES = DATA.cases;
+  const BYID = {};
+  CASES.forEach(c => { BYID[c.id] = c; });
+  const MULT = { 1: 1, 2: 1.5, 3: 2 };
+  const TIER_NAME = { 1: '쉬움', 2: '복합', 3: '함정' };
+  const PLAN = [1, 2, 2, 3, 3];
+  const LIVES = 3, CARD_MS = 1200, PERFECT_BONUS = 200;
+
+  // 이모지 → SVG 아이콘 키 (art-ui.md 세트). 모르는 키는 note
+  const EMO = {
+    '🟤': 'mud', '🪴': 'mud', '👣': 'foot', '🥾': 'foot', '🧤': 'print', '🖐️': 'print', '⛺': 'print', '🔩': 'print', '🧶': 'print', '🔍': 'print',
+    '💧': 'puddle', '📹': 'cctv', '🧾': 'receipt', '💰': 'receipt', '🏧': 'receipt', '🏦': 'receipt',
+    '🪪': 'badge', '🎫': 'badge', '🎡': 'badge', '🏅': 'badge', '💳': 'card', '🚕': 'card', '📄': 'book', '📋': 'book', '📖': 'book', '📒': 'book', '🔨': 'book', '📚': 'book',
+    '📱': 'phone', '📻': 'phone', '💬': 'phone', '📷': 'photo', '📸': 'photo', '🚣': 'photo', '🍞': 'photo', '🤳': 'photo', '🔔': 'photo', '🌊': 'photo', '🌲': 'photo', '🎨': 'photo', '🖼️': 'photo',
+    '🔑': 'key', '🔧': 'key', '☂️': 'umbrella', '✉️': 'letter', '📨': 'letter', '📝': 'note', '✏️': 'note', '☕': 'cup', '🧴': 'cup',
+    '🚨': 'clock', '🕗': 'clock', '⌚': 'clock', '🕰️': 'clock', '🔦': 'sun', '🔒': 'lock', '🔐': 'lock', '🗝️': 'lock', '💐': 'lock', '💎': 'lock',
+    '🚪': 'door', '🪟': 'window', '🛵': 'person', '🗣️': 'person', '🛎️': 'person', '🏃': 'foot',
+    '🏕️': 'temp', '❄️': 'temp', '🥐': 'moon', '🚄': 'pin', '🗼': 'pin', '🛳️': 'pin'
+  };
+  const KIND = { mud: 'trace', foot: 'trace', print: 'trace', puddle: 'trace', cctv: 'record', receipt: 'record', badge: 'record', calendar: 'record', card: 'record', book: 'record',
+    phone: 'item', photo: 'item', key: 'item', umbrella: 'item', letter: 'item', note: 'item', cup: 'item' };
+  const FACT_ICONS = [
+    [/맑|해는|햇빛/, 'sun'], [/비가|비는|눈이|내리던 눈/, 'rain'], [/시계|종은|종을/, 'clock'], [/정전|비상등|깜깜/, 'moon'], [/잠갔|잠김|열쇠|자물쇠/, 'lock'],
+    [/기온|영하|얼었|벽난로|오븐/, 'temp'], [/CCTV/, 'cctv'], [/와이파이|휴대폰|통신|무전/, 'phone'], [/소인|우표|우체국|편지/, 'letter'], [/ATM|카드/, 'card'],
+    [/발자국/, 'foot'], [/카페|커피/, 'cup'], [/휴관|요일|공휴일|\d+월 \d+일|\d{4}년|전날/, 'calendar'], [/배|열차|섬|코스|반환점|출발|km/, 'pin'],
+    [/\d:\d\d|\d시/, 'clock']
+  ];
+  const iconKey = e => EMO[e] || 'note';
+  const factIcon = t => { for (const [re, k] of FACT_ICONS) if (re.test(t)) return k; return 'note'; };
+  const ic = (k, cls) => `<svg class="ic${cls ? ' ' + cls : ''}" aria-hidden="true"><use href="#i-${k}"/></svg>`;
+  const tile = k => `<span class="tile k-${KIND[k] || 'env'}">${ic(k)}</span>`;
+
+  // 시간·날짜 표현 찾기 (시간 칩, 본문 숫자 강조)
+  const TIME_RE = /(?:(?:오전|오후|새벽|아침|낮|저녁|밤)\s?)?\d{1,2}:\d{2}(?:\s?~\s?\d{1,2}:\d{2})?|(?:오전|오후|새벽|아침|낮|저녁|밤)\s?\d{1,2}시(?:\s?\d{1,2}분|\s?반)?(?:\s?~\s?\d{1,2}시)?|\d{4}\.\d{1,2}\.\d{1,2}|\d{1,2}월 \d{1,2}일/g;
+  function times(text) {
+    const out = [];
+    String(text).replace(TIME_RE, m => { if (!out.some(x => x.text === m)) out.push({ kind: /[.월]/.test(m) && !/:/.test(m) ? 'date' : 'time', text: m }); return m; });
+    return out;
+  }
+  const richText = t => esc(t).replace(TIME_RE, m => `<span class="tinl">${m}</span>`);
+  const chip = t => `<span class="tchip">${ic(t.kind === 'date' ? 'calendar' : 'clock')}<span>${esc(t.text)}</span></span>`;
+  const evTimes = e => { const a = times(e.detail); return a.length ? a : times(e.name); };
+
+  // ---------- 상태 ----------
+  const G = {
+    screen: 'intro', paused: false, cardShown: false,
+    run: null, ci: 0, c: null, order: [], rorder: [], picked: -1, reason: -1,
+    viewed: new Set(), acc: 0, tStart: 0, last: null, noteSlot: -1, cardTimer: 0, timers: []
+  };
+  const el = {
+    board: $('board'), caseBox: $('case'), ctabNo: $('ctabNo'), grid: $('evgrid'), status: $('status'), seendots: $('seendots'), seenNum: $('seenNum'),
+    clock: $('clock'), pickInfo: $('pickInfo'), stBtn: $('stBtn'), panel: $('panel'), pbody: $('pbody'), mainBtn: $('mainBtn'), sheetTitle: $('sheetTitle'),
+    sheetClose: $('sheetClose'), scrim: $('scrim'), caseSheet: $('caseSheet'), csBody: $('csBody'), csClose: $('csClose'),
+    ovStart: $('ovStart'), ovCase: $('ovCase'), ovPause: $('ovPause'), ovResult: $('ovResult'), ccard: $('ccard'),
+    casePill: $('casePill'), caseNum: $('caseNum'), cdots: $('cdots'), lives: $('lives'), score: $('score'),
+    muteBtn: $('muteBtn'), icoOn: $('icoOn'), icoOff: $('icoOff'), pauseBtn: $('pauseBtn'), live: $('live'),
+    bestTxt: $('bestTxt'), resTitle: $('resTitle'), resScore: $('resScore'), resChips: $('resChips'), resStat: $('resStat'), lbSlot: $('lbSlot')
+  };
+  const show = (node, on) => node.toggleAttribute('hidden', !on);
+  const announce = t => { el.live.textContent = ''; setTimeout(() => { el.live.textContent = t; }, 30); };
+  function later(fn, ms) { const id = setTimeout(fn, ms); G.timers.push(id); return id; }
+  function clearLater() { G.timers.forEach(clearTimeout); G.timers = []; }
+
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function readBest() { const v = parseInt(store.get(K_BEST), 10); return v >= 0 ? v : null; }
+  function readLast() { try { const a = JSON.parse(store.get(K_LAST) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+
+  // 판 구성: 쉬움1 → 복합2 → 함정2, 직전 판 제외(모자라면 허용), 첫 판 1번은 c01
+  function chooseCases() {
+    const last = readLast(), first = readBest() === null, ids = [];
+    [1, 2, 3].forEach(tier => {
+      const need = PLAN.filter(t => t === tier).length;
+      const pool = CASES.filter(c => c.tier === tier).map(c => c.id);
+      let picks = [];
+      if (tier === 1 && first && BYID.c01) picks.push('c01');
+      const fresh = shuffle(pool.filter(id => last.indexOf(id) < 0 && picks.indexOf(id) < 0));
+      const rest = shuffle(pool.filter(id => last.indexOf(id) >= 0 && picks.indexOf(id) < 0));
+      picks = picks.concat(fresh, rest).slice(0, need);
+      ids.push(...picks);
+    });
+    return { ids, tutorial: first };
+  }
+
+  function scoreFor(tier, evOk, rsOk, sec) {
+    if (!evOk) return 0;
+    const m = MULT[tier] || 1;
+    if (!rsOk) return Math.round(100 * m);
+    const tb = Math.round(40 * clamp((120 - sec) / 80, 0, 1));
+    return Math.round((100 + 60 + tb) * m);
+  }
+
+  // ---------- 시간 ----------
+  const running = () => G.screen === 'case' && !G.cardShown && !G.paused;
+  const elapsedMs = () => G.acc + (running() && G.tStart ? now() - G.tStart : 0);
+  function fmtTime(ms) { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+  // ---------- 판 흐름 ----------
+  function startRun(ids) {
+    clearLater();
+    let plan;
+    if (Array.isArray(ids) && ids.length) plan = { ids: ids.filter(id => BYID[id]).slice(0, 5), tutorial: false, test: true };
+    else plan = chooseCases();
+    if (!plan.ids.length) return;
+    G.run = { ids: plan.ids, res: [], score: 0, lives: LIVES, eligible: !plan.test, tutorial: plan.tutorial, bonus: 0 };
+    if (!plan.test) store.set(K_LAST, JSON.stringify(plan.ids));
+    G.paused = false;
+    show(el.ovStart, false); show(el.ovPause, false); show(el.ovResult, false);
+    Sound.startMusic();
+    openCase(0, true);
+  }
+
+  function openCase(i, withCard) {
+    clearLater();
+    closeSheet(true); closeCaseSheet(true);
+    G.ci = i; G.c = BYID[G.run.ids[i]];
+    G.order = shuffle([0, 1, 2, 3, 4, 5]); G.rorder = shuffle([0, 1, 2, 3]);
+    G.picked = -1; G.reason = -1; G.viewed = new Set(); G.acc = 0; G.tStart = 0; G.last = null; G.noteSlot = -1;
+    G.screen = 'case';
+    document.body.classList.remove('v-sheet');
+    renderCase(); renderCards(); renderPanel(); renderStatus(); renderHud();
+    if (withCard) showCard(); else { G.cardShown = false; G.tStart = now(); el.board.classList.add('enter'); }
+  }
+
+  function showCard() {
+    const c = G.c, n = G.ci + 1, tut = G.run.tutorial && G.ci === 0;
+    el.ccard.innerHTML = `<div class="ctab">사건 파일 <span class="num">0${n}</span></div>
+      <div class="chead">${ic(iconKey(c.icon))}<h2>${esc(c.title)}</h2><span class="tierchip">사건 <span class="num">${n}/${G.run.ids.length}</span> · ${TIER_NAME[c.tier]}</span></div>
+      <p class="story">${richText(c.story)}</p>${tut ? '<p class="guide">가짜 증거 1개를 고르고, 이유를 고르세요.</p>' : ''}`;
+    G.cardShown = true;
+    el.board.classList.remove('enter');
+    show(el.ovCase, true);
+    G.cardTimer && clearTimeout(G.cardTimer);
+    G.cardTimer = setTimeout(closeCard, tut ? CARD_MS + 1300 : CARD_MS);
+  }
+  function closeCard() {
+    if (!G.cardShown) return;
+    clearTimeout(G.cardTimer); G.cardTimer = 0;
+    G.cardShown = false;
+    show(el.ovCase, false);
+    G.tStart = now();
+    void el.board.offsetWidth;
+    el.board.classList.add('enter');
+    fitCards();
+  }
+
+  function pick(slot) {
+    if (G.paused || !G.c) return;
+    if (G.cardShown) closeCard();
+    if (G.screen === 'verdict') { showNote(slot); return; }
+    if (G.screen !== 'case' || slot < 0 || slot > 5) return;
+    const changed = G.picked !== slot;
+    G.picked = slot; G.viewed.add(slot);
+    Sound.play('select');
+    updateCards(); renderPanel(); renderStatus();
+    if (sheetMode()) openSheet();
+    const e = G.c.evidence[G.order[slot]];
+    if (changed) announce(`증거 ${slot + 1} ${e.name} 지목. 이유를 고르세요.`);
+  }
+  function pickReason(r) {
+    if (G.paused || G.screen !== 'case' || r < 0 || r > 3) return;
+    if (G.cardShown) closeCard();
+    G.reason = r;
+    Sound.play('reason');
+    el.pbody.querySelectorAll('.opt').forEach((b, i) => b.setAttribute('aria-checked', i === r ? 'true' : 'false'));
+    syncMain();
+  }
+  const canSubmit = () => G.screen === 'case' && !G.cardShown && !G.paused && G.picked >= 0 && G.reason >= 0;
+
+  function submit() {
+    if (!canSubmit()) return false;
+    G.acc = elapsedMs(); G.tStart = 0;
+    const c = G.c, fakeData = G.order[G.picked], rIdx = G.rorder[G.reason];
+    const evOk = fakeData === c.fake, myReasonOk = !!c.reasons[rIdx].correct, rsOk = evOk && myReasonOk;
+    const sec = G.acc / 1000, pts = scoreFor(c.tier, evOk, rsOk, sec);
+    const r = G.run;
+    if (!evOk) r.lives = Math.max(0, r.lives - 1);
+    r.score += pts;
+    r.res.push({ id: c.id, title: c.title, tier: c.tier, ev: evOk, rs: rsOk, pts, sec: Math.round(sec) });
+    G.last = { evOk, rsOk, myReasonOk, pts, picked: G.picked, reason: G.reason, sec };
+    G.screen = 'verdict'; G.noteSlot = evOk ? -1 : G.picked;
+    Sound.play('submit');
+    later(() => Sound.play(rsOk ? 'correct' : evOk ? 'partial' : 'wrong'), 380);
+    applyVerdictBoard(); renderPanel(); renderStatus(); renderHud(true);
+    if (sheetMode()) openSheet();
+    const correctReason = c.reasons.find(x => x.correct).text;
+    announce(`${rsOk ? '정확한 추리' : evOk ? '증거는 맞혔어요' : '다른 증거였어요'}. 가짜는 ${c.evidence[c.fake].name}. 이유: ${correctReason} ${pts}점.`);
+    return true;
+  }
+
+  function next() {
+    if (G.screen !== 'verdict' || G.paused) return;
+    Sound.play('next');
+    const r = G.run;
+    if (r.lives <= 0 || G.ci >= r.ids.length - 1) { finish(); return; }
+    openCase(G.ci + 1, true);
+    later(() => Sound.play('caseStart'), 450);
+  }
+
+  function finish() {
+    clearLater();
+    closeSheet(true); closeCaseSheet(true);
+    const r = G.run;
+    const perfect = r.res.length === 5 && r.res.every(x => x.ev && x.rs);
+    r.bonus = perfect ? PERFECT_BONUS : 0;
+    r.score += r.bonus;
+    G.screen = 'result';
+    const prev = readBest(), isNew = r.eligible && (prev === null || r.score > prev);
+    if (r.eligible && (prev === null || r.score > prev)) store.set(K_BEST, r.score);
+    renderHud(); renderStatus();
+    // 결과 화면
+    const done = r.res.length === 5 && r.lives > 0;
+    el.resTitle.textContent = done ? '수사 완료' : '수사 종료';
+    el.resScore.textContent = r.score;
+    let chips = '';
+    for (let i = 0; i < 5; i++) {
+      const x = r.res[i];
+      if (!x) { chips += `<span class="casechip skip" role="img" aria-label="사건 ${i + 1} 진행 안 함"><span class="num">${i + 1}</span><span class="dash">–</span></span>`; continue; }
+      const lab = x.ev && x.rs ? '완벽' : x.ev ? '증거만 정답' : '실패';
+      chips += `<span class="casechip${x.ev && x.rs ? ' perfect' : ''}" role="img" aria-label="사건 ${i + 1} ${esc(x.title)}: ${lab}" title="${esc(x.title)}"><span class="num">${i + 1}</span>${ic(x.ev ? 'check' : 'x', x.ev ? 'y' : 'n')}${ic(x.rs ? 'check' : 'x', x.rs ? 'y' : 'n')}</span>`;
+    }
+    el.resChips.innerHTML = chips;
+    const evN = r.res.filter(x => x.ev).length, rsN = r.res.filter(x => x.rs).length, best = readBest();
+    el.resStat.innerHTML = `<span>가짜 <b class="num">${evN}/5</b> · 이유 <b class="num">${rsN}/5</b></span>` +
+      (r.bonus ? `<span>완벽 보너스 <b class="num">+${r.bonus}</b></span>` : '') +
+      (isNew ? '<span class="badge">새 최고 기록</span>' : best !== null ? `<span>최고 <b class="num">${best}</b>점</span>` : '');
+    el.lbSlot.textContent = '';
+    show(el.ovResult, true);
+    Sound.play('result'); Sound.stopMusic();
+    if (isNew && prev !== null) later(() => Sound.play('best'), 1000);
+    try {
+      window.Leaderboard && Leaderboard.report({ game: 'fake-evidence', score: r.score, eligible: r.eligible, reason: r.eligible ? '' : 'test', slot: el.lbSlot });
+    } catch (e) {}
+    renderBest();
+    announce(`${done ? '수사 완료' : '수사 종료'}. 총점 ${r.score}점. 가짜 ${evN}개, 이유 ${rsN}개 정답.`);
+    setTimeout(() => { try { $('againBtn').focus({ preventScroll: true }); } catch (e) {} }, 60);
+  }
+
+  function toIntro() {
+    clearLater(); clearTimeout(G.cardTimer);
+    G.screen = 'intro'; G.paused = false; G.cardShown = false;
+    show(el.ovCase, false); show(el.ovPause, false); show(el.ovResult, false); show(el.ovStart, true);
+  }
+
+  // ---------- 일시정지 ----------
+  function pause() {
+    if (G.paused || (G.screen !== 'case' && G.screen !== 'verdict')) return;
+    if (running() && G.tStart) { G.acc += now() - G.tStart; }
+    G.tStart = 0; G.paused = true;
+    clearTimeout(G.cardTimer); G.cardTimer = 0;
+    show(el.ovPause, true);
+    setTimeout(() => { try { $('resumeBtn').focus({ preventScroll: true }); } catch (e) {} }, 30);
+  }
+  function resume() {
+    if (!G.paused) return;
+    G.paused = false;
+    show(el.ovPause, false);
+    if (G.cardShown) G.cardTimer = setTimeout(closeCard, CARD_MS);
+    else if (G.screen === 'case') G.tStart = now();
+  }
+
+  // ---------- 렌더: 사건 파일 ----------
+  function factsHtml(c, withNo) {
+    return c.facts.map((f, i) => `<li class="fact" data-fid="${esc(f.id)}">${tile(factIcon(f.text))}<span class="ftxt">${richText(f.text)}</span><span class="lnk"></span></li>`).join('');
+  }
+  function renderCase() {
+    const c = G.c, n = G.ci + 1, tut = G.run.tutorial && G.ci === 0;
+    el.ctabNo.textContent = '0' + n;
+    el.caseBox.innerHTML = `${tut ? '<p class="guide">가짜 증거 1개를 고르고, 이유를 고르세요.</p>' : ''}
+      <div class="cbody"><div><div class="chead">${ic(iconKey(c.icon))}<h2>${esc(c.title)}</h2><span class="tierchip">${TIER_NAME[c.tier]}</span>
+      <button class="expbtn" id="expBtn" type="button" aria-label="사건 파일 펼치기">펼치기${ic('chev-d')}</button></div>
+      <p class="story">${richText(c.story)}</p></div>
+      <div><div class="facthead">추가 정보</div><ul class="facts" aria-label="추가 정보">${factsHtml(c)}</ul></div></div>`;
+    el.caseBox.scrollTop = 0;
+    $('expBtn').addEventListener('click', openCaseSheet);
+    el.csBody.innerHTML = `<div class="chead" style="margin-top:6px">${ic(iconKey(c.icon))}<h2>${esc(c.title)}</h2><span class="tierchip">${TIER_NAME[c.tier]}</span></div>
+      <p class="story">${richText(c.story)}</p><div class="facthead">추가 정보</div><ul class="facts">${factsHtml(c)}</ul>`;
+    $('csTitle').textContent = '사건 파일 0' + n;
+    layoutCaseSplit();
+  }
+  function layoutCaseSplit() { el.caseBox.classList.toggle('split', document.body.classList.contains('lay-tall') && el.caseBox.clientWidth >= 700); }
+
+  // ---------- 렌더: 증거 카드 ----------
+  function cardLabel(slot) {
+    const e = G.c.evidence[G.order[slot]], t = evTimes(e)[0];
+    const parts = [`증거 ${slot + 1}`, e.name];
+    if (t) parts.push(t.text);
+    if (G.screen === 'verdict' && G.last) {
+      const d = G.order[slot];
+      if (d === G.c.fake) parts.push('조작된 증거');
+      if (slot === G.last.picked) parts.push(G.last.evOk ? '내 지목, 정답' : '내 지목, 오답');
+    } else {
+      if (G.viewed.has(slot)) parts.push('봤음');
+      if (G.picked === slot) parts.push('지목함');
+    }
+    return parts.join(', ');
+  }
+  function renderCards() {
+    const c = G.c;
+    el.grid.innerHTML = G.order.map((d, slot) => {
+      const e = c.evidence[d], k = iconKey(e.icon), t = evTimes(e)[0];
+      return `<li><button class="ev" type="button" data-slot="${slot}" style="--i:${slot}">
+        <span class="ev-top"><b class="ev-no num">${slot + 1}</b><span class="ev-tag"></span><span class="ev-mark"></span></span>
+        <span class="ev-head">${tile(k)}<span class="ev-title">${esc(e.name)}</span></span>
+        ${t ? chip(t) : ''}<span class="ev-sum">${esc(e.detail)}</span><span class="stamp">조작</span><span class="lnk"></span></button></li>`;
+    }).join('');
+    updateCards();
+    fitCards();
+  }
+  function updateCards() {
+    el.grid.querySelectorAll('.ev').forEach(b => {
+      const s = +b.dataset.slot, picked = G.screen === 'case' && G.picked === s;
+      if (G.screen === 'case') {
+        b.className = 'ev' + (G.viewed.has(s) ? ' viewed' : '') + (picked ? ' picked' : '');
+        b.querySelector('.ev-tag').textContent = picked ? '지목' : '';
+        b.querySelector('.ev-mark').innerHTML = picked ? ic('magnifier') : G.viewed.has(s) ? ic('eye') : '';
+      }
+      b.classList.toggle('viewing', G.screen === 'verdict' && G.noteSlot === s);
+      if (G.screen === 'verdict') b.setAttribute('aria-current', G.noteSlot === s ? 'true' : 'false'); else b.removeAttribute('aria-current');
+      b.setAttribute('aria-label', cardLabel(s));
+    });
+  }
+  // 카드 실제 크기로 내용 단계 결정 + 요약 줄 수 맞춤
+  function fitCards() {
+    const first = el.grid.querySelector('.ev');
+    if (!first) return;
+    const w = first.clientWidth, h = first.clientHeight;
+    if (!w || !h) return;
+    el.grid.dataset.sz = w >= 200 && h >= 160 ? 'l' : w >= 150 && h >= 120 ? 'm' : 's';
+    el.grid.querySelectorAll('.ev').forEach(b => {
+      const s = b.querySelector('.ev-sum');
+      s.classList.remove('off'); s.style.setProperty('--lines', 8);
+      const pad = parseFloat(getComputedStyle(b).paddingBottom) || 10;
+      const avail = b.clientHeight - pad - s.offsetTop;
+      const n = Math.floor(avail / (13 * 1.45));
+      if (n < 1) s.classList.add('off'); else s.style.setProperty('--lines', Math.min(n, 8));
+    });
+  }
+
+  // ---------- 판정: 보드 표시 ----------
+  function linkTargets() {
+    const c = G.c, L = c.link || { facts: [], evidence: [] }, out = [];
+    (L.facts || []).forEach(fid => { const f = c.facts.find(x => x.id === fid); if (f) out.push({ type: 'fact', fid, f }); });
+    (L.evidence || []).forEach(d => { if (c.evidence[d]) out.push({ type: 'ev', d, e: c.evidence[d] }); });
+    return out;
+  }
+  function applyVerdictBoard() {
+    const c = G.c, L = G.last, tg = linkTargets();
+    el.grid.querySelectorAll('.ev').forEach(b => {
+      const s = +b.dataset.slot, d = G.order[s];
+      let cls = 'ev', tag = '', mark = '';
+      const li = tg.findIndex(t => t.type === 'ev' && t.d === d);
+      if (d === c.fake) { cls += L.evOk ? ' v-ok' : ' v-fake'; tag = L.evOk ? '조작 · 내 지목' : '조작'; mark = L.evOk ? ic('check') : ''; b.querySelector('.lnk').innerHTML = ic('link'); }
+      else if (s === L.picked) { cls += ' v-miss'; tag = '내 지목'; mark = ic('x'); }
+      else if (li >= 0) { cls += ' v-link'; b.querySelector('.lnk').textContent = li + 1; }
+      else cls += ' v-dim';
+      if (s === L.picked && li >= 0) { b.querySelector('.lnk').textContent = li + 1; cls += ' v-link'; }
+      b.className = cls;
+      b.querySelector('.ev-tag').textContent = tag;
+      b.querySelector('.ev-mark').innerHTML = mark;
+    });
+    [el.caseBox, el.csBody].forEach(root => root.querySelectorAll('.fact').forEach(f => {
+      const i = tg.findIndex(t => t.type === 'fact' && t.fid === f.dataset.fid);
+      f.classList.toggle('v-link', i >= 0);
+      f.querySelector('.lnk').textContent = i >= 0 ? i + 1 : '';
+    }));
+    const firstLink = el.caseBox.querySelector('.fact.v-link');
+    if (firstLink) {
+      const cb = el.caseBox.getBoundingClientRect(), fr = firstLink.getBoundingClientRect();
+      if (fr.top < cb.top || fr.bottom > cb.bottom) el.caseBox.scrollTop += fr.top - cb.top - 8;
+    }
+    updateCards();
+  }
+
+  // ---------- 렌더: 패널 ----------
+  function renderPanel() {
+    const c = G.c;
+    if (G.screen === 'verdict') { renderVerdict(); return; }
+    el.panel.setAttribute('aria-label', '증거 자세히');
+    if (G.picked < 0) {
+      el.sheetTitle.textContent = '증거 자세히';
+      el.pbody.innerHTML = `<div class="empty">${ic('tap')}<span>증거 카드를 눌러 가짜를 지목하세요.<br>추가 정보와 맞지 않는 증거가 가짜예요.</span></div>`;
+    } else {
+      const e = c.evidence[G.order[G.picked]], k = iconKey(e.icon), ts = evTimes(e);
+      el.sheetTitle.textContent = `증거 ${G.picked + 1} 지목`;
+      el.pbody.innerHTML = `<div class="dt"><div class="dthead">${tile(k)}<h4><span class="dno">증거 <span class="num">${G.picked + 1}</span> / <span class="num">6</span> · 지목함</span>${esc(e.name)}</h4></div>
+        ${ts.length ? `<div class="dtchips">${ts.map(chip).join('')}</div>` : ''}
+        <p class="dttext">${richText(e.detail)}</p></div>
+        <h5 class="rq" id="rq">왜 조작됐을까?</h5>
+        <div class="opts" role="radiogroup" aria-labelledby="rq">${G.rorder.map((ri, i) => `<button class="opt" type="button" role="radio" aria-checked="${G.reason === i}" data-r="${i}">
+          <span class="ono">${'ABCD'[i]}</span><span class="otx">${esc(c.reasons[ri].text)}</span>${ic('check', 'ock')}</button>`).join('')}</div>
+        <p class="pmini">${ic('magnifier')}<span>다른 카드를 누르면 지목이 바뀌어요</span></p>`;
+      el.pbody.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { Sound.unlock(); pickReason(+b.dataset.r); }));
+    }
+    syncMain();
+  }
+  function syncMain() {
+    if (G.screen === 'verdict') return;
+    el.mainBtn.innerHTML = `${ic('magnifier')}고발하기`;
+    const ok = G.picked >= 0 && G.reason >= 0;
+    el.mainBtn.disabled = !ok;
+    el.mainBtn.setAttribute('aria-disabled', ok ? 'false' : 'true');
+  }
+
+  function renderVerdict() {
+    const c = G.c, L = G.last, tg = linkTargets();
+    const fakeE = c.evidence[c.fake], myE = c.evidence[G.order[L.picked]];
+    const myR = c.reasons[G.rorder[L.reason]], okR = c.reasons.find(x => x.correct);
+    const kind = L.rsOk ? 'ok' : L.evOk ? 'half' : 'miss';
+    const headTxt = { ok: '정확한 추리', half: '증거는 맞혔어요', miss: '다른 증거였어요' }[kind];
+    const headIc = { ok: 'check2', half: 'checko', miss: 'xo' }[kind];
+    el.sheetTitle.textContent = '판정';
+    el.panel.setAttribute('aria-label', '판정과 해설');
+    const fakeSlot = G.order.indexOf(c.fake);
+    let html = `<div class="vhead ${kind}">${ic(headIc, 'vic')}<span class="vt">${headTxt}</span><b class="vpts num">+${L.pts}</b></div>
+      <div class="vrows">
+        <div class="vrow ${L.evOk ? 'ok' : 'no'}">${ic(L.evOk ? 'check' : 'x')}<span class="vk">가짜 증거</span><span class="va">${L.picked + 1}번 ${esc(myE.name)}</span>
+          ${L.evOk ? '' : `<span class="vc">정답: <b>${fakeSlot + 1}번 ${esc(fakeE.name)}</b></span>`}</div>
+        <div class="vrow ${L.rsOk ? 'ok' : 'no'}">${ic(L.rsOk ? 'check' : 'x')}<span class="vk">조작 이유</span><span class="va">${esc(myR.text)}${L.evOk ? '' : ' (채점 안 함)'}</span>
+          ${L.myReasonOk && L.evOk ? '' : `<span class="vc">정답: <b>${esc(okR.text)}</b></span>`}</div>
+      </div>
+      <div id="vnote"></div>
+      <div class="vsec">모순 연결</div>
+      <div class="links" id="links"><svg class="lsvg" aria-hidden="true"></svg>
+        <div class="lnode fake"><div class="lh">${tile(iconKey(fakeE.icon))}<span class="nm">${fakeSlot + 1}번 ${esc(fakeE.name)}</span><span class="ministamp">조작</span></div>
+          <div class="lq"><mark class="hl">${richText(fakeE.detail)}</mark></div></div>
+        <ol class="ltargets" aria-label="모순 연결">${tg.map((t, i) => t.type === 'fact'
+          ? `<li class="lnode tgt" data-i="${i}"><span class="ltag">추가 정보 · 연결 <span class="num">${i + 1}</span></span><div class="lh">${tile(factIcon(t.f.text))}<span class="nm" style="font-weight:400"><mark class="hl">${richText(t.f.text)}</mark></span></div></li>`
+          : `<li class="lnode tgt" data-i="${i}"><span class="ltag">증거 ${G.order.indexOf(t.d) + 1} · 연결 <span class="num">${i + 1}</span></span><div class="lh">${tile(iconKey(t.e.icon))}<span class="nm">${esc(t.e.name)}</span></div><div class="lq"><mark class="hl">${richText(t.e.detail)}</mark></div></li>`).join('')}</ol>
+      </div>
+      <p class="vexp">${richText(c.explain)}</p>`;
+    if (!L.myReasonOk) html += `<div class="vwhy"><p><b>내가 고른 이유가 틀린 까닭</b>${esc(myR.why || '')}</p></div>`;
+    if (G.run.lives <= 0) html += `<p class="vend">기회를 모두 썼어요. 수사가 끝났어요.</p>`;
+    el.pbody.innerHTML = html;
+    el.pbody.scrollTop = 0;
+    renderNote();
+    const last = G.run.lives <= 0 || G.ci >= G.run.ids.length - 1;
+    el.mainBtn.disabled = false; el.mainBtn.setAttribute('aria-disabled', 'false');
+    el.mainBtn.innerHTML = last ? '결과 보기' : `다음 사건${ic('chev-r')}`;
+    requestAnimationFrame(() => { drawLinks(true); });
+  }
+  function renderNote() {
+    const box = $('vnote');
+    if (!box) return;
+    if (G.noteSlot < 0) { box.className = 'vnote hint'; box.innerHTML = `${ic('tap')}<span>카드를 누르면 그 증거가 왜 진짜/가짜인지 보여요.</span>`; return; }
+    const d = G.order[G.noteSlot], e = G.c.evidence[d], fake = d === G.c.fake;
+    box.className = 'vnote';
+    box.innerHTML = `<div class="vnh">${tile(iconKey(e.icon))}<span>${G.noteSlot + 1}번 ${esc(e.name)}${fake ? ' · <span style="color:var(--thread)">조작</span>' : ' · 진짜'}</span></div>
+      <p class="vnd">${richText(e.detail)}</p><p class="vnn"><b>해설</b> ${richText(e.note)}</p>`;
+  }
+  function showNote(slot) {
+    if (slot < 0 || slot > 5) return;
+    G.noteSlot = slot; G.viewed.add(slot);
+    Sound.play('cardOpen');
+    renderNote(); updateCards();
+    if (sheetMode() && !document.body.classList.contains('sheet-open')) openSheet();
+    const box = $('vnote');
+    if (box) { const top = box.offsetTop - 8; if (el.pbody.scrollTop > top || el.pbody.scrollTop + el.pbody.clientHeight < top + 60) el.pbody.scrollTop = top; }
+    announce(`${slot + 1}번 ${G.c.evidence[G.order[slot]].name}. ${G.c.evidence[G.order[slot]].note}`);
+  }
+
+  // 연결 그림: 같은 컨테이너 안 노드 위치로 선을 그린다
+  let linkSounds = false;
+  function drawLinks(fresh) {
+    const box = $('links');
+    if (!box || !box.isConnected || !box.clientWidth) return;
+    const horiz = box.clientWidth >= 440;
+    box.classList.toggle('h', horiz); box.classList.toggle('v', !horiz);
+    const svg = box.querySelector('.lsvg'), fake = box.querySelector('.lnode.fake'), tgs = box.querySelectorAll('.lnode.tgt');
+    box.querySelectorAll('.lbadge').forEach(n => n.remove());
+    const B = box.getBoundingClientRect(), F = fake.getBoundingClientRect();
+    let paths = '';
+    const badges = [];
+    tgs.forEach((n, i) => {
+      const R = n.getBoundingClientRect();
+      if (horiz) {
+        const x1 = F.right - B.left, y1 = F.top + F.height / 2 - B.top, x2 = R.left - B.left, y2 = R.top + R.height / 2 - B.top, mx = (x1 + x2) / 2;
+        paths += `<path pathLength="1" style="animation-delay:${260 + i * 120}ms" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/>`;
+        badges.push([mx, (y1 + y2) / 2]);
+      } else {
+        const x = 14, y1 = F.bottom - B.top, ty = R.top + 18 - B.top, x2 = R.left - B.left;
+        paths += `<path pathLength="1" style="animation-delay:${260 + i * 120}ms" d="M${x} ${y1} V${ty - 8} Q${x} ${ty} ${x + 8} ${ty} H${x2}"/>`;
+        badges.push([x, ty]);
+      }
+    });
+    svg.setAttribute('viewBox', `0 0 ${B.width} ${B.height}`);
+    svg.innerHTML = paths;
+    if (!fresh) svg.querySelectorAll('path').forEach(p => { p.style.animation = 'none'; });
+    badges.forEach((p, i) => {
+      const s = document.createElement('span');
+      s.className = 'lnk lbadge'; s.textContent = i + 1; s.setAttribute('aria-hidden', 'true');
+      s.style.left = p[0] + 'px'; s.style.top = p[1] + 'px';
+      if (!fresh) s.style.animation = 'none';
+      box.appendChild(s);
+    });
+    if (fresh) tgs.forEach((n, i) => later(() => Sound.play('link', { step: i + 1 }), 260 + i * 160));
+  }
+
+  // ---------- 상태 줄 / HUD ----------
+  function renderStatus() {
+    const n = G.viewed.size;
+    el.seendots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i < n));
+    el.seendots.classList.toggle('all', n >= 6);
+    el.seenNum.textContent = n + '/6';
+    el.clock.textContent = fmtTime(elapsedMs());
+    let info = '', btn = '';
+    if (G.screen === 'case' && G.picked >= 0) {
+      const e = G.c.evidence[G.order[G.picked]];
+      info = `지목: ${G.picked + 1}번 ${e.name}`;
+      btn = `${G.picked + 1}번 · 이유 고르기`;
+    } else if (G.screen === 'case') { info = '카드를 눌러 가짜를 지목하세요'; btn = ''; }
+    else if (G.screen === 'verdict') { info = ''; btn = '판정·해설 보기'; }
+    el.pickInfo.textContent = info;
+    el.stBtn.innerHTML = btn ? `${esc(btn)}${ic('chev-r')}` : '';
+    el.stBtn.classList.toggle('on', !!btn);
+  }
+  let shownScore = 0;
+  function renderHud(bump) {
+    const r = G.run;
+    const total = r ? r.ids.length : 5, ci = r ? G.ci : 0;
+    el.caseNum.textContent = `${Math.min(ci + 1, total)}/${total}`;
+    const dots = el.cdots.querySelectorAll('i');
+    dots.forEach((d, i) => {
+      const x = r && r.res[i];
+      d.className = x ? (x.ev && x.rs ? 'ok' : x.ev ? 'half' : 'miss') : (r && i === ci && G.screen !== 'result' ? 'cur' : '');
+    });
+    const done = r ? r.res.map((x, i) => `${i + 1}번 ${x.ev && x.rs ? '정답' : x.ev ? '증거만 정답' : '실패'}`).join(', ') : '';
+    el.casePill.setAttribute('aria-label', `사건 ${Math.min(ci + 1, total)} / ${total}${done ? ', ' + done : ''}`);
+    const lives = r ? r.lives : LIVES;
+    el.lives.querySelectorAll('.ic').forEach((s, i) => s.classList.toggle('lost', i >= lives));
+    el.lives.setAttribute('aria-label', `기회 ${lives}번 남음`);
+    const sc = r ? r.score : 0;
+    el.score.textContent = sc;
+    el.score.setAttribute('aria-label', '점수 ' + sc);
+    if (bump && sc !== shownScore) { el.score.classList.remove('bump'); void el.score.offsetWidth; el.score.classList.add('bump'); }
+    shownScore = sc;
+  }
+  function renderBest() {
+    const b = readBest();
+    el.bestTxt.textContent = b !== null ? `최고 ${b}점` : '';
+    show(el.bestTxt, b !== null);
+  }
+
+  // ---------- 시트 (폰 세로·가로) ----------
+  const sheetMode = () => document.body.classList.contains('lay-phone') || document.body.classList.contains('lay-short');
+  let sheetReturn = null;
+  function openSheet() {
+    if (!sheetMode()) return;
+    const was = document.body.classList.contains('sheet-open');
+    document.body.classList.add('sheet-open');
+    const v = G.screen === 'verdict';
+    document.body.classList.toggle('v-sheet', v);
+    el.panel.setAttribute('role', 'dialog');
+    el.panel.setAttribute('aria-modal', v ? 'false' : 'true');
+    el.panel.setAttribute('aria-labelledby', 'sheetTitle');
+    show(el.scrim, !v);
+    if (!was) {
+      sheetReturn = document.activeElement;
+      Sound.play('cardOpen');
+      setTimeout(() => { try { el.sheetTitle.focus({ preventScroll: true }); } catch (e) {} }, 30);
+    }
+    if (v) setTimeout(() => drawLinks(false), 260);
+  }
+  function closeSheet(silent) {
+    const was = document.body.classList.contains('sheet-open');
+    document.body.classList.remove('sheet-open');
+    if (!el.caseSheet.hidden) return;
+    show(el.scrim, false);
+    if (was && !silent) {
+      Sound.play('cardClose');
+      const back = sheetReturn && sheetReturn.isConnected ? sheetReturn : el.grid.querySelector(`.ev[data-slot="${Math.max(0, G.picked)}"]`);
+      try { back && back.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+  function openCaseSheet() {
+    if (G.paused) return;
+    show(el.caseSheet, true); show(el.scrim, true);
+    Sound.play('cardOpen');
+    setTimeout(() => { try { $('csTitle').focus({ preventScroll: true }); } catch (e) {} }, 30);
+  }
+  function closeCaseSheet(silent) {
+    if (el.caseSheet.hidden) return;
+    show(el.caseSheet, false);
+    show(el.scrim, document.body.classList.contains('sheet-open') && G.screen !== 'verdict' && sheetMode());
+    if (!silent) { Sound.play('cardClose'); try { $('expBtn').focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  // ---------- 레이아웃 ----------
+  const px = v => parseFloat(v) || 0;
+  let lastMode = '';
+  function layout() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    document.documentElement.style.setProperty('--app-h', vh + 'px');
+    const bs = getComputedStyle(document.body);
+    const W = Math.min(1400, vw - px(bs.paddingLeft) - px(bs.paddingRight)), H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    const mode = H <= 500 ? 'short' : (W >= 900 && W >= H) ? 'wide' : W >= 600 ? 'tall' : 'phone';
+    const B = document.body.classList, rs = document.documentElement.style;
+    ['wide', 'tall', 'phone', 'short'].forEach(m => B.toggle('lay-' + m, m === mode));
+    const TB = mode === 'short' ? 44 : 52;
+    rs.setProperty('--tb', TB + 'px');
+    const boardH = H - TB - 8;
+    let gap = 12, caseMax = boardH;
+    if (mode === 'wide') { rs.setProperty('--lcol', (vw >= 1280 ? 380 : 340) + 'px'); caseMax = Math.round(boardH * .45); }
+    else if (mode === 'tall') {
+      const cw = (W - 24) / 3, ch = Math.min(220, cw * .78), gh = Math.round(2 * ch + 12);
+      rs.setProperty('--gh', gh + 'px');
+      caseMax = Math.max(120, Math.min(Math.round(boardH * .28), boardH - gh - 28 - 36 - 18 - 240));
+    } else if (mode === 'phone') { gap = 8; caseMax = Math.round(boardH * .28); }
+    else { gap = 8; rs.setProperty('--lcol', (W < 700 ? 200 : 240) + 'px'); caseMax = boardH; }
+    rs.setProperty('--gap', gap + 'px'); rs.setProperty('--ggap', (mode === 'wide' || mode === 'tall' ? 12 : mode === 'phone' ? 10 : 8) + 'px');
+    rs.setProperty('--case-max', Math.max(60, caseMax - 18) + 'px');
+    B.toggle('ov-full', H < 460 || W < 600);
+    B.toggle('tb-760', W < 760); B.toggle('tb-640', W < 640); B.toggle('tb-420', W < 420);
+    if (mode !== lastMode) {
+      if (!sheetMode()) { B.remove('sheet-open'); show(el.scrim, !el.caseSheet.hidden); }
+      if (mode !== 'phone') { show(el.caseSheet, false); if (!B.contains('sheet-open')) show(el.scrim, false); }
+      if (sheetMode()) { el.panel.setAttribute('role', 'dialog'); } else { el.panel.setAttribute('role', 'region'); el.panel.removeAttribute('aria-modal'); }
+      lastMode = mode;
+    }
+    layoutCaseSplit();
+    fitCards();
+    drawLinks(false);
+  }
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', layout);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  try { new ResizeObserver(() => { fitCards(); drawLinks(false); }).observe(el.grid); } catch (e) {}
+  try { new ResizeObserver(() => drawLinks(false)).observe(el.pbody); } catch (e) {}
+
+  // ---------- 입력 ----------
+  window.addEventListener('pointerdown', () => { if (!(window.Leaderboard && Leaderboard.isOpen())) Sound.unlock(); }, true);
+  el.grid.addEventListener('click', e => {
+    const b = e.target.closest('.ev');
+    if (!b) return;
+    Sound.unlock();
+    pick(+b.dataset.slot);
+  });
+  el.mainBtn.addEventListener('click', () => {
+    Sound.unlock();
+    if (G.screen === 'case') submit(); else if (G.screen === 'verdict') next();
+  });
+  el.stBtn.addEventListener('click', () => { Sound.unlock(); openSheet(); });
+  el.sheetClose.addEventListener('click', () => closeSheet(false));
+  el.csClose.addEventListener('click', () => closeCaseSheet(false));
+  el.scrim.addEventListener('click', () => { if (!el.caseSheet.hidden) closeCaseSheet(false); else closeSheet(false); });
+  el.ovCase.addEventListener('click', () => { Sound.unlock(); closeCard(); });
+  $('startBtn').addEventListener('click', () => { Sound.unlock(); Sound.play('button'); startRun(); later(() => Sound.play('caseStart'), 120); });
+  $('againBtn').addEventListener('click', () => { Sound.unlock(); Sound.play('button'); startRun(); later(() => Sound.play('caseStart'), 120); });
+  $('resumeBtn').addEventListener('click', () => { Sound.unlock(); Sound.play('button'); resume(); });
+  $('restartBtn').addEventListener('click', () => { Sound.unlock(); Sound.play('button'); G.paused = false; startRun(); });
+  el.pauseBtn.addEventListener('click', () => { Sound.unlock(); if (G.paused) resume(); else pause(); });
+  function syncMute() {
+    const m = Sound.isMuted();
+    el.icoOn.toggleAttribute('hidden', m);
+    el.icoOff.toggleAttribute('hidden', !m);
+    el.muteBtn.setAttribute('aria-pressed', m ? 'true' : 'false');
+    el.muteBtn.setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
+  }
+  function toggleMute() { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); syncMute(); }
+  el.muteBtn.addEventListener('click', toggleMute);
+  ['dblclick', 'gesturestart', 'contextmenu'].forEach(t => document.addEventListener(t, e => { if (!(e.target.closest && e.target.closest('a'))) e.preventDefault(); }, { passive: false }));
+
+  function trapTab(e, root) {
+    const f = Array.from(root.querySelectorAll('button:not([disabled]), a[href], [tabindex="-1"]')).filter(n => n.offsetParent !== null || n === document.activeElement);
+    if (!f.length) return;
+    const first = f[0], lastN = f[f.length - 1];
+    if (!root.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastN.focus(); }
+    else if (!e.shiftKey && document.activeElement === lastN) { e.preventDefault(); first.focus(); }
+  }
+  const DIG = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3, Numpad5: 4, Numpad6: 5 };
+  const LET = { KeyA: 0, KeyB: 1, KeyC: 2, KeyD: 3 };
+  document.addEventListener('keydown', e => {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
+    Sound.unlock();
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key, code = e.code || '', t = e.target;
+    const onBtn = t && (t.tagName === 'BUTTON' || t.tagName === 'A');
+    const gameBtn = onBtn && t.closest && (t.closest('.ev') || t.closest('.opt') || t === el.mainBtn);
+    const isEnter = k === 'Enter', isSpace = k === ' ' || k === 'Spacebar';
+    if (k === 'Tab') {
+      if (!el.caseSheet.hidden) trapTab(e, el.caseSheet);
+      else if (sheetMode() && document.body.classList.contains('sheet-open') && G.screen === 'case') trapTab(e, el.panel);
+      return;
+    }
+    if (code === 'KeyM' || k === 'm' || k === 'M') { if (!e.repeat) toggleMute(); return; }
+    if (G.screen === 'intro') { if ((isEnter || isSpace) && !onBtn && !e.repeat) { e.preventDefault(); $('startBtn').click(); } return; }
+    if (G.screen === 'result') { if ((isEnter || isSpace) && !onBtn && !e.repeat) { e.preventDefault(); $('againBtn').click(); } return; }
+    if (G.paused) {
+      if ((code === 'KeyP' || k === 'p' || k === 'P' || k === 'Escape' || ((isEnter || isSpace) && !onBtn)) && !e.repeat) { e.preventDefault(); resume(); }
+      return;
+    }
+    if (code === 'KeyP' || k === 'p' || k === 'P') { e.preventDefault(); pause(); return; }
+    if (G.cardShown) {
+      if (isEnter || isSpace || k === 'Escape') { e.preventDefault(); if (!e.repeat) closeCard(); return; }
+      if (DIG[code] === undefined && !/^[1-6]$/.test(k)) return;
+    }
+    if (k === 'Escape') {
+      if (!el.caseSheet.hidden) { e.preventDefault(); closeCaseSheet(false); }
+      else if (document.body.classList.contains('sheet-open')) { e.preventDefault(); closeSheet(false); }
+      return;
+    }
+    let d = DIG[code]; if (d === undefined && /^[1-6]$/.test(k)) d = +k - 1;
+    if (d !== undefined) { e.preventDefault(); if (!e.repeat) pick(d); return; }
+    if (G.screen === 'case') {
+      let r = LET[code]; if (r === undefined && /^[a-dA-D]$/.test(k)) r = k.toUpperCase().charCodeAt(0) - 65;
+      if (r !== undefined) { if (G.picked >= 0) { e.preventDefault(); if (!e.repeat) pickReason(r); } return; }
+      if (isEnter && (!onBtn || gameBtn) && canSubmit()) { e.preventDefault(); if (!e.repeat) submit(); }
+      return;
+    }
+    if (G.screen === 'verdict') {
+      if (isEnter && (!onBtn || gameBtn)) { e.preventDefault(); if (!e.repeat) next(); }
+    }
+  });
+  document.addEventListener('keyup', e => { if ((e.key === ' ' || e.key === 'Enter') && G.screen !== 'intro') { const t = e.target; if (!(t && t.tagName === 'A')) {} } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && (G.screen === 'case' || G.screen === 'verdict')) pause(); });
+  window.addEventListener('pagehide', () => { if (G.screen === 'case' || G.screen === 'verdict') pause(); });
+
+  // ---------- 루프 (경과 시계) ----------
+  let lastClock = '';
+  function frame() {
+    try {
+      if (G.screen === 'case') { const t = fmtTime(elapsedMs()); if (t !== lastClock) { el.clock.textContent = t; lastClock = t; } }
+    } catch (e) { setTimeout(() => { throw e; }, 0); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- 데이터 검증 ----------
+  function validate(list) {
+    const errs = [], warn = [], cs = list || CASES, ids = new Set();
+    const LEN = { story: 40, fact: 50, name: 12, detail: 45, reason: 35, explain: 60 };
+    const over = (what, s, n, id) => { if (String(s).length > n + 10) warn.push(`${id} ${what} 길이 ${String(s).length} > ${n}`); };
+    if (!Array.isArray(cs)) return ['cases 배열 없음'];
+    cs.forEach((c, ci) => {
+      const id = c && c.id || ('#' + ci);
+      if (!c || typeof c !== 'object') { errs.push(id + ' 객체 아님'); return; }
+      if (ids.has(c.id)) errs.push(id + ' id 중복'); ids.add(c.id);
+      if ([1, 2, 3].indexOf(c.tier) < 0) errs.push(id + ' tier');
+      ['title', 'icon', 'story', 'explain'].forEach(f => { if (typeof c[f] !== 'string' || !c[f].trim()) errs.push(`${id} ${f} 비어 있음`); });
+      if (!Array.isArray(c.facts) || c.facts.length < 2 || c.facts.length > 4) errs.push(id + ' facts 2~4개 아님');
+      const fids = new Set();
+      (c.facts || []).forEach(f => { if (!f.id || !f.text) errs.push(id + ' fact 비어 있음'); if (fids.has(f.id)) errs.push(id + ' fact id 중복 ' + f.id); fids.add(f.id); over('fact', f.text || '', LEN.fact, id); });
+      if (!Array.isArray(c.evidence) || c.evidence.length !== 6) errs.push(id + ' evidence 6개 아님');
+      const names = new Set();
+      (c.evidence || []).forEach((e, i) => {
+        ['name', 'icon', 'detail', 'note'].forEach(f => { if (typeof e[f] !== 'string' || !e[f].trim()) errs.push(`${id} evidence[${i}].${f} 비어 있음`); });
+        if (names.has(e.name)) errs.push(id + ' 증거 이름 중복 ' + e.name); names.add(e.name);
+        over('name', e.name || '', LEN.name, id); over('detail', e.detail || '', LEN.detail, id);
+      });
+      if (!(Number.isInteger(c.fake) && c.fake >= 0 && c.fake <= 5)) errs.push(id + ' fake 범위');
+      if (!Array.isArray(c.reasons) || c.reasons.length !== 4) errs.push(id + ' reasons 4개 아님');
+      const rs = c.reasons || [];
+      if (rs.filter(r => r.correct === true).length !== 1) errs.push(id + ' 정답 이유 1개 아님');
+      rs.forEach((r, i) => { if (!r.text) errs.push(`${id} reasons[${i}] text 없음`); if (!r.correct && !(r.why && r.why.trim())) errs.push(`${id} reasons[${i}] why 없음`); over('reason', r.text || '', LEN.reason, id); });
+      if (new Set(rs.map(r => r.text)).size !== rs.length) errs.push(id + ' 이유 문장 중복');
+      const L = c.link;
+      if (!L || !Array.isArray(L.facts) || !Array.isArray(L.evidence)) errs.push(id + ' link 형식');
+      else {
+        if (!L.facts.length) errs.push(id + ' link.facts 비어 있음');
+        L.facts.forEach(f => { if (!fids.has(f)) errs.push(id + ' link.facts 없는 id ' + f); });
+        L.evidence.forEach(d => { if (!(Number.isInteger(d) && d >= 0 && d <= 5)) errs.push(id + ' link.evidence 범위 ' + d); if (d === c.fake) errs.push(id + ' link.evidence에 가짜 포함'); });
+      }
+      over('story', c.story || '', LEN.story, id); over('explain', c.explain || '', LEN.explain, id);
+    });
+    [1, 2, 3].forEach(t => { if (cs.filter(c => c.tier === t).length < PLAN.filter(x => x === t).length) errs.push('tier ' + t + ' 사건 부족'); });
+    if (!cs.some(c => c.id === 'c01')) errs.push('c01 없음');
+    validate.warnings = warn;
+    return errs;
+  }
+
+  // ---------- 테스트 훅 (QA 전용) ----------
+  function state() {
+    return {
+      screen: G.screen, cardShown: G.cardShown, paused: G.paused, caseIndex: G.ci, caseId: G.c ? G.c.id : null,
+      lives: G.run ? G.run.lives : LIVES, score: G.run ? G.run.score : 0, picked: G.picked, reason: G.reason,
+      elapsed: Math.round(elapsedMs()) / 1000, order: G.order.slice(), reasonOrder: G.rorder.slice(),
+      eligible: G.run ? G.run.eligible : true, ids: G.run ? G.run.ids.slice() : [], results: G.run ? G.run.res.map(x => Object.assign({}, x)) : [],
+      bonus: G.run ? G.run.bonus : 0, noteSlot: G.noteSlot,
+      layout: ['wide', 'tall', 'phone', 'short'].find(m => document.body.classList.contains('lay-' + m)), sheetOpen: document.body.classList.contains('sheet-open')
+    };
+  }
+  const copy = o => JSON.parse(JSON.stringify(o));
+  window.__evidence = {
+    state,
+    get cases() { return copy(CASES); },
+    start(ids) { startRun(ids); return state(); },
+    setCase(id) {
+      if (!G.run || !BYID[id] || G.screen === 'result') return null;
+      G.run.eligible = false; G.run.ids[G.ci] = id; openCase(G.ci, false); return state();
+    },
+    answer() {
+      if (!G.c) return null;
+      return { evidenceSlot: G.order.indexOf(G.c.fake), reasonSlot: G.rorder.findIndex(ri => G.c.reasons[ri].correct), fake: G.c.fake };
+    },
+    pick(slot) { pick(slot); return state(); },
+    reason(slot) { if (G.cardShown) closeCard(); pickReason(slot); return state(); },
+    submit() { if (G.cardShown) closeCard(); submit(); return state(); },
+    next() { next(); return state(); },
+    skipCard() { closeCard(); return state(); },
+    setElapsed(sec) { if (G.run) G.run.eligible = false; G.acc = Math.max(0, +sec || 0) * 1000; G.tStart = running() ? now() : 0; return state(); },
+    validate() { return validate(); },
+    warnings() { validate(); return (validate.warnings || []).slice(); },
+    scoreFor
+  };
+
+  // ---------- 시작 ----------
+  layout();
+  syncMute();
+  renderBest();
+  renderHud();
+  show(el.ovStart, true);
+  requestAnimationFrame(frame);
+  const v = validate();
+  if (v.length) console.warn('[fake-evidence] 데이터 검증 오류', v);
+})();
+</script>
+<script src="../../lib/leaderboard.js?v=3" defer></script>
+</body>
+</html>
