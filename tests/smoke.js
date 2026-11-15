@@ -38,6 +38,16 @@ function serve() {
 // 순위표 백엔드(Supabase)는 기본 차단: 실서버를 절대 건드리지 않고, "백엔드 불통이어도 게임 정상"도 함께 확인
 const isBackend = u => /^https?:\/\/[^/]*\.supabase\.co\//.test(u || '');
 async function blockBackend(ctx) { await ctx.route('**/*.supabase.co/**', r => r.abort()); }
+// 닉네임 게이트 우회: 등록된 방문자처럼 닉네임·상태·기기 번호를 미리 넣는다 (게이트 자체는 아래 별도 검사)
+async function seedVisitor(ctx) {
+  await ctx.addInitScript(() => {
+    try {
+      localStorage.setItem('studio-nickname', '테스트');
+      localStorage.setItem('studio-nick-state', 'ok');
+      if (!localStorage.getItem('studio-device-id')) localStorage.setItem('studio-device-id', '00000000-0000-4000-8000-00000000c0de');
+    } catch (e) {}
+  });
+}
 
 (async () => {
   const srv = await serve();
@@ -54,6 +64,7 @@ async function blockBackend(ctx) { await ctx.route('**/*.supabase.co/**', r => r
   // 1) 게임 목록 페이지
   const listCtx = await browser.newContext(profiles[0].opts);
   await blockBackend(listCtx);
+  await seedVisitor(listCtx);
   const list = await listCtx.newPage();
   const listErrs = [];
   list.on('pageerror', e => listErrs.push(e.message));
@@ -67,11 +78,43 @@ async function blockBackend(ctx) { await ctx.route('**/*.supabase.co/**', r => r
   }
   await listCtx.close();
 
+  // 2) 닉네임 게이트 (처음 방문, 백엔드 불통): 게이트가 뜨고, 닉네임 + PIN 2번 → 임시 등록으로 닫혀야 함
+  if (!only.length) {
+    const gctx = await browser.newContext(profiles[0].opts);
+    await blockBackend(gctx);
+    const gp = await gctx.newPage();
+    const gerrs = [];
+    gp.on('pageerror', e => gerrs.push('pageerror: ' + e.message));
+    gp.on('console', m => m.type() === 'error' && !isBackend((m.location() || {}).url) && gerrs.push('console: ' + m.text()));
+    const gprob = [];
+    try {
+      await gp.goto(origin);
+      await gp.waitForSelector('.lb-gate #lb-gate-nick', { timeout: 5000 });
+      if (!(await gp.evaluate(() => window.Leaderboard && Leaderboard.isOpen()))) gprob.push('isOpen() false');
+      await gp.keyboard.press('Escape');
+      if (!(await gp.$('.lb-gate'))) gprob.push('Esc로 닫힘');
+      await gp.fill('#lb-gate-nick', '스모크');
+      await gp.keyboard.press('Enter');
+      await gp.waitForSelector('#lb-gate-pin:visible', { timeout: 3000 });
+      await gp.keyboard.type('1234'); await gp.keyboard.press('Enter');
+      await gp.waitForFunction(() => window.__lb.gateStep() === 'set2', null, { timeout: 3000 });
+      await gp.keyboard.type('1234'); await gp.keyboard.press('Enter');
+      await gp.waitForFunction(() => !document.querySelector('.lb-gate'), null, { timeout: 9000 });
+      const st = await gp.evaluate(() => window.__lb.state());
+      if (st.nickState !== 'pending' || st.nickname !== '스모크') gprob.push('상태 ' + JSON.stringify(st));
+    } catch (e) { gprob.push(String(e.message || e).split('\n')[0]); }
+    gprob.push(...gerrs);
+    report.push(`${gprob.length ? '✗' : '✓'} 닉네임 게이트 [pc]${gprob.length ? ' → ' + gprob.join(' | ') : ''}`);
+    if (gprob.length) failed++;
+    await gctx.close();
+  }
+
   const targets = only.length ? only : slugs;
   for (const slug of targets) {
     for (const prof of profiles) {
       const ctx = await browser.newContext(prof.opts);
       await blockBackend(ctx);
+      await seedVisitor(ctx);
       const page = await ctx.newPage();
       const errs = [];
       page.on('pageerror', e => errs.push('pageerror: ' + e.message));

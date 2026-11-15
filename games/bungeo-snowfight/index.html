@@ -252,6 +252,7 @@
   .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
   .overlay .small { font-size: 12px; }
   .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay .row.recrow { gap: 4px 8px; }
   .overlay [hidden] { display: none !important; }
   .modes { display: flex; gap: 8px; }
   .mode {
@@ -482,7 +483,7 @@
       </div>
       <div class="bar rbar" id="resBar" aria-hidden="true"><i class="seg ap" id="rsAP"></i><i class="seg at" id="rsAT"></i><i class="seg bt" id="rsBT"></i><i class="seg bp" id="rsBP"></i></div>
       <p id="resStat"></p>
-      <p id="resRec"></p>
+      <div class="row recrow" id="resRecRow"><p id="resRec"></p><span id="lbSlot"></span></div>
       <div class="row">
         <button class="primary" id="againBtn" type="button">다시 하기</button>
         <button class="secondary" id="modeBtn2" type="button">모드 바꾸기</button>
@@ -996,7 +997,8 @@ const Sound = (function () {
     base: new Int8Array(NC), temp: new Array(NC), obstacles: [], projectiles: [],
     players: [null, mkPlayer(1), mkPlayer(2)],
     cd: 0, cdTotal: 0, cdResume: false, endWait: -1, result: null,
-    aiOn: true, ai1: null, throws: null, startFlash: -10, lastSec: 60, obsSeq: 0, projSeq: 0
+    aiOn: true, ai1: null, throws: null, startFlash: -10, lastSec: 60, obsSeq: 0, projSeq: 0,
+    tainted: false // 이 판에 상태를 바꾸는 테스트 훅을 썼는지(썼으면 순위 제출 안 함)
   };
   var best = loadBest();
   // Tip 화면(팥붕·슈붕 반반 데모) 상태 — 게임 상태 S와 따로. t = 데모 전용 시계(초)
@@ -1570,7 +1572,7 @@ const Sound = (function () {
     S.mode = mode; S.diff = diff;
     resetBoard();
     S.players = [null, mkPlayer(1), mkPlayer(2)];
-    S.timeLeft = T_GAME; S.lastSec = T_GAME; S.result = null; S.endWait = -1;
+    S.timeLeft = T_GAME; S.lastSec = T_GAME; S.result = null; S.endWait = -1; S.tainted = false;
     S.throws = [null, { pat: 0, shu: 0 }, { pat: 0, shu: 0 }];
     S.startFlash = -10;
     clearTimeout(resultTimer);
@@ -1628,10 +1630,17 @@ const Sound = (function () {
       best = loadBest();
       var rec = best[S.diff];
       if (winner === 1) rec.wins++;
-      if (p1Pct > rec.best) { isNew = rec.best > 0 || p1Pct > 0; rec.best = p1Pct; }
+      // 최고 %는 이긴 판만 갱신(서버 순위와 같은 기준). 기존 저장값은 그대로 둔다
+      if (winner === 1 && p1Pct > rec.best) { isNew = true; rec.best = p1Pct; }
       saveBest(best);
     }
     renderResult(isNew);
+    // 온라인 순위: 컴퓨터 대전만. 이긴 판 = 내 땅 % ×10 (서버 최고보다 크면 자동 제출), 진 판·비긴 판 = 0(제출 없이 내 순위만)
+    var slot = $('lbSlot');
+    if (S.mode === 'ai') {
+      if (window.Leaderboard) Leaderboard.report({ game: 'bungeo-' + S.diff, score: winner === 1 ? Math.round(p1Pct * 10) : 0,
+        eligible: !S.tainted && !S.ai1 && S.aiOn, reason: 'test', slot: slot });
+    } else slot.textContent = '';
     var snd = S.mode === 'ai' ? (winner === 1 ? 'win' : winner === 2 ? 'lose' : 'draw') : (winner ? 'win' : 'draw');
     var wait = Math.max(0, 800 - (performance.now() - whistleAt));
     resultTimer = setTimeout(function () { Sound.play(snd); }, wait);
@@ -1670,6 +1679,7 @@ const Sound = (function () {
     return true;
   }
   function onPointerDown(e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     if (S.phase !== 'playing') return;
     if (e.button !== undefined && e.button > 0) return;
     var tg = e.target;
@@ -2388,8 +2398,8 @@ const Sound = (function () {
       $('resStat').textContent = '던진 횟수 팥붕 ' + S.throws[1].pat + ' · 슈붕 ' + S.throws[1].shu;
       var rec = best[S.diff];
       $('resRec').textContent = DIFF_NAME[S.diff] + ' 기록 · 승리 ' + rec.wins + ' · 최고 ' + rec.best.toFixed(1) + '%';
-      show($('resStat'), true); show($('resRec'), true);
-    } else { show($('resStat'), false); show($('resRec'), false); }
+      show($('resStat'), true); show($('resRecRow'), true);
+    } else { show($('resStat'), false); show($('resRecRow'), false); }
     show($('newRec'), !!isNew);
     var segs = [$('rsAP'), $('rsAT'), $('rsBT'), $('rsBP')];
     var A = $('resA'), B = $('resB');
@@ -2718,6 +2728,7 @@ const Sound = (function () {
   });
 
   document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     var k = e.key, onBtn = e.target && e.target.tagName === 'BUTTON';
     if (k === 'm' || k === 'M') { if (!e.repeat) toggleMute(); return; }
     if (S.phase === 'tip') {
@@ -2893,35 +2904,40 @@ const Sound = (function () {
   window.__bungeo = {
     start: function (mode, difficulty) {
       startGame(mode === 'pvp' ? 'pvp' : 'ai', DIFFS.indexOf(difficulty) >= 0 ? difficulty : 'normal', true);
+      S.tainted = true;
       return copyState();
     },
     state: copyState,
-    setTime: function (sec) { S.timeLeft = Math.max(0, +sec || 0); S.lastSec = Math.ceil(S.timeLeft); },
+    setTime: function (sec) { S.tainted = true; S.timeLeft = Math.max(0, +sec || 0); S.lastSec = Math.ceil(S.timeLeft); },
     throwAt: function (player, type, tx, ty, opts) {
+      S.tainted = true;
       var a = aimFor(player, type, tx, ty);
       return doThrow(player, type, a.ang, a.power, !!(opts && opts.ignoreReload));
     },
-    throwRaw: function (player, type, angleDeg, power) { return doThrow(player, type, +angleDeg, +power, false); },
+    throwRaw: function (player, type, angleDeg, power) { S.tainted = true; return doThrow(player, type, +angleDeg, +power, false); },
     setCell: function (c, r, owner, opts) {
+      S.tainted = true;
       var i = idx(c, r);
       if (opts && opts.temp) S.temp[i] = { owner: owner, timeLeft: +opts.temp, t0: S.clock - 1, ox: c + 0.5, oy: r + 0.5, refreshAt: -10, refreshFrom: 0.78 };
       else { S.base[i] = owner; S.temp[i] = null; baseDirty = true; }
       countsDirty = true;
     },
     placeObstacle: function (owner, x, y) {
+      S.tainted = true;
       var o = addObstacle(owner, x, y, owner === 1 ? 0 : Math.PI);
       S.base[o.i] = owner; S.temp[o.i] = null; baseDirty = true; countsDirty = true;
       return { c: o.c, r: o.r };
     },
-    setAI: function (on) { S.aiOn = !!on; if (!on) { S.players[2].plan = null; S.players[2].think = -1; } },
-    setAI1: function (diff) { S.ai1 = DIFFS.indexOf(diff) >= 0 ? diff : null; S.players[1].plan = null; S.players[1].think = -1; },
+    setAI: function (on) { S.tainted = true; S.aiOn = !!on; if (!on) { S.players[2].plan = null; S.players[2].think = -1; } },
+    setAI1: function (diff) { S.tainted = true; S.ai1 = DIFFS.indexOf(diff) >= 0 ? diff : null; S.players[1].plan = null; S.players[1].think = -1; },
     simulate: function (sec) {
+      S.tainted = true;
       var n = Math.round((+sec || 0) * 60);
       for (var k = 0; k < n; k++) update(1 / 60);
       syncHUD();
       return copyState();
     },
-    seed: function (n) { rngState = (+n >>> 0) || 1; },
+    seed: function (n) { S.tainted = true; rngState = (+n >>> 0) || 1; },
     tip: function () { return { open: tip.open, t: tip.t, total: tip.total, hold: tip.hold, m: tip.m, side: tip.side, closing: tip.closeAt >= 0 }; }
   };
 
@@ -2941,5 +2957,6 @@ const Sound = (function () {
   });
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=2" defer></script>
 </body>
 </html>
