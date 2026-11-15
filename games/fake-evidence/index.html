@@ -143,6 +143,13 @@
     flex: 1; min-width: 0; max-height: var(--case-max, none); overflow-x: hidden; overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain;
     background: var(--folder); border: 1px solid var(--folder-edge); border-radius: 0 14px 14px 14px; padding: 10px 12px 12px;
   }
+  /* 사건 파일이 넘치면 아래쪽 흐림 + '더 보기' 표시 (스크롤 가능 안내) */
+  .casebox::after { content: ""; position: absolute; left: 1px; right: 1px; bottom: 1px; height: 30px; border-radius: 0 0 13px 13px; pointer-events: none;
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--folder) 0%, transparent), var(--folder) 85%); opacity: 0; transition: opacity 150ms; z-index: 1; }
+  .casebox .cmore { position: absolute; right: 10px; bottom: 5px; z-index: 2; pointer-events: none; display: inline-flex; align-items: center; gap: 2px;
+    font-size: 11px; font-weight: 700; color: var(--folder-ink); background: var(--folder); border: 1px solid var(--folder-edge); border-radius: 999px; padding: 1px 8px 1px 9px; opacity: 0; transition: opacity 150ms; }
+  .casebox .cmore .ic { width: 12px; height: 12px; stroke-width: 2.4; }
+  .casebox.more::after, .casebox.more .cmore { opacity: 1; }
   .guide { font-size: 13px; font-weight: 700; color: var(--pick); background: var(--pick-tint); border-radius: 8px; padding: 5px 9px; margin: 0 0 8px; line-height: 1.4; }
   .chead { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .chead .ic { width: 20px; height: 20px; color: var(--folder-ink); }
@@ -165,7 +172,7 @@
   .fact.v-link { background: var(--thread-tint); border-left-color: var(--thread); }
   .fact .lnk { position: absolute; right: 6px; top: 8px; }
   .fact.v-link .ftxt { padding-right: 22px; }
-  body.lay-tall .case.split .cbody { display: grid; grid-template-columns: 55% 45%; gap: 0 14px; }
+  body.lay-tall .case.split .cbody { display: grid; grid-template-columns: 44% 56%; gap: 0 14px; }
   body.lay-tall .case.split .facthead { margin-top: 0; }
   body.lay-short .chead h2 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   body.lay-short .story { font-size: 13px; }
@@ -315,6 +322,21 @@
   .opt[aria-checked="true"] .ock { visibility: visible; }
   .pmini { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 14px; }
   body.lay-short .opt { min-height: 48px; font-size: 14px; }
+  /* 세로 태블릿: 세부를 줄이고 이유를 2×2로 놓아 지목 직후 이유 4개가 패널 안에 다 보이게 */
+  body.lay-tall .pbody { padding: 12px 16px; }
+  body.lay-tall .pfoot { padding: 8px 16px 10px; }
+  body.lay-tall .dthead { gap: 10px; }
+  body.lay-tall .dthead .tile { width: 36px; height: 36px; border-radius: 10px; }
+  body.lay-tall .dthead .tile .ic { width: 22px; height: 22px; }
+  body.lay-tall .dthead h4 { font-size: 17px; }
+  body.lay-tall .dtchips { display: none; }
+  body.lay-tall .dttext { margin-top: 8px; padding: 8px 0 0; font-size: 15px; line-height: 1.5; }
+  body.lay-tall .rq { margin: 10px 0 8px; font-size: 16px; }
+  body.lay-tall .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.lay-tall .opt { min-height: 52px; font-size: 14.5px; line-height: 1.4; padding: 8px 10px 8px 8px; gap: 8px; }
+  body.lay-tall .opt[aria-checked="true"] { padding: 7px 9px 7px 7px; }
+  body.lay-tall .opt .ock { display: none; }
+  body.lay-tall .pmini { margin-top: 10px; }
 
   /* 판정 */
   .vhead { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
@@ -565,6 +587,7 @@
       <div class="casebox">
         <div class="ctab" id="ctab">사건 파일 <span class="num" id="ctabNo">01</span></div>
         <div class="case" id="case"></div>
+        <span class="cmore" aria-hidden="true">아래로 더 있어요<svg class="ic"><use href="#i-chev-d"/></svg></span>
       </div>
       <div class="gridwrap"><ul class="evgrid" id="evgrid" role="list" aria-label="증거 6개"></ul></div>
       <div class="status" id="status">
@@ -1666,9 +1689,18 @@ const Sound = (function () {
     G.picked = slot; G.viewed.add(slot);
     Sound.play('select');
     updateCards(); renderPanel(); renderStatus();
-    if (sheetMode()) openSheet();
+    if (sheetMode()) openSheet(); else revealReasons();
     const e = G.c.evidence[G.order[slot]];
     if (changed) announce(`증거 ${slot + 1} ${e.name} 지목. 이유를 고르세요.`);
+  }
+  // 제자리 패널(와이드·세로 태블릿): 이유 4개가 안 보이면 이유 쪽으로 스크롤 (세부 글은 가능한 만큼 위에 남김)
+  function revealReasons() {
+    const pb = el.pbody, opts = pb.querySelector('.opts'), rq = $('rq');
+    if (!opts || !rq) return;
+    pb.scrollTop = 0;
+    const base = pb.getBoundingClientRect().top + pb.clientTop, pad = 8;
+    const bottom = opts.getBoundingClientRect().bottom - base + pad, view = pb.clientHeight;
+    if (bottom > view) pb.scrollTop = Math.min(rq.getBoundingClientRect().top - base - pad, bottom - view);
   }
   function pickReason(r) {
     if (G.paused || G.screen !== 'case' || r < 0 || r > 3) return;
@@ -1789,7 +1821,11 @@ const Sound = (function () {
     el.csBody.innerHTML = `<div class="chead" style="margin-top:6px">${ic(iconKey(c.icon))}<h2>${esc(c.title)}</h2><span class="tierchip">${TIER_NAME[c.tier]}</span></div>
       <p class="story">${richText(c.story)}</p><div class="facthead">추가 정보</div><ul class="facts">${factsHtml(c)}</ul>`;
     $('csTitle').textContent = '사건 파일 0' + n;
-    layoutCaseSplit();
+    layout();
+  }
+  function updateCaseMore() {
+    const c = el.caseBox;
+    c.parentNode.classList.toggle('more', c.scrollHeight - c.clientHeight - c.scrollTop > 4);
   }
   function layoutCaseSplit() { el.caseBox.classList.toggle('split', document.body.classList.contains('lay-tall') && el.caseBox.clientWidth >= 700); }
 
@@ -1882,6 +1918,7 @@ const Sound = (function () {
       const cb = el.caseBox.getBoundingClientRect(), fr = firstLink.getBoundingClientRect();
       if (fr.top < cb.top || fr.bottom > cb.bottom) el.caseBox.scrollTop += fr.top - cb.top - 8;
     }
+    updateCaseMore();
     updateCards();
   }
 
@@ -2115,9 +2152,15 @@ const Sound = (function () {
     let gap = 12, caseMax = boardH;
     if (mode === 'wide') { rs.setProperty('--lcol', (vw >= 1280 ? 380 : 340) + 'px'); caseMax = Math.round(boardH * .45); }
     else if (mode === 'tall') {
-      const cw = (W - 24) / 3, ch = Math.min(220, cw * .78), gh = Math.round(2 * ch + 12);
+      // 세로 태블릿: 아래 패널이 '세부 + 이유 4개'를 담을 수 있게 먼저 확보하고, 남는 높이로 그리드를 정한다 (그리드는 스크롤 없음)
+      // 사건 파일이 상한보다 짧으면 남는 높이는 그리드가 쓴다(사건마다 다시 계산, 지목 중에는 그리드가 움직이지 않음)
+      const avail = boardH - 18 - 28 - 36, cw = (W - 24) / 3;
+      const caseCap = Math.max(120, Math.round(avail * .27)), panelMin = Math.max(330, Math.round(avail * .40));
+      layoutCaseSplit();
+      const caseH = Math.min(caseCap, el.caseBox.scrollHeight + 2);
+      const gh = Math.max(2 * 110 + 12, Math.min(Math.round(2 * Math.min(220, cw * .78) + 12), avail - caseH - panelMin));
       rs.setProperty('--gh', gh + 'px');
-      caseMax = Math.max(120, Math.min(Math.round(boardH * .28), boardH - gh - 28 - 36 - 18 - 240));
+      caseMax = caseCap + 18;
     } else if (mode === 'phone') { gap = 8; caseMax = Math.round(boardH * .28); }
     else { gap = 8; rs.setProperty('--lcol', (W < 700 ? 200 : 240) + 'px'); caseMax = boardH; }
     rs.setProperty('--gap', gap + 'px'); rs.setProperty('--ggap', (mode === 'wide' || mode === 'tall' ? 12 : mode === 'phone' ? 10 : 8) + 'px');
@@ -2133,12 +2176,15 @@ const Sound = (function () {
     layoutCaseSplit();
     fitCards();
     drawLinks(false);
+    updateCaseMore();
   }
   window.addEventListener('resize', layout);
   window.addEventListener('orientationchange', layout);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
   try { new ResizeObserver(() => { fitCards(); drawLinks(false); }).observe(el.grid); } catch (e) {}
   try { new ResizeObserver(() => drawLinks(false)).observe(el.pbody); } catch (e) {}
+  try { new ResizeObserver(updateCaseMore).observe(el.caseBox); } catch (e) {}
+  el.caseBox.addEventListener('scroll', updateCaseMore, { passive: true });
 
   // ---------- 입력 ----------
   window.addEventListener('pointerdown', () => { if (!(window.Leaderboard && Leaderboard.isOpen())) Sound.unlock(); }, true);
