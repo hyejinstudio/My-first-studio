@@ -35,6 +35,10 @@ function serve() {
   });
 }
 
+// 순위표 백엔드(Supabase)는 기본 차단: 실서버를 절대 건드리지 않고, "백엔드 불통이어도 게임 정상"도 함께 확인
+const isBackend = u => /^https?:\/\/[^/]*\.supabase\.co\//.test(u || '');
+async function blockBackend(ctx) { await ctx.route('**/*.supabase.co/**', r => r.abort()); }
+
 (async () => {
   const srv = await serve();
   const origin = `http://localhost:${srv.address().port}${BASE}`;
@@ -49,6 +53,7 @@ function serve() {
 
   // 1) 게임 목록 페이지
   const listCtx = await browser.newContext(profiles[0].opts);
+  await blockBackend(listCtx);
   const list = await listCtx.newPage();
   const listErrs = [];
   list.on('pageerror', e => listErrs.push(e.message));
@@ -66,11 +71,12 @@ function serve() {
   for (const slug of targets) {
     for (const prof of profiles) {
       const ctx = await browser.newContext(prof.opts);
+      await blockBackend(ctx);
       const page = await ctx.newPage();
       const errs = [];
       page.on('pageerror', e => errs.push('pageerror: ' + e.message));
-      page.on('console', m => m.type() === 'error' && errs.push('console: ' + m.text()));
-      page.on('requestfailed', r => errs.push('request failed: ' + r.url()));
+      page.on('console', m => m.type() === 'error' && !isBackend((m.location() || {}).url) && errs.push('console: ' + m.text()));
+      page.on('requestfailed', r => !isBackend(r.url()) && errs.push('request failed: ' + r.url()));
       page.on('response', r => r.status() >= 400 && errs.push(`HTTP ${r.status()}: ${r.url()}`));
       await page.goto(origin + `games/${slug}/`);
       await page.waitForTimeout(800);

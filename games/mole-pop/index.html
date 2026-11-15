@@ -328,6 +328,7 @@
         <div class="big num"><span id="overScore">0</span><small>점</small></div>
         <p id="overStat1">잡은 두더지 0 (황금 0) · 최대 콤보 ×0</p>
         <p id="overStat2">폭탄 0번 · 최고 0점</p>
+        <div id="lbSlot"></div>
         <div class="row">
           <button class="primary" id="againBtn" type="button">다시 하기</button>
           <a class="secondary" href="../../">← 게임 목록</a>
@@ -690,6 +691,7 @@ const Sound = (function () {
     { iv: 360, stay: 480, max: 3, gold: 310, bombs: 2 }
   ];
   var BEST_KEY = 'mole-pop-best';
+  var tainted = false; // 테스트 훅을 쓴 판(순위 제출 안 함)
   var HIDE_Y = 70;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -1156,7 +1158,7 @@ const Sound = (function () {
     clearTimeout(overTimer); clearTimeout(hsTimer); clearTimeout(lvlTimer);
     clearFx();
     for (var i = 0; i < 9; i++) { clearHole(holes[i]); holes[i].st = 'empty'; }
-    gt = 0; timeLeft = GAME_MS;
+    gt = 0; timeLeft = GAME_MS; tainted = false;
     combo = 0; maxCombo = 0; caughtN = 0; caughtG = 0; bombsHit = 0;
     nextSpawnAt = FIRST_SPAWN; lastHole = -1; lastType = null; lastGoldAt = -1e9;
     ignoreUntil = 0;
@@ -1206,6 +1208,7 @@ const Sound = (function () {
       phase = 'over';
       setComboUI(false);
       ovOver.hidden = false;
+      window.Leaderboard && Leaderboard.report({ game: 'mole-pop', score: score, eligible: !tainted, reason: 'test', slot: $('lbSlot') });
       againBtn.disabled = true;
       overLockUntil = performance.now() + OVER_LOCK;
       setTimeout(function () {
@@ -1274,6 +1277,7 @@ const Sound = (function () {
 
   /* ================= 입력 ================= */
   boardEl.addEventListener('pointerdown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     var t = e.target.closest ? e.target.closest('.hole') : null;
     if (!t) return;                              // 판 안쪽 여백·오버레이는 무시
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -1311,6 +1315,7 @@ const Sound = (function () {
   muteBtn.addEventListener('click', function () { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); updateMuteIcon(); });
 
   document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     Sound.unlock();
     var k = e.key;
     if (k === 'm' || k === 'M') { if (!e.repeat) { Sound.setMuted(!Sound.isMuted()); updateMuteIcon(); } return; }
@@ -1359,6 +1364,7 @@ const Sound = (function () {
           hole = Math.floor(+hole);
           if (phase !== 'play' || !(hole >= 0 && hole <= 8)) return false;
           if (type !== 'normal' && type !== 'gold' && type !== 'bomb') type = 'normal';
+          tainted = true;  // 훅으로 바꾼 판은 순위 제출 안 함
           var h = holes[hole];
           h.dustT0 = -1e9; h.smokeT0 = -1e9;
           while (h.stars.firstChild) h.stars.removeChild(h.stars.firstChild);
@@ -1368,6 +1374,7 @@ const Sound = (function () {
         },
         setTime: function (sec) {
           var v = Math.max(0, Math.min(GAME_MS, (+sec || 0) * 1000));
+          if (phase === 'play') tainted = true;
           timeLeft = v;
           lastSec = -1;
           setTimeUI(true);
@@ -1387,5 +1394,6 @@ const Sound = (function () {
   requestAnimationFrame(function (t) { lastFrame = t; frame(t); });
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>

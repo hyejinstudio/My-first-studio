@@ -242,6 +242,7 @@
         <p id="overSub" hidden></p>
         <div class="big"><span id="overScore">0</span><small>마리</small></div>
         <p id="overBest">최고 0마리</p>
+        <div id="lbSlot"></div>
         <div class="row">
           <button class="primary" id="againBtn">다시 하기</button>
           <a class="secondary" href="../../">← 게임 목록</a>
@@ -534,6 +535,7 @@ const Sound = (function () {
   var COLS = 17, ROWS = 10, TOTAL = COLS * ROWS;
   var GAME_MS = 120000;
   var BEST_KEY = 'bunny-ten-best';
+  var tainted = false; // 테스트 훅(newBoard/solution)을 쓴 판은 순위 제출 안 함
 
   /* ================= 판 생성 (순수 계산) ================= */
   function mulberry32(a) {
@@ -919,6 +921,7 @@ const Sound = (function () {
     Sound.unlock();
     Sound.play('start');
     Sound.stopMusic(); Sound.startMusic();
+    tainted = false;
     newBoard(randomSeed());
   }
 
@@ -996,6 +999,7 @@ const Sound = (function () {
     clearTimeout(overTimer);
     overTimer = setTimeout(function () {
       ovOver.hidden = false;
+      window.Leaderboard && Leaderboard.report({ game: 'bunny-ten', score: score, eligible: !tainted, reason: 'test', slot: $('lbSlot') });
       againBtn.disabled = true;
       overLockUntil = performance.now() + 700;
       setTimeout(function () { againBtn.disabled = false; if (state === 'over' && !coarse) try { againBtn.focus({ preventScroll: true }); } catch (e) {} }, 700);
@@ -1027,6 +1031,7 @@ const Sound = (function () {
     drag = null; badge.hidden = true;
   }
   wrap.addEventListener('pointerdown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     if (state !== 'play' || drag) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (e.target.closest && e.target.closest('button, a')) return;
@@ -1098,6 +1103,7 @@ const Sound = (function () {
   muteBtn.addEventListener('click', function () { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); updateMuteIcon(); });
 
   document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     Sound.unlock();
     var k = e.key;
     if (k === 'm' || k === 'M') { if (!e.repeat) { Sound.setMuted(!Sound.isMuted()); updateMuteIcon(); } return; }
@@ -1320,10 +1326,10 @@ const Sound = (function () {
   Object.defineProperty(window, '__bunny', {
     value: Object.freeze({
       seed: function () { return seed; },
-      solution: function () { return solution ? deepCopy(solution) : null; },
+      solution: function () { tainted = true; return solution ? deepCopy(solution) : null; },
       grid: function () { return grid ? deepCopy(grid) : null; },
       generate: function (s) { var r = generate(s); return { grid: r.grid, solution: r.solution, retries: r.retries }; },
-      newBoard: function (s) { newBoard(s); }
+      newBoard: function (s) { newBoard(s); tainted = true; }
     }),
     writable: false, configurable: false
   });
@@ -1340,5 +1346,6 @@ const Sound = (function () {
   requestAnimationFrame(function (t) { lastFrame = t; frame(t); });
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>

@@ -399,6 +399,7 @@
       <span class="badge" id="newRec" hidden>새 최고 기록</span>
       <span class="retrypill" id="retryPill" role="img" aria-label="이어하기 0번" hidden><svg aria-hidden="true"><use href="#icRewind"/></svg><span>이어하기</span><b class="num" id="retryNum">0</b></span>
       <div class="reslist" id="resList"></div>
+      <div id="lbSlot"></div>
       <div class="row resbtns">
         <button class="primary" id="retryBtn" type="button" hidden><svg aria-hidden="true"><use href="#icRewind"/></svg>틀린 곳부터</button>
         <button class="primary" id="againBtn" type="button">다시 하기</button>
@@ -1364,7 +1365,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     stage = clamp(stage | 0 || 1, 1, MAXS);
     G.g = Rules.newGame({ seed: seed, stage: stage });
     G.seed = G.g.seed; G.startStage = stage;
-    G.retries = 0; G.failPoint = null; G.failRd = null;
+    G.retries = 0; G.failPoint = null; G.failRd = null; G.autoUsed = !!G.auto;
     G.rounds = []; G.bars = []; G.lastTapT = -1e9; G.lastHeard = null; G.disp = null; G.fade = null; G.lastJudge = null; G.pendingStage = 0;
     G.hud = { stage: stage, score: -1, hearts: -1, combo: -1, dots: '' };
     G.grid = gridOf(stage);
@@ -1506,6 +1507,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     el.againBtn.classList.toggle('as-secondary', canRetry);
     setEyes(el.resBirdSvg, r.cleared ? 'shut' : '');
     show(el.ovResult, true);
+    window.Leaderboard && Leaderboard.report({ game: 'parrot-beat', score: g.score,
+      eligible: G.retries === 0 && G.startStage === 1 && !G.autoUsed, reason: G.retries > 0 ? 'retry' : 'test', slot: $('lbSlot') });
     el.pauseBtn.disabled = true;
     if (r.isNew) Sound.play('newBest');
     G.resultLockUntil = performance.now() + 800;
@@ -2130,6 +2133,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   // ---------- 입력 ----------
   function overlayOpen() { return !el.ovStart.hidden || !el.ovPause.hidden || !el.ovResult.hidden || !el.ovCal.hidden; }
   window.addEventListener('pointerdown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     Sound.unlock();
     var tg = e.target;
     if (tg && tg.closest && tg.closest('button, a')) return;
@@ -2146,6 +2150,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   document.addEventListener('touchmove', function (e) { if (G.phase === 'play' || G.phase === 'calibrate') e.preventDefault(); }, { passive: false });
   var IGNORE_KEYS = { Tab: 1, Shift: 1, Control: 1, Alt: 1, Meta: 1, CapsLock: 1, ContextMenu: 1, OS: 1, Fn: 1 };
   document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     var k = e.key, onBtn = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A');
     Sound.unlock();
     if (IGNORE_KEYS[k] || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -2297,7 +2302,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
     setHearts: function (n) { if (G.g) { G.g.hearts = clamp(n | 0, 1, 3); syncHUD(true); } },
     setOffset: function (ms) { Beat.setOffset(ms); return Beat.getOffset(); },
     tapAt: function (t) { return doTap(+t, null); },
-    autoPlay: function (o) { G.auto = o ? { sigma: +o.sigma || 0, bias: +o.bias || 0, rand: Rules.rng(o.seed === undefined ? 7 : o.seed) } : null; },
+    autoPlay: function (o) { if (o) G.autoUsed = true; G.auto = o ? { sigma: +o.sigma || 0, bias: +o.bias || 0, rand: Rules.rng(o.seed === undefined ? 7 : o.seed) } : null; },
     simulateRun: function (o) { return Rules.simulateRun(o || {}); },
     patterns: function () { return Rules.POOLS.map(function (p) { return p.slice(); }); },
     pause: function () { pauseGame(false); return copyState(); },
@@ -2316,5 +2321,6 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   Promise.race([fontReady, new Promise(function (r) { setTimeout(r, 600); })]).then(function () { requestAnimationFrame(frame); });
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>

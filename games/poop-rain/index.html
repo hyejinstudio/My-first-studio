@@ -309,7 +309,7 @@
       <h2>철퍽!</h2>
       <p class="restime" id="resScoreBox"><b class="num" id="resScore">0</b><span class="u">점</span></p>
       <p class="resstats"><span><b class="num" id="resTime">0.0</b>초 버팀</span><span><svg viewBox="-10 -10 20 20" aria-hidden="true"><path d="M0,-8.6 L2.4,-3.3 L8.2,-2.7 L3.8,1.2 L5.1,7 L0,4 L-5.1,7 L-3.8,1.2 L-8.2,-2.7 L-2.4,-3.3Z" stroke-linejoin="round"/></svg>별사탕 <b class="num" id="resStars">0</b>개</span></p>
-      <p id="resLine">최고 <b class="num" id="resBest">0</b>점<span id="resNear"></span></p>
+      <p id="resLine">최고 <b class="num" id="resBest">0</b>점<span id="resNear"></span><span class="lb-inline" id="lbSlot"></span></p>
       <button class="primary big" id="againBtn" type="button">다시 하기</button>
       <button class="secondary" id="resHomeBtn" type="button">처음으로</button>
     </div>
@@ -1766,6 +1766,7 @@ const Sound = (function () {
     Sound.play('gameOver');
     if (isNew) { var rid = G.runId; setTimeout(function () { if (G.runId === rid && G.phase === 'result') Sound.play('record'); }, 1300); }
     updateHud(true);
+    window.Leaderboard && Leaderboard.report({ game: 'poop-rain', score: sc, eligible: canSave, reason: 'test', slot: document.getElementById('lbSlot') });
   }
   function unlockResult() {
     G.lock = false;
@@ -2175,6 +2176,7 @@ const Sound = (function () {
   function isUi(t) { return t && t.closest && t.closest('button, a, .overlay:not([hidden])'); }
 
   window.addEventListener('pointerdown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     if (e.pointerType === 'mouse') return;
     if (isUi(e.target)) return;
     e.preventDefault();
@@ -2222,6 +2224,7 @@ const Sound = (function () {
   function releaseDir(d) { var i = inp.keys.indexOf(d); if (i >= 0) inp.keys.splice(i, 1); }
   var DIRKEYS = { ArrowLeft: 'L', KeyA: 'L', ArrowRight: 'R', KeyD: 'R' };
   window.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     var code = e.code || e.key;
     if (DIRKEYS[code]) { e.preventDefault(); if (!e.repeat) pressDir(DIRKEYS[code]); return; }
     if (code === 'Space' || code === 'Enter' || code === 'NumpadEnter') {
@@ -2385,5 +2388,6 @@ const Sound = (function () {
   requestAnimationFrame(frame);
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>

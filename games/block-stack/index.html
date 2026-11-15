@@ -82,6 +82,7 @@
       <div class="overlay" id="overlay">
         <h3 id="ovTitle">블록 스택</h3>
         <p id="ovText">줄을 가득 채워 지워보세요!</p>
+        <div id="lbSlot" hidden></div>
         <button class="primary" id="startBtn">시작하기</button>
       </div>
     </div>
@@ -320,6 +321,8 @@
       try { localStorage.setItem('blockstack-best', best); } catch (e) {}
     }
     showOverlay('게임 오버', `점수 ${score} · ${lines}줄`, '다시 하기');
+    $('lbSlot').hidden = false;
+    window.Leaderboard && Leaderboard.report({ game: 'block-stack', score, eligible: true, slot: $('lbSlot') });
   }
   function togglePause() {
     if (!running) return;
@@ -328,6 +331,7 @@
     else { $('overlay').hidden = true; lastTime = performance.now(); requestAnimationFrame(loop); }
   }
   function showOverlay(title, text, btn) {
+    $('lbSlot').hidden = true;  // 순위 줄은 게임오버일 때만
     $('ovTitle').textContent = title; $('ovText').textContent = text; $('startBtn').textContent = btn;
     $('overlay').hidden = false;
   }
@@ -361,6 +365,7 @@
     ShiftLeft: 'hold', ShiftRight: 'hold', KeyP: 'pause', Escape: 'pause',
   };
   document.addEventListener('keydown', e => {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     if (e.code === 'Enter' && !$('overlay').hidden) { $('startBtn').click(); return; }
     const a = KEYS[e.code];
     if (!a) return;
@@ -402,5 +407,6 @@
   draw();
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>

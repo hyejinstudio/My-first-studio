@@ -226,6 +226,7 @@
         <h2 id="overTitle">게임 끝</h2>
         <div class="big" id="overScore">0</div>
         <p id="overInfo">길이 3칸 · 최고 0점</p>
+        <div id="lbSlot"></div>
         <div class="row">
           <button class="primary" id="againBtn">다시 하기</button>
           <a class="secondary" href="../../">← 게임 목록</a>
@@ -593,6 +594,7 @@ const Sound = (function () {
     $('newRec').hidden = !newRecord;
     updateHud(false);
     showOnly(ovOver);
+    window.Leaderboard && Leaderboard.report({ game: 'snake-garden', score: score, eligible: true, slot: $('lbSlot') });
     againBtn.disabled = true;
     lockUntil = performance.now() + LOCK_MS;
     setTimeout(function () {
@@ -627,6 +629,7 @@ const Sound = (function () {
   }
 
   document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     Sound.unlock();
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var d = KEYMAP[e.key] || KEYMAP[e.code];
@@ -695,6 +698,7 @@ const Sound = (function () {
   // 스와이프: 보드 위, 30px 이상 → 큰 축 방향 1회 (손 떼기 전 1회만)
   var sw = null;
   board.addEventListener('pointerdown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen()) return;
     if (e.target.closest && e.target.closest('button, a')) return;
     sw = { id: e.pointerId, x: e.clientX, y: e.clientY, used: false };
   });
@@ -1085,5 +1089,6 @@ const Sound = (function () {
   if (!mqCoarse.matches) { try { $('startBtn').focus({ preventScroll: true }); } catch (e) {} }
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=1" defer></script>
 </body>
 </html>
