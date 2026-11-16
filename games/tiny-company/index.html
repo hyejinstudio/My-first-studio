@@ -186,6 +186,14 @@
   .board .br .num { font-size: 14px; }
   .board .br small { font-size: 11px; white-space: nowrap; }
   body.wallslim .board .br { flex-direction: row; gap: 6px; align-items: center; }
+  .bnext { flex: none; display: inline-flex; align-items: center; gap: 2px; font-size: 11px; color: var(--muted); white-space: nowrap; border-left: 1px solid var(--wall-line); padding-left: 6px; height: 70%; }
+  .bnext .num { font-size: 13px; color: var(--ink); }
+  .bnext.up .num { color: var(--rev); } 
+  body.wallslim .bnext { font-size: 10px; padding-left: 4px; }
+  .bnext .lbs { display: none; }
+  body.port.wallslim .bnext .lbl { display: none; } body.port.wallslim .bnext .lbs { display: inline; }
+  body.port.wallslim .board .br small { display: none; }
+  body.port.wallslim .board { gap: 5px; padding: 0 6px; }
   .evtag { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--grid); background: var(--panel); padding: 0; display: grid; place-items: center; position: relative; }
   .evtag::after { content: ""; position: absolute; inset: -10px; }
   .evtag svg { width: 15px; height: 15px; }
@@ -739,6 +747,7 @@
           <span class="bl"><svg class="ic" aria-hidden="true"><use href="#icOrder"/></svg>주문 <b class="num" id="bD">70</b></span>
           <span class="btrack" id="btrack"><i class="miss" id="bMiss"></i><i class="fill" id="bFill"></i></span>
           <span class="br"><b class="num" id="bProc">0/70</b><small id="bNote"></small></span>
+          <span class="bnext" id="bNext" hidden></span>
         </div>
         <svg class="wdeco clock" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13" fill="var(--panel)" stroke="var(--wall-line)" stroke-width="2"/><path id="clockHand" d="M15 15V7M15 15l5 3" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" style="transform-origin:15px 15px"/></svg>
         <svg class="wdeco plant" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 18c-6-2-9-8-7-12 4 1 7 6 7 12zM15 18c6-2 9-8 7-12-4 1-7 6-7 12z" fill="var(--plant)"/><path d="M9 18h12l-2 10h-8z" fill="var(--desk-edge)"/></svg>
@@ -1367,18 +1376,18 @@ const Sound = (function () {
 var Engine = (function () {
   'use strict';
   var K = {
-    startCash: 2000, rent: 550, price: 52, hireCost: 200, bonusCost: 50, maxStaff: 6,
+    startCash: 2500, rent: 550, price: 53, hireCost: 200, bonusCost: 50, maxStaff: 6,
     pays: [250, 275, 300, 325, 350, 375, 400],
     hF: [0.80, 0.90, 1.00, 1.15, 1.30], rF: [1.00, 0.95, 0.90, 0.85, 0.80],
     wF: [3, 7, 11, 17, 24], rRec: [0, 4, 8, 12, 16],
     workH: [3, 1, 0, -3, -8], restH: [-3, 0, 1, 2, 3],
     hours: [35, 40, 45, 52, 60], days: [0, 1, 2, 3, 4],
-    baseD: [45, 48, 52, 56, 60, 65, 70, 75, 80, 85, 90, 95],
-    firstBoost: 25, bigOrder: 30, slumpMul: 0.5,
+    baseD: [45, 50, 35, 75, 100, 35, 60, 105, 35, 75, 110, 55],   // 계절: 바쁜 달 5·8·11월, 한가한 달 3·6·9월
+    firstBoost: 25, bigOrder: 30, headCost: 40, slumpMul: 0.6,
     quitLine: 30, shakenLine: 40, scoutLine: 60,
     shock: 12, shockBonus: 6, shockOther: 3,
     eRise: 5, wageDiv: 8, wageCap: 8, priceRise: 20, moodK: 0.3, fatigueDiv: 5, burnout: 90,
-    botReserve: 800, botSlumpCut: 25, leaveF: -35, leaveH: 6, sickF: -40, sickH: -5, bonusH: 10
+    botReserve: 1000, botSlumpCut: 25, botHireUntil: 8, botBusy: 80, botPayAdd: 10, botPayH: 45, botBusyF: 70, botBusyH: 55, botBusyR: 3, botCashFloor: 500, leaveF: -35, leaveH: 6, sickF: -40, sickH: -5, bonusH: 10
   };
   var NEI = { 0: [1, 3], 1: [0, 2, 4], 2: [1, 5], 3: [0, 4], 4: [1, 3, 5], 5: [2, 4] };
   var POOL = ['다온', '하람', '이든', '누리', '보람', '시온', '가온', '라온', '단비', '여름', '마루', '초롱'];
@@ -1519,8 +1528,8 @@ var Engine = (function () {
     // 2. 돈
     var n = st.staff.length, nb = 0;
     for (var s in d.actions) if (d.actions[s] === 'bonus') nb++;
-    var cost = { wages: n * d.pay, rent: K.rent, bonus: nb * K.bonusCost, hire: hired ? K.hireCost : 0 };
-    cost.total = cost.wages + cost.rent + cost.bonus + cost.hire;
+    var cost = { wages: n * d.pay, rent: K.rent, office: K.headCost * n, n: n, bonus: nb * K.bonusCost, hire: hired ? K.hireCost : 0 };
+    cost.total = cost.wages + cost.rent + cost.office + cost.bonus + cost.hire;
     var revenue = sold * K.price;
     st.cash += revenue - cost.total; st.revenue += revenue;
     rep.money = { revenue: revenue, cost: cost, profit: revenue - cost.total, cashAfter: st.cash, n: n, pay: d.pay };
@@ -1685,6 +1694,8 @@ var Engine = (function () {
     return out;
   }
 
+  // 다음 달 주문 예보 (기본 주문표 + 이미 알려진 경기 침체. 실제는 ±5% 노이즈와 사건으로 달라짐)
+  function nextOrders(st) { var m = st.month; return m < 12 ? Math.round(K.baseD[m] * (st.slumpLeft > 1 ? K.slumpMul : 1)) : null; }
   function step(st, dec) { var r = runMonth(st, dec, true); var s = r.st; s.history.push(r.rep); if (!s.over) { s.month++; beginMonth(s); } return { st: s, rep: r.rep }; }
 
   // ----- 봇 -----
@@ -1695,34 +1706,57 @@ var Engine = (function () {
     angel: function () { return { pay: 400, work: 1, rest: 5 }; },
     fixed: function () { return { pay: 300, work: 3, rest: 3 }; },
     adaptive: function (st) {
-      var staff = st.staff, slump = isSlump(st);
-      var pay = Math.ceil((avg(staff, function (p) { return p.E; }) + 10) / 25) * 25;
-      if (staff.some(function (p) { return p.H < 45; })) pay += 25;
+      // 사람처럼: 이번 달 주문·다음 달 예보를 보고 조절 (design.md "적응형 봇 규칙")
+      var staff = st.staff, slump = isSlump(st), m = st.month;
+      var nextD = nextOrders(st) || 0;
+      var pay = Math.ceil((avg(staff, function (p) { return p.E; }) + K.botPayAdd) / 25) * 25;
+      if (staff.some(function (p) { return p.H < K.botPayH; })) pay += 25;
       pay = clamp(pay, 250, 400);
       var aF = avg(staff, function (p) { return p.F; });
-      var rest = 3; if (aF >= 55) rest = 4; if (slump) rest = 5;
       var actions = {};
-      var tired = staff.filter(function (p) { return p.F >= 75 && !p.sick; }).sort(function (a, b) { return b.F - a.F || a.seat - b.seat; });
+      var busy = st.D >= K.botBusy || m === 12, nextBusy = nextD >= K.botBusy;
+      // 휴가: 바쁜 달엔 아주 지친 사람(85↑)만, 평소엔 75↑ 1명
+      var tired = staff.filter(function (p) { return p.F >= (busy ? 85 : 75) && !p.sick; }).sort(function (a, b) { return b.F - a.F || a.seat - b.seat; });
       if (tired.length && staff.length > 1) actions[tired[0].seat] = 'leave';
-      var maxW = 5; if (st.month < 12) { if (aF >= 75) maxW = 2; else if (aF >= 60) maxW = 3; }
-      var work = maxW;
-      for (var w = 1; w <= maxW; w++) { if (forecast(st, { pay: pay, work: w, rest: rest, actions: actions }).cap >= st.D) { work = w; break; } }
-      if (slump) { var fc0 = forecast(st, { pay: pay, work: work, rest: rest, actions: actions }); if (fc0.cashAfter < 500) pay = clamp(pay - K.botSlumpCut, 250, 400); }
-      var fc = forecast(st, { pay: pay, work: work, rest: rest, actions: actions }), nb = 0;
+      var lastW = st.history.length ? st.history[st.history.length - 1].decision.work : 3;
+      var aH = avg(staff, function (p) { return p.H; });
+      var maxW = busy ? (aF < K.botBusyF && aH >= K.botBusyH ? 5 : 4) : (aF >= 70 ? 3 : aF >= 60 ? 4 : 5);
+      if (!busy && lastW >= 5 && aF >= 50) maxW = Math.min(maxW, 4);
+      var best = null, f1 = forecast(st, { pay: pay, work: 1, rest: 5, actions: actions });
+      if (f1.cap >= st.D) best = { work: 1, rest: 5 };            // 한가한 달: 쉬게 한다
+      else {
+        // 다음 달이 바쁘면 이번 달은 충전(휴식↑), 바쁜 달엔 휴식↓
+        var R0 = busy ? K.botBusyR : nextBusy ? 5 : (aF >= 55 ? 4 : 3);
+        for (var w = 1; w <= maxW && !best; w++) if (forecast(st, { pay: pay, work: w, rest: R0, actions: actions }).cap >= st.D) best = { work: w, rest: R0 };
+        if (!best && nextBusy) { R0 = 3; for (var w2 = 1; w2 <= maxW && !best; w2++) if (forecast(st, { pay: pay, work: w2, rest: R0, actions: actions }).cap >= st.D) best = { work: w2, rest: R0 }; }
+        if (!best && busy && K.botBusyR > 1 && aH >= 60) { R0 = 1; if (forecast(st, { pay: pay, work: maxW, rest: 1, actions: actions }).cap > forecast(st, { pay: pay, work: maxW, rest: 2, actions: actions }).cap) best = { work: maxW, rest: 1 }; }
+        if (!best) best = { work: maxW, rest: R0 };
+      }
+      // 한가한 달: 남는 일손에게 휴가(피로 높은 순, 처리량 유지되는 만큼)
+      if (!busy) staff.filter(function (p) { return p.F >= (nextBusy ? 25 : 40) && !p.sick && !actions[p.seat]; }).sort(function (a, b) { return b.F - a.F; }).forEach(function (p) {
+        var tryA = Object.assign({}, actions); tryA[p.seat] = 'leave';
+        if (Object.keys(tryA).filter(function (k) { return tryA[k] === 'leave'; }).length > staff.length - 1) return;
+        if (forecast(st, { pay: pay, work: best.work, rest: best.rest, actions: tryA }).cap >= st.D) actions = tryA;
+      });
+      // 현금 지키기: 월말 현금이 바닥(적자 중이거나 12월이면 0, 아니면 500) 아래로 예상되면 월급을 한 단계씩 내린다
+      var must = st.deficit >= 1 || m === 12;
+      // 다음 달 예보로 다음 달 적자를 어림해, 그만큼은 남겨 둔다
+      var nextLoss = nextD ? (staff.length * pay + K.rent + K.headCost * staff.length) - nextD * K.price : 0;
+      var floor = must ? 0 : Math.max(K.botCashFloor, nextLoss);
+      for (var g = 0; g < (must ? 6 : 2) && pay > 250 && forecast(st, { pay: pay, work: best.work, rest: best.rest, actions: actions }).cashAfter < floor; g++) pay -= 25;
+      var fc = forecast(st, { pay: pay, work: best.work, rest: best.rest, actions: actions }), nb = 0;
       staff.slice().sort(function (a, b) { return a.H - b.H; }).forEach(function (p) {
-        if (nb >= 2 || actions[p.seat]) return;
+        if (nb >= 2 || actions[p.seat] === 'bonus') return;
         var scout = st.event === 'scout' && st.scoutId === p.id;
         if (!(p.flag || p.shaken > 0 || scout)) return;
         var T = scout ? K.scoutLine : lineOf(p);
-        if (fc.staff[p.seat].H1 < T + 5) { actions[p.seat] = 'bonus'; nb++; }
+        if (fc.staff[p.seat].H1 < T + 5 && fc.cashAfter - K.bonusCost * (nb + 1) >= floor) { actions[p.seat] = 'bonus'; nb++; }
       });
       var hire = null;
-      var slumpPending = !Object.keys(st.events).some(function (mm) { return st.events[mm] === 'slump' && +mm <= st.month; });
-      if (staff.length < 6 && !slump && st.cash - K.hireCost >= (slumpPending ? K.botReserve : 800)) {
-        var last = st.history[st.history.length - 1];
-        var nextD = st.month < 12 ? K.baseD[st.month] : 0;
-        var f3 = forecast(st, { pay: pay, work: 3, rest: rest, actions: actions });
-        if ((last && last.prod.missed >= 6) || nextD > f3.C) {
+      if (staff.length < 6 && !slump && m <= K.botHireUntil) {
+        var f4 = forecast(st, { pay: pay, work: 4, rest: 3, actions: {} });
+        var need = Math.max(st.D, nextD) > f4.C;
+        if (need && st.cash - K.hireCost >= K.botReserve) {
           var bestSeat = -1, bestScore = -1;
           for (var s = 0; s < 6; s++) {
             if (bySeat(st, s)) continue;
@@ -1732,7 +1766,7 @@ var Engine = (function () {
           if (bestSeat >= 0) hire = bestSeat;
         }
       }
-      return { pay: pay, work: work, rest: rest, actions: actions, hire: hire };
+      return { pay: pay, work: best.work, rest: best.rest, actions: actions, hire: hire };
     }
   };
   function randomBot(r) {
@@ -1803,6 +1837,7 @@ var Engine = (function () {
   function explain(rep) {
     var m = rep.money, c = m.cost, P = rep.prod, f = P.factors, X = {};
     var parts = ['매출 ' + fmt(m.revenue), '월급 ' + fmt(c.wages), '임대료 ' + fmt(c.rent)];
+    if (c.office) parts.push('사무실 ' + fmt(c.office) + '(' + c.n + '명×' + K.headCost + ')');
     if (c.bonus) parts.push('보너스 ' + fmt(c.bonus));
     if (c.hire) parts.push('채용 ' + fmt(c.hire));
     X.money = '이번 달 ' + sgn(m.profit) + '만원 (' + parts.join(' − ') + ')';
@@ -1814,8 +1849,9 @@ var Engine = (function () {
     var reason;
     if (P.workers === 0) reason = '일한 사람이 없었어요';
     else if (P.missed > 0 && f.fatigue < 0.9) reason = '피로 때문에 처리량이 줄었어요';
+    else if (P.missed > 0 && rep.D >= K.botBusy) reason = '바쁜 달이라 일손이 모자랐어요';
     else if (P.missed > 0) reason = '일손이 모자라 주문을 놓쳤어요';
-    else if (P.slack >= 10) reason = '일손이 남았어요. 업무를 줄여도 돼요';
+    else if (P.slack >= 10) reason = '한가한 달이에요. 쉬게 해도 돼요';
     else reason = '주문을 모두 처리했어요';
     X.reason = reason;
     X.staff = rep.rows.map(function (r) {
@@ -1855,7 +1891,7 @@ var Engine = (function () {
     X.scout = rep.scout ? (rep.scout.stayed ? rep.scout.name + ' 스카우트 제안 거절 (행복 ' + rep.scout.H + ' ≥ ' + rep.scout.line + ')' : rep.scout.name + ' 이직 (행복 ' + rep.scout.H + ' < ' + rep.scout.line + ')') : '';
     return X;
   }
-  return { explain: explain, termText: termText, chipsOf: chipsOf, fmt: fmt, sgn: sgn, tv: tv, sum1: sum1, K: K, NEI: NEI, POOL: POOL, newGame: newGame, beginMonth: beginMonth, runMonth: runMonth, forecast: forecast, step: step,
+  return { nextOrders: nextOrders, explain: explain, termText: termText, chipsOf: chipsOf, fmt: fmt, sgn: sgn, tv: tv, sum1: sum1, K: K, NEI: NEI, POOL: POOL, newGame: newGame, beginMonth: beginMonth, runMonth: runMonth, forecast: forecast, step: step,
     normDecision: normDecision, canHire: canHire, leaveLimit: leaveLimit, bots: bots, fixedBot: fixedBot, randomBot: randomBot, simulate: simulate,
     clone: clone, fatM: fatM, moodM: moodM, lineOf: lineOf, bySeat: bySeat, neighborsOf: neighborsOf, mulberry32: mulberry32 };
 })();
@@ -2363,8 +2399,11 @@ if (typeof module !== 'undefined') module.exports = Engine;
     $('sHg').style.width = aH + '%'; $('sFg').style.width = aF + '%';
     clearTimeout(G.liveT);
     G.liveT = setTimeout(function () { if (fc && G.phase === 'decide') $('scProfit').setAttribute('aria-label', '예상 이익 ' + (fc.profit >= 0 ? '플러스 ' : '마이너스 ') + fmt(Math.abs(fc.profit)) + '만, 처리 ' + fc.sold + ' / 주문 ' + fc.D); }, 400);
-    // 주문 보드
+    // 주문 보드 + 다음 달 예보
     $('bD').textContent = st.D;
+    var nx = Engine.nextOrders(st);
+    $('bNext').hidden = nx === null || G.phase === 'menu';
+    if (nx !== null) { $('bNext').innerHTML = '<span class="lbl">다음 달</span><span class="lbs">다음</span> <span class="num">' + nx + '</span>' + arrow(nx - st.D); $('bNext').className = 'bnext ' + (nx > st.D + 5 ? 'up' : nx < st.D - 5 ? 'dn' : ''); $('bNext').setAttribute('aria-label', '다음 달 주문 예보 ' + nx + '건'); }
     if (fc && G.phase === 'decide') boardSet(Math.min(fc.cap, st.D), st.D, fc.cap);
     // 돈 막대
     if (fc && G.phase === 'decide') {
@@ -2373,8 +2412,8 @@ if (typeof module !== 'undefined') module.exports = Engine;
       var pc = function (v) { return (v / max * 100) + '%'; };
       $('pvRev').style.width = pc(fc.revenue);
       $('pvWg').style.left = '0'; $('pvWg').style.width = pc(fc.cost.wages);
-      $('pvRt').style.left = pc(fc.cost.wages); $('pvRt').style.width = pc(fc.cost.rent);
-      $('pvEx').style.left = pc(fc.cost.wages + fc.cost.rent); $('pvEx').style.width = pc(fc.cost.bonus + fc.cost.hire);
+      $('pvRt').style.left = pc(fc.cost.wages); $('pvRt').style.width = pc(fc.cost.rent + fc.cost.office);
+      $('pvEx').style.left = pc(fc.cost.wages + fc.cost.rent + fc.cost.office); $('pvEx').style.width = pc(fc.cost.bonus + fc.cost.hire);
       $('pvRevV').innerHTML = fmt(fc.revenue) + '<small>만</small>'; $('pvCostV').innerHTML = fmt(fc.cost.total) + '<small>만</small>';
       $('pvRevL').hidden = !last; $('pvCostL').hidden = !last;
       if (last) { $('pvRevL').style.left = pc(last.money.revenue); $('pvCostL').style.left = pc(last.money.cost.total); }
@@ -2790,6 +2829,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
   function yearChart(hist, cur, h, big) {
     var W = 360, Hh = h, top = 6, bot = Hh - 12, maxR = 1, maxC = 1, minC = 0;
     hist.forEach(function (r) { maxR = Math.max(maxR, r.money.revenue); maxC = Math.max(maxC, r.money.cashAfter); minC = Math.min(minC, r.money.cashAfter); });
+    for (var q = hist.length; q < 12; q++) maxR = Math.max(maxR, K.baseD[q] * K.price);
     maxC = Math.max(maxC, K.startCash);
     var cw = W / 12, s = '';
     hist.forEach(function (r, i) {
@@ -2798,7 +2838,10 @@ if (typeof module !== 'undefined') module.exports = Engine;
       if (i === cur) s += '<text x="' + (i * cw + cw / 2) + '" y="' + Math.max(9, bot - bh - 3) + '" text-anchor="middle" font-size="10" font-family="var(--num-font)" font-weight="800" fill="var(--ink)">' + fmt(r.money.revenue) + '</text>';
       if (big && r.leavers.length) s += '<use href="#' + (r.leavers.some(function (x) { return x.chain; }) ? 'icLink' : 'icDoor') + '" x="' + (i * cw + cw / 2 - 5) + '" y="' + (bot + 1) + '" width="10" height="10"/>';
     });
-    for (var m = hist.length; m < 12; m++) s += '<line x1="' + (m * cw + cw * 0.2) + '" y1="' + bot + '" x2="' + (m * cw + cw * 0.8) + '" y2="' + bot + '" stroke="var(--grid)" stroke-dasharray="2 2"/>';
+    for (var m = big ? 12 : hist.length; m < 12; m++) {
+      var fh = (bot - top) * K.baseD[m] * K.price / maxR;
+      s += '<rect x="' + (m * cw + cw * 0.2) + '" y="' + (bot - fh) + '" width="' + (cw * 0.6) + '" height="' + fh + '" rx="2" fill="none" stroke="var(--rev)" stroke-opacity=".55" stroke-dasharray="3 2"/>';
+    }
     if (cur >= 0 && cur < 12) s = '<rect x="' + (cur * cw) + '" y="0" width="' + cw + '" height="' + Hh + '" fill="var(--accent)" opacity=".08"/>' + s;
     var range = Math.max(1, maxC - minC), cy = function (v) { return top + (bot - top) * (1 - (v - minC) / range); };
     if (big) s += '<line x1="0" x2="' + W + '" y1="' + cy(K.startCash) + '" y2="' + cy(K.startCash) + '" stroke="var(--muted)" stroke-dasharray="3 3" opacity=".6"/>' + (minC < 0 ? '<line x1="0" x2="' + W + '" y1="' + cy(0) + '" y2="' + cy(0) + '" stroke="var(--ink)" opacity=".3"/>' : '');
@@ -2849,10 +2892,10 @@ if (typeof module !== 'undefined') module.exports = Engine;
     b1 += '<span class="sr">' + esc(X.money) + '</span></div>';
     // ② 돈
     var max = Math.max(m.revenue, m.cost.total, 1) * 1.05;
-    var cnote = '(월급 ' + fmt(m.cost.wages) + ' · 임대료 ' + fmt(m.cost.rent) + (m.cost.bonus ? ' · 보너스 ' + fmt(m.cost.bonus) : '') + (m.cost.hire ? ' · 채용 ' + fmt(m.cost.hire) : '') + ')';
+    var cnote = '(월급 ' + fmt(m.cost.wages) + ' · 임대료 ' + fmt(m.cost.rent) + (m.cost.office ? ' · 사무실 ' + m.cost.n + '명×' + K.headCost + ' = ' + fmt(m.cost.office) : '') + (m.cost.bonus ? ' · 보너스 ' + fmt(m.cost.bonus) : '') + (m.cost.hire ? ' · 채용 ' + fmt(m.cost.hire) : '') + ')';
     var b2 = '<section class="rb anim" style="animation-delay:120ms" aria-label="돈"><h4>돈</h4>' +
       '<div class="rmrow">' + use('icRev', '') + '<span>매출</span><span class="mtrack">' + bar(m.revenue, max, 'rv') + '</span><b class="num">' + fmt(m.revenue) + '만</b></div>' +
-      '<div class="rmrow">' + use('icCost', '') + '<span>비용</span><span class="mtrack">' + bar(m.cost.wages, max, 'wg') + bar(m.cost.rent, max, 'rt', m.cost.wages) + bar(m.cost.bonus + m.cost.hire, max, 'ex', m.cost.wages + m.cost.rent) + '</span><b class="num">' + fmt(m.cost.total) + '만</b></div>' +
+      '<div class="rmrow">' + use('icCost', '') + '<span>비용</span><span class="mtrack">' + bar(m.cost.wages, max, 'wg') + bar(m.cost.rent + m.cost.office, max, 'rt', m.cost.wages) + bar(m.cost.bonus + m.cost.hire, max, 'ex', m.cost.wages + m.cost.rent + m.cost.office) + '</span><b class="num">' + fmt(m.cost.total) + '만</b></div>' +
       '<span class="rmnote">' + cnote + '</span>' +
       '<div class="cashflow"><b class="num">' + fmt(rep.cashBefore) + '</b><span class="arrow">' + chip(null, sgn(pf) + '만', pf > 0 ? true : pf < 0 ? false : null) + use('icArrow', 'ic') + '</span><b class="num">' + fmt(m.cashAfter) + '</b><span style="font-size:12px;color:var(--muted)">만</span></div></section>';
     // ③ 매출 이유
