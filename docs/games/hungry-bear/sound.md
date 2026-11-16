@@ -1,0 +1,143 @@
+# 폭식 불곰을 찾아라 (hungry-bear) — 사운드 명세
+
+모든 소리는 Web Audio API로 실시간 합성한다(음원 파일 없음). 코드: `docs/games/hungry-bear/sound-module.js` — Developer가 `lab/games/hungry-bear/index.html`의 독립 `<script>` 블록에 그대로 붙여 넣는다(`_test` 부분 포함해도 무해).
+
+**톤 원칙**: 숲속 강가. 칼림바·나무 '툭'·물소리. 버저·사각파·날카로운 고음 없음(효과음 버스 7kHz 로우패스). 자주 나는 소리(냠·첨벙·틱·버튼)일수록 작고 짧다. 오답·게임오버도 "아쉬움" 정도로, 놀라게 하지 않는다.
+
+조성: G 장조로 효과음·BGM 통일. 모든 멜로디는 오리지널.
+
+## 0. 공정성 규칙 (가장 중요)
+
+이 게임은 **눈으로 세기**가 핵심이다. 소리가 정답 단서가 되면 안 된다.
+- `Sound.play('eat')`는 **곰 번호를 받지 않는다.** 세 곰 모두 완전히 같은 레시피, 같은 음량, **패닝 없음**(가운데).
+- 무작위 변화(음높이 ±3%, 노이즈 시작 위치)는 모든 호출에 같은 분포로 적용된다 → 곰과 상관없음.
+- 연속 발음 시 자동 축소(아래)는 **직전 '냠'과의 시간 간격**만 보고 정한다 → 곰과 상관없음.
+- Developer 주의: 곰마다 다른 소리를 내거나, 정답 곰이 먹을 때만 다른 효과(진동·소리)를 넣지 말 것. `select`도 어느 곰을 눌러도 같은 소리. `tally`(해설)는 정답 공개 **뒤**에만 쓴다.
+- BGM의 박은 연어 타이밍과 **동기화하지 않는다**(일정 템포). 연어 간격이 박에 맞춰 들리면 리듬으로 세는 단서가 될 수 있기 때문.
+
+## 1. 신호 경로
+
+```
+sfxBus → lowpass 7kHz ─────────────────┐
+musicBus(0.14) → musicDuck(순간 덕킹) ──┴→ master(0.6, 음소거) → limiter → 출력
+```
+- **마스터 리미터**: DynamicsCompressor threshold −6 dBFS, knee 2, ratio 20, attack 2ms, release 150ms.
+- **순간 덕킹**: correct / wrong / levelUp / gameOver 재생 시 음악 0.45배로 0.9~2.0초 낮춘 뒤 서서히 복귀.
+- **첨벙·냠 동시 발음 제한**: 두 소리는 공용 보이스 풀(최대 4개)을 쓴다. 넘치면 가장 오래된 소리를 약 10ms 안에 줄여 없앤다.
+- **연속 자동 축소**(첨벙·냠 각각): 직전 같은 소리와의 간격 `gap`(초)으로
+  - 음량 계수 = clamp(0.65 + 1.2·gap, 0.65, 1) → 간격 0.3초 이상 1.0, 0.12초면 약 0.79
+  - 길이: 냠 = clamp(0.75·gap, 0.06, 0.10)초, 첨벙 = clamp(0.9·gap, 0.07, 0.13)초
+- 엔벨로프는 0.0001에서 지수 어택/감쇠(클릭음 방지). 노이즈 버퍼 0.6초 고정 시드, 재생 위치 무작위.
+
+## 2. 효과음 목록
+
+피크는 Chromium OfflineAudioContext 48kHz 렌더 측정값(마스터·리미터 통과 후, 음악 없음).
+"칼림바" = sine 기음 + 5.4배 비조화 배음(12%, 40ms 이내 소멸).
+
+| 이름 (`Sound.play`) | 언제 | 합성 레시피 | 길이 | 피크 |
+|---|---|---|---|---|
+| `count` | 시작 카운트 3·2·1 각각 | 나무 '톡'(밴드패스 노이즈 1.8kHz 25ms) + 칼림바 D5 | 0.22s | −17.5 dB |
+| `go` | 카운트 끝 "시작!" | 칼림바 G5 + D6 동시 + 물방울(sine 900→1500Hz 50ms) | 0.4s | −15.1 dB |
+| `splash` | 연어가 강에서 튀어 오를 때(연어마다 1회) | 밴드패스 노이즈 2.4k→800Hz(Q 0.9, 어택 6ms) + 물방울 sine 900→1500Hz 35ms. 필터 ±6% 무작위. 연속 자동 축소. 40ms 스로틀 | 0.07~0.13s | −25.7 dB |
+| `eat` | 곰이 연어를 먹는 순간(어느 곰이든 같은 호출) | '앙' 로우패스 노이즈 1.4k→400Hz(길이 절반) + '냠' triangle 330→230Hz(2kHz 로우패스) + 윗소리 sine 520→380Hz(작게). 음높이 ±3% 무작위. 연속 자동 축소. 40ms 스로틀 | 0.06~0.10s | −17.8 dB |
+| `select` | 곰을 골라 누를 때(어느 곰이든 같은 소리) | 나무 '툭' sine 240→150Hz 70ms + 노이즈 1.2kHz 30ms + 칼림바 B4 작게. 200ms 스로틀 | 0.2s | −17.1 dB |
+| `correct` | 정답 판정 | 칼림바 G5-B5-D6 상승(80ms 간격) + G6 작은 반짝임 | 0.75s | −16.4 dB |
+| `wrong` | 오답 판정 | triangle E4 → C4 하강(살짝 처짐) + sine C3 받침. 버저 없음 | 0.8s | −14.4 dB |
+| `tally` | 해설: 곰별 먹은 수가 하나씩 올라갈 때 | 칼림바, `opts.n`(1부터)에 따라 G 장조 5음 음계 G4-A4-B4-D5-E5-G5-A5-B5-D6-E6-G6 한 칸씩 상승(11 이상은 G6 고정) + 3kHz 노이즈 12ms. 35ms 스로틀 | 0.14s | −20.4 dB |
+| `levelUp` | 다음 레벨로 넘어갈 때 | 칼림바 G4-B4-D5-G5(90ms 간격) + sine G5·B5·G3 화음 0.8초 | 1.2s | −15.4 dB |
+| `gameOver` | 게임 오버 화면 | 칼림바 D5-B4-A4-G4 느린 하강(270ms 간격, 점점 처짐) + triangle G2 받침 | 2.0s | −13.8 dB |
+| `button` | 일반 UI 버튼 | sine 660→520Hz 55ms + 2.5kHz 노이즈 20ms. 50ms 스로틀 | 0.06s | −21.4 dB |
+
+레벨 의도: 첨벙(−26) < 버튼·틱(−20~−21) < 냠·카운트·선택(−17~−18) < 결과음(−14~−16). '냠'이 첨벙보다 약 8 dB 커서, 셀 대상인 '먹는 순간'이 귀에도 분명하다.
+대역 분리: 냠 = 200Hz~2kHz 중역, 첨벙 = 800Hz~2.4kHz 고중역의 '쉬익', 먹는 구간 BGM = 200Hz 이하 북·베이스 + 7kHz 이상 셰이커.
+
+`correct`/`wrong`은 같은 스로틀 키(400ms)라 실수로 둘 다 불려도 하나만 난다.
+
+## 3. 배경음악 (선택 가능)
+
+- **오리지널 G 장조 강가 루프**: 8분음표 스텝, 8마디(64스텝).
+- 화음(2마디씩): `Gmaj7(B3 D4 F#4 / G2)` → `Em7(G3 B3 D4 / E2)` → `Cmaj7(B3 E4 G4 / C3)` → `Dsus4(A3 D4 G4 / D3)`.
+- 두 가지 모드 — `Sound.setMusicMode(mode, level)`, 다음 8분음표부터 반영(최대 약 0.3초 뒤), 루프 위치는 이어진다.
+  - **`calm`** (타이틀, 선택, 해설, 결과): **80 BPM**, 루프 약 24초. 패드(sine 화음, 마디마다, 느린 어택) + 베이스(triangle 1박 루트·3박 5도) + 칼림바 멜로디. 멜로디는 A안/B안 번갈아, **4번째 루프마다 쉼**.
+    - A안(스텝:음): 2 D5, 4 B4, 6 D5, 8 G5 | 18 E5, 20 D5, 22 B4, 24 D5 | 34 E5, 36 G5, 38 E5, 40 D5, 44 B4 | 50 A4, 52 B4, 54 D5, 56 A4
+    - B안: 2 B4, 4 D5, 6 G5, 8 F#5 | 18 G5, 20 E5, 22 D5 | 34 C5, 36 E5, 38 G5, 40 E5 | 50 D5, 52 E5, 54 F#5, 56 G5
+  - **`feed`** (연어 먹는 구간): **96 + (레벨−1)×4 BPM, 최대 120**(레벨 6부터). **멜로디 없음.** 패드(더 작게) + 낮은 북 '둥'(sine 110→55Hz, 1·3박) + 매 박 짧은 베이스 + 고역 셰이커(7kHz 하이패스, 8분). 템포감은 주되 '냠'이 있는 중역을 비워 둔다. 연어 타이밍과 동기화하지 않는다.
+- 레벨(측정): calm RMS **−45.5 dBFS**(피크 −25.6), feed RMS **−49.5 dBFS**(피크 −18.7, 북의 순간 피크) — 먹는 구간이 오히려 더 작다.
+- 스케줄러: `setTimeout` 100ms 주기, 0.3초 룩어헤드, `ctx.currentTime` 기준 예약. 0.3초 이상 밀리면(탭 복귀 등) 밀린 음을 몰아 치지 않고 현재 시점으로 맞춘다.
+- `stopMusic()`은 약 1초 페이드아웃. 페이드 중 `startMusic()`은 끊김 없이 복귀.
+- **음악 켜기/끄기**: `Sound.setMusicOn(bool)` — 효과음은 그대로 두고 BGM만 끈다. 설정 저장. 게임이 `startMusic()`을 불렀어도 꺼져 있으면 재생하지 않고, 다시 켜면 그때 시작한다.
+
+## 4. 오디오 시스템
+
+### API
+```
+Sound.unlock()                     사용자 제스처 안에서 호출(여러 번 안전)
+Sound.play(name, opts?)            효과음. opts: tally {n: 1부터}. eat은 인자 없음
+Sound.setMuted(bool) / Sound.isMuted()          전체 음소거(저장)
+Sound.setMusicOn(bool) / Sound.isMusicOn()      BGM만 켜기/끄기(저장)
+Sound.setMusicMode('calm'|'feed', level?)       BGM 분위기·feed 템포
+Sound.startMusic() / Sound.stopMusic()
+```
+공통 인터페이스 `{unlock, play, setMuted, isMuted, startMusic, stopMusic}`를 지키고, `setMusicOn`·`isMusicOn`·`setMusicMode`는 이 게임 전용 추가 메서드다. 알 수 없는 이름, unlock 전 호출, 음소거 중 `play()`는 조용히 무시된다.
+
+### 저장 (localStorage, 읽기·쓰기 모두 try/catch)
+- `hungry-bear-muted`: `'1'` 음소거 / `'0'` 켬. 기본 켬.
+- `hungry-bear-music`: `'0'` BGM 끔 / `'1'` 켬. 기본 켬.
+- 저장소가 막힌 환경에서도 기본값으로 동작(검증함).
+- 음소거는 마스터 게인을 20ms 시정수로 0으로. 음악 스케줄러는 계속 돌아 해제 시 곡 중간부터 이어진다.
+
+### iPad Safari
+- AudioContext는 **첫 사용자 제스처(click/touchend/pointerup/keydown) 안에서** `Sound.unlock()`으로 생성·`resume()`하고 1샘플 무음 버퍼를 재생해 iOS 출력 경로를 연다. `touchstart`보다 `touchend`/`click`이 확실하다. **시작 버튼에서 반드시 unlock.**
+- **무음 스위치/무음 모드**가 켜져 있으면 Web Audio 소리가 나지 않을 수 있다(게임 오류 아님). 도움말에 "소리가 안 나면 무음 모드를 확인하세요" 한 줄 권장. 이 게임은 소리 없이도 완전히 플레이 가능하다(소리는 단서가 아님).
+- 탭 전환/홈 이동: `visibilitychange`에서 `ctx.suspend()`, 복귀 시 `resume()` (모듈이 자동 처리). 게임 쪽에서 먹는 구간을 일시정지하는지는 Developer 판단.
+- AudioContext 미지원·생성 실패 시 모든 메서드는 무시되고 게임은 정상 진행.
+
+## 5. Developer 호출 지점
+
+| 위치 | 호출 |
+|---|---|
+| 모든 사용자 입력 핸들러(시작, 버튼, 곰 선택, keydown, 음소거·음악 버튼) 맨 앞 | `Sound.unlock()` |
+| 게임 시작 버튼 | `Sound.play('button'); Sound.setMusicMode('calm'); Sound.startMusic();` |
+| 일반 버튼(도움말, 닫기 등 — 전용 소리가 있는 버튼은 그것만) | `Sound.play('button')` |
+| 라운드 시작 카운트 3·2·1 표시마다 | `Sound.play('count')` |
+| 카운트 끝 → 먹기 시작 | `Sound.play('go'); Sound.setMusicMode('feed', level);` |
+| 연어가 강에서 튀어 오를 때 | `Sound.play('splash')` |
+| 연어가 곰 입에 닿는 순간(먹은 수 +1 되는 프레임) | `Sound.play('eat')` — **곰 번호 넘기지 말 것** |
+| 먹기 끝 → "누가 제일 많이 먹었을까?" | `Sound.setMusicMode('calm')` |
+| 곰 선택 | `Sound.play('select')` 후 판정 연출 시점(약 0.2~0.4초 뒤)에 아래 하나 |
+| └ 정답 | `Sound.play('correct')` |
+| └ 오답 | `Sound.play('wrong')` |
+| 해설: 곰별 먹은 수 집계가 하나 올라갈 때마다 | `Sound.play('tally', { n: 지금까지 센 수 })` (곰마다 1부터 다시) |
+| 다음 레벨로 넘어갈 때 | `Sound.play('levelUp')` (다음 라운드 `count` 전에 약 1초 여유) |
+| 게임 오버 화면 | `Sound.stopMusic(); Sound.play('gameOver');` (wrong 뒤 해설이 끝난 다음 권장) |
+| 다시하기 | `Sound.play('button'); Sound.setMusicMode('calm'); Sound.startMusic();` |
+| 음소거 버튼 🔊/🔇 | `Sound.setMuted(!Sound.isMuted())` + 아이콘 갱신(초기 표시는 `Sound.isMuted()`) |
+| 음악 버튼 🎵 (선택) | `Sound.setMusicOn(!Sound.isMusicOn())` + 아이콘 갱신(초기 표시는 `Sound.isMusicOn()`) |
+
+- `tally` 간격은 80~150ms 권장(35ms 미만은 스로틀로 생략됨). 같은 곰 집계 중 n이 올라갈수록 음이 올라가 "쌓이는" 느낌이 난다.
+- 먹는 구간이 매우 빠를 때(연어 간격 120ms)도 `splash`·`eat`을 매번 그대로 부르면 된다. 줄이는 처리는 모듈이 한다.
+- 두 곰이 **정확히 같은 순간(40ms 이내)** 에 먹으면 '냠'은 한 번만 난다. 이는 곰과 무관한 시간 규칙이라 공정성에 영향 없음. 기획상 동시 먹기가 없으면 해당 없음.
+
+## 6. 검증 기록
+
+| 항목 | 방법 | 결과 |
+|---|---|---|
+| 문법 | `node --check sound-module.js` | 통과 |
+| 레벨·클리핑 | Chromium OfflineAudioContext 48kHz 스테레오, 효과음 11개 개별 렌더 | 피크 −13.8 ~ −25.7 dBFS, 클리핑 0 |
+| 빠른 먹기 | 연어 120ms 간격 30마리(첨벙 + 60ms 뒤 냠) | 피크 −17.2 dB, RMS −36.5 dB, 클리핑 0 (냠 단독 120ms×25: 피크 −17.9) |
+| 느린 먹기 | 500ms 간격 12마리 | 피크 −17.1 dB — 빠를 때와 피크가 거의 같아 빨라져도 시끄러워지지 않음 |
+| 배경음악 | calm 약 49초 / feed 레벨1·6 각 24초 렌더 | calm RMS −45.5, feed RMS −49.5 dBFS, 클리핑 0 |
+| feed + 빠른 먹기 | feed 레벨6 + 120ms 간격 30마리 | 피크 −16.7 dB, 클리핑 0 |
+| 최악 겹침 | calm 음악 + 효과음 11개 동시 | 피크 −3.9 dBFS(리미터 동작), 클리핑 0 |
+| 실시간 API | Chromium iPad 에뮬레이션(터치), localStorage 접근 차단 상태: unlock 전 play/startMusic/setMusicMode 무시 → 탭 후 전 효과음 + 없는 이름, feed 레벨7 + 60ms 간격 첨벙/냠 40회, setMusicOn off/on, 음소거 토글, stop→start(페이드 중 재시작), stop 완료 후 재시작 | 페이지 오류 0 |
+
+`node tests/smoke.js hungry-bear`는 게임 페이지가 아직 없어 실행하지 않았다(모듈 단독 검증). Developer 연결 후 `node tests/smoke.js --lab hungry-bear`로 확인 필요.
+
+**청취 확인 필요(미검증)**: 헤드리스 환경이라 실제 소리는 듣지 못했다. 실기기에서
+① '냠'이 먹는 소리처럼 들리는지, 세 곰 모두 같은 소리로 느껴지는지(구별되면 공정성 문제 — 바로 보고),
+② 연어 간격 120ms 레벨에서 첨벙·냠이 뭉개지거나 거슬리지 않는지(거슬리면 `HIT_CAP` 4→3, 음량 계수 하한 0.65→0.5),
+③ 첨벙이 물소리로 들리는지(iPad 스피커에서 너무 작으면 0.13→0.18),
+④ feed 모드 북·셰이커가 세기를 방해하지 않는지(방해되면 `setMusicMode('calm')` 유지 또는 음악 끄기 권장),
+⑤ BGM 크기(`MUSIC_VOL` 0.14)와 오래 들어도 피곤하지 않은지,
+⑥ `tally` 상승음이 집계 애니메이션과 맞는지,
+⑦ iPad Safari 첫 터치 후 소리·무음 스위치 동작, ⑧ 탭 전환 후 복귀 시 재개.
