@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>혜진's 스튜디오 · 개발 중</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="혜진's 스튜디오">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  :root {
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
+    --line: #e7e2d8; --accent: #e4572e;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-company: #ebe7f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
+      --line: #262a35; --accent: #ff7a50;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
+    --line: #262a35; --accent: #ff7a50;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26;
+  }
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: 32px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left));
+    -webkit-tap-highlight-color: transparent;
+  }
+  main { max-width: 960px; margin: 0 auto; }
+  .title-row { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px; margin: 0 0 4px; }
+  h1 { margin: 0; font-size: 28px; }
+  h1 span { color: var(--accent); }
+  .since { margin: 0; font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+  .sub { margin: 0 0 24px; color: var(--muted); }
+  .mebtn {
+    margin-left: auto; align-self: center; flex: none; min-width: 0;
+    display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: 999px;
+    background: none; border: 1px solid transparent; color: var(--muted);
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: border-color 140ms ease-out;
+  }
+  .mebtn[hidden] { display: none; }
+  .mebtn svg { width: 16px; height: 16px; flex: none; }
+  .mebtn span { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mebtn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+  .mebtn:active { transform: scale(.97); }
+  @media (hover: hover) { .mebtn:hover { border-color: var(--accent); } }
+  @media (max-width: 359px) { .mebtn span { max-width: 5em; } }
+  .mebtn:not([hidden]) + .rankbtn { margin-left: 8px; }
+  .rankbtn {
+    margin-left: auto; align-self: center; flex: none;
+    display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+    font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: border-color 140ms ease-out;
+  }
+  .rankbtn[hidden] { display: none; }
+  .rankbtn svg { width: 18px; height: 18px; flex: none; }
+  .rankbtn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+  .rankbtn:active { transform: scale(.97); }
+  @media (hover: hover) { .rankbtn:hover { border-color: var(--accent); } }
+  @media (max-width: 359px) { .rankbtn { width: 44px; padding: 0; justify-content: center; } .rankbtn span { display: none; } }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 1023px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 639px)  { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 359px)  { .grid { grid-template-columns: minmax(0, 1fr); } h1 { font-size: 24px; } }
+
+  .game {
+    display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 12px 12px 16px;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: transform 140ms ease-out, border-color 140ms ease-out;
+    animation: enter 220ms ease-out both;
+  }
+  .game:nth-child(2) { animation-delay: 40ms; }
+  .game:nth-child(3) { animation-delay: 80ms; }
+  .game:nth-child(4) { animation-delay: 120ms; }
+  .game:nth-child(n+5) { animation-delay: 160ms; }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
+  .game:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 16px; border-color: var(--accent); }
+  .game:active { transform: scale(.97); transition-duration: 80ms; }
+  .art {
+    aspect-ratio: 4 / 3; background: var(--tile); border-radius: 12px;
+    display: grid; place-items: center; overflow: hidden;
+  }
+  .art svg { width: 62%; height: auto; max-height: 82%; transition: transform 140ms ease-out; }
+  .game h2 { margin: 12px 4px 4px; word-break: keep-all; overflow-wrap: break-word; font-size: 18px; font-weight: 700; color: var(--ink); }
+  .game p {
+    margin: 0 4px; color: var(--muted); font-size: 14px; line-height: 1.5;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  @media (max-width: 639px) {
+    .game h2 { font-size: 16px; }
+    .game p { font-size: 13px; }
+  }
+  @media (hover: hover) {
+    .game:hover, .game:focus-visible { transform: translateY(-3px); border-color: var(--accent); }
+    .game:hover .art svg, .game:focus-visible .art svg { transform: scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .game { animation: none; }
+    .game:hover, .game:focus-visible, .game:active { transform: none; }
+    .game:hover .art svg, .game:focus-visible .art svg { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="title-row">
+    <h1>개발진 <span>실험실</span></h1>
+    <p class="since">출시 전 · 혜진's 스튜디오</p>
+  </div>
+  <p class="sub">출시 전 게임을 시험하는 곳이에요. 여기 기록은 순위표에 올라가지 않아요.</p>
+
+  <!-- 개발진: 출시 전 게임 카드를 맨 앞에 추가. 출시되면 카드를 루트 index.html로 옮긴다 -->
+  <div class="grid">
+    <a class="game" href="games/tiny-company/" aria-label="악덕 사장 — 직원도 회사도 웃게!">
+      <div class="art" style="--tile: var(--tile-company)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#e2d8c6"/>
+          <rect x="44" y="24" width="4" height="8" rx="1.5" fill="#4f86a8"/>
+          <rect x="50" y="19" width="4" height="13" rx="1.5" fill="#4f86a8"/>
+          <rect x="56" y="13" width="4" height="19" rx="1.5" fill="#4f86a8"/>
+          <ellipse cx="20" cy="33" rx="10" ry="12" fill="#f2c6a0" stroke="#c99a74" stroke-width="1.4"/>
+          <circle cx="16.6" cy="31" r="1.3" fill="#2a2d36"/><circle cx="23.4" cy="31" r="1.3" fill="#2a2d36"/>
+          <path d="M17.4 35.4 Q20 37.6 22.6 35.4" fill="none" stroke="#2a2d36" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="14.2" cy="35" r="1.8" fill="#f0b4a8" opacity=".5"/>
+          <ellipse cx="40" cy="35" rx="9.5" ry="11" fill="#b8c9e6" stroke="#8aa0c4" stroke-width="1.4"/>
+          <path d="M40 24 Q39.6 20.5 42.4 19.4" fill="none" stroke="#8aa0c4" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="36.8" cy="33.4" r="1.3" fill="#2a2d36"/><circle cx="43.2" cy="33.4" r="1.3" fill="#2a2d36"/>
+          <path d="M37.6 37.6 Q40 39.6 42.4 37.6" fill="none" stroke="#2a2d36" stroke-width="1.4" stroke-linecap="round"/>
+          <rect x="28" y="38" width="6" height="3" rx="1.5" fill="#d3c9b6"/>
+          <rect x="8" y="43" width="46" height="6" rx="2" fill="#cfae8a"/>
+          <rect x="10" y="49" width="42" height="3" fill="#a8865f"/>
+          <circle cx="49" cy="40" r="3" fill="#c9973a"/>
+        </svg>
+      </div>
+      <h2>악덕 사장</h2>
+      <p>직원도 회사도 웃게!</p>
+    </a>
+  </div>
+</main>
+</body>
+</html>

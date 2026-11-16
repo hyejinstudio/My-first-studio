@@ -4,6 +4,32 @@
 - 사이트: https://hyejinstudio.github.io/My-first-studio/
 - 저장소: `hyejinstudio/My-first-studio` (기본 브랜치 `main`)
 
+## 0. 채팅창(세션) 역할 분리 — 사용자 결정 2026-11-16 (최우선)
+
+사용자는 게임을 출시했다가 다시 내리면 방문자가 혼란스럽다고 판단해, 개발과 출시를 분리했다.
+
+| 채팅창 | 하는 일 | 하지 않는 일 |
+|---|---|---|
+| **개발진** (게임 개발 전용 세션) | 새 게임 제작·기존 게임 수정·버그 수정. 아래 조직(6개 에이전트)과 작업 흐름(3장)을 그대로 쓴다. 결과는 **실험실(lab)** 에만 배포 | 사이트 공통 시스템(순위표 모듈, 홈 구조, 배포 워크플로, 닉네임 등) 변경 |
+| **CEO / 사이트 시스템** (원래 채팅창) | 사이트 자체 시스템 개선: 순위표·닉네임 시스템, 홈 구조, 배포 워크플로, 테스트 인프라, 운영 규칙 | 게임 제작·수정 (사용자가 개발진으로 보냄) |
+
+**실험실(lab) = 출시 전 게임만 모은 별도 사이트**
+- 주소: https://hyejinstudio.github.io/My-first-studio/lab/ — 혜진's 스튜디오 화면 어디에도 링크하지 않는다. `noindex`.
+- 파일: `lab/index.html`(실험실 목록), `lab/games/<slug>/index.html`(각 게임). 기획 문서는 그대로 `docs/games/<slug>/`.
+- 실험실 게임은 `lib/leaderboard.js`를 **불러오지 않는다**(닉네임 게이트·순위 기록 없음). 게임 코드의 `window.Leaderboard && ...` 가드는 그대로 둔다.
+- 개발진의 3장 작업 흐름에서 "배포"는 **lab 배포**를 뜻한다: QA 통과 → `lab/`만 바뀐 커밋을 main에 반영(fast-forward) → Actions 성공 확인 → 사용자에게 실험실 주소로 보고.
+- 테스트: `node tests/smoke.js --lab` (실험실), `node tests/smoke.js` (본 사이트 회귀).
+
+**출시(release) = 실험실 → 혜진's 스튜디오** — **사용자가 직접 해 보고 개발진 채팅창에서 "출시해"라고 할 때만.**
+1. `git mv lab/games/<slug> games/<slug>`, 실험실 카드 제거 → 루트 `index.html` 맨 앞에 카드 추가(타일 색 변수 라이트 1·다크 2곳).
+2. 게임에 `<script src="../../lib/leaderboard.js?v=N" defer></script>`를 넣고 결과 화면 `#lbSlot` + `Leaderboard.report(...)` 연결 확인.
+3. 순위표 등록이 필요하면: `lib/leaderboard.js` CONFIG.games에 항목 추가, 모든 페이지 `?v=` 숫자 올림, 서버 `score_cap` SQL을 `docs/site/`에 새 파일로 작성 → 로컬 Postgres로 검증 → 사용자에게 Supabase SQL Editor 실행 요청 → 실서버에서 쓰기 없이 확인(`no player` 응답). **lib·SQL은 공통 시스템이므로 이 단계만은 개발진이 해도 된다(출시 절차의 일부).**
+4. `node tests/smoke.js` 전체 + `--lab` 통과 → main 반영 → Actions 확인 → 보고.
+
+**이미 출시된 게임을 고칠 때**(개발진): 작은 수정(문구·버그)은 QA 통과 후 본 사이트에 바로 반영해도 된다. 규칙·화면이 크게 바뀌는 수정은 실험실 사본(`lab/games/<slug>-v2/` 등)에서 먼저 보여 주고 사용자가 "출시해"라고 하면 반영한다.
+
+**두 세션이 같은 저장소를 쓰므로**: 작업 전 `git fetch origin main && git rebase origin/main`(또는 merge)로 최신화, main 반영은 fast-forward만, 서로의 영역 파일을 건드리지 않는다. 개발진 작업 브랜치는 그 세션에 지정된 브랜치를 쓴다.
+
 ## 1. 조직
 
 | 역할 | 누구 | 하는 일 |
@@ -93,6 +119,10 @@
 ```
 index.html                    게임 목록 (배포됨)
 games/<slug>/index.html       각 게임, HTML 1개 (배포됨)
+lab/index.html                실험실 목록 — 출시 전 게임 (배포됨, 링크 없음, noindex)
+lab/games/<slug>/index.html   출시 전 게임
+lib/leaderboard.js            순위표·닉네임 공통 모듈 (본 사이트 게임만 사용)
+docs/site/*.sql               Supabase 순위표 SQL (사용자가 SQL Editor에서 실행)
 docs/games/<slug>/            design.md, art-ui.md, sound.md, qa-report.md (배포 안 됨)
 tests/smoke.js                공통 스모크 테스트 (PC / iPad 세로·가로)
 .claude/agents/*.md           전문 에이전트 정의
@@ -112,6 +142,7 @@ CHANGELOG.md                  릴리스 기록
 ## 6. 배포 권한 (사용자의 상시 승인)
 
 사용자는 게임 제작·수정 요청에 대해 **따로 말하지 않아도 QA 통과 후 `main`에 반영하고 GitHub Pages로 배포하는 것**을 미리 승인했다.
+- **단, 새 게임과 큰 수정은 실험실(`lab/`)까지만** 자동 배포한다. 혜진's 스튜디오 본 목록으로의 출시는 사용자가 "출시해"라고 할 때만 한다(0장).
 - main 반영은 fast-forward push만. 강제 push·히스토리 재작성 금지.
 - `main`에 push되면 `.github/workflows/pages.yml`이 자동 배포한다.
 

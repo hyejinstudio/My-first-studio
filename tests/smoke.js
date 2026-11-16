@@ -1,5 +1,6 @@
 // AI Game Studio 공통 스모크 테스트
-// 사용법: node tests/smoke.js [게임-slug ...] [--out <스크린샷 폴더>]
+// 사용법: node tests/smoke.js [게임-slug ...] [--out <스크린샷 폴더>] [--lab]
+//  - --lab: 개발진 실험실(lab/index.html 목록, lab/games/<slug>)을 검사합니다.
 //  - 인자가 없으면 index.html 목록에 있는 모든 게임을 검사합니다.
 //  - PC(1280x800)와 iPad(gen 7, 터치) 환경을 Chromium으로 에뮬레이션합니다.
 //    실제 iPad Safari(WebKit) 테스트는 이 환경에서 불가능합니다.
@@ -12,7 +13,9 @@ const ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const outIdx = args.indexOf('--out');
 const OUT = outIdx >= 0 ? path.resolve(args[outIdx + 1]) : null;
-const only = args.filter((a, i) => outIdx < 0 || (i !== outIdx && i !== outIdx + 1));
+const LAB = args.includes('--lab');
+const SUB = LAB ? 'lab/' : '';
+const only = args.filter((a, i) => a !== '--lab' && (outIdx < 0 || (i !== outIdx && i !== outIdx + 1)));
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg',
@@ -68,13 +71,13 @@ async function seedVisitor(ctx) {
   const list = await listCtx.newPage();
   const listErrs = [];
   list.on('pageerror', e => listErrs.push(e.message));
-  await list.goto(origin);
+  await list.goto(origin + SUB);
   const links = await list.$$eval('a.game', as => as.map(a => a.getAttribute('href')));
   const slugs = links.map(h => (h.match(/games\/([^/]+)/) || [])[1]).filter(Boolean);
   report.push(`[목록] 게임 ${slugs.length}개: ${slugs.join(', ')}${listErrs.length ? ' / 오류: ' + listErrs.join(' | ') : ''}`);
   if (listErrs.length) failed++;
   for (const s of slugs) {
-    if (!fs.existsSync(path.join(ROOT, 'games', s, 'index.html'))) { report.push(`  ✗ 목록의 ${s} 폴더가 없음`); failed++; }
+    if (!fs.existsSync(path.join(ROOT, SUB, 'games', s, 'index.html'))) { report.push(`  ✗ 목록의 ${s} 폴더가 없음`); failed++; }
   }
   await listCtx.close();
 
@@ -121,7 +124,7 @@ async function seedVisitor(ctx) {
       page.on('console', m => m.type() === 'error' && !isBackend((m.location() || {}).url) && errs.push('console: ' + m.text()));
       page.on('requestfailed', r => !isBackend(r.url()) && errs.push('request failed: ' + r.url()));
       page.on('response', r => r.status() >= 400 && errs.push(`HTTP ${r.status()}: ${r.url()}`));
-      await page.goto(origin + `games/${slug}/`);
+      await page.goto(origin + SUB + `games/${slug}/`);
       await page.waitForTimeout(800);
       const info = await page.evaluate(() => ({
         title: document.title,
