@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-evidence: #e9e6ef;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-evidence: #1f1d27;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-evidence: #1f1d27;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -135,23 +135,6 @@
 
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
-    <a class="game" href="games/fake-evidence/" aria-label="증거 조작범 — 가짜 증거 하나를 찾아라">
-      <div class="art" style="--tile: var(--tile-evidence)">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <rect x="6" y="52" width="52" height="7" rx="3.5" fill="#dcd8e3"/>
-          <path d="M8 18 h16 l4 4 h26 a2 2 0 0 1 2 2 v26 a2 2 0 0 1 -2 2 H10 a2 2 0 0 1 -2 -2 Z" fill="#e2cfa6" stroke="#b89a62" stroke-width="1.5"/>
-          <g transform="rotate(-6 23 35)"><rect x="14" y="24" width="18" height="22" rx="2" fill="#fffdf8" stroke="#9aa1ae" stroke-width="1"/><rect x="16.5" y="27" width="13" height="10" rx="1" fill="#d9dfe8"/></g>
-          <g transform="rotate(5 42 36)"><rect x="34" y="26" width="16" height="20" rx="2" fill="#fffdf8" stroke="#9aa1ae" stroke-width="1"/><path d="M37 33h10 M37 37h7" stroke="#b8bec9" stroke-width="1.2"/></g>
-          <path d="M23 25 Q33 31 42 27" fill="none" stroke="#b0503c" stroke-width="1.4"/>
-          <circle cx="23" cy="25" r="2.2" fill="#b0503c"/><circle cx="42" cy="27" r="2.2" fill="#b0503c"/>
-          <circle cx="44" cy="41" r="7" fill="#ffffff" fill-opacity=".35" stroke="#3d5d86" stroke-width="2.4"/>
-          <path d="M49 46 L55 52" stroke="#3d5d86" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <h2>증거 조작범</h2>
-      <p>가짜 증거 하나를 찾아라</p>
-    </a>
-
     <a class="game" href="games/parrot-beat/" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!">
       <div class="art" style="--tile: var(--tile-parrot)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -333,7 +316,7 @@
     </a>
   </div>
 </main>
-<script src="lib/leaderboard.js?v=3" defer></script>
+<script src="lib/leaderboard.js?v=4" defer></script>
 <script>
   // 순위 모듈이 실패하면 버튼을 숨긴 채로 둔다(목록은 그대로)
   document.addEventListener('DOMContentLoaded', function () {
