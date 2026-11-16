@@ -570,7 +570,7 @@
   .rnav button { width: 44px; height: 44px; padding: 0; font-size: 20px; }
   .rep.compact .rhead .big .num { font-size: 28px; }
   .rep.compact .rb { padding: 5px 0; gap: 3px; }
-  .rep.c1 .cnote, .rep.compact .cnote, body.plow #resChartNote, .rep.compact .ychart, .rep.c1 .ychart, .rep.c1 .rsent:not(.lead), .rep.c1 .rmnote, .rep.c2 .fac, .rep.c2 .rb > h4 { display: none; }
+  .rep.c1 .cnote, .rep.compact .cnote, body.plow #resChartNote, .rep.compact .ychart, .rep.cy .ychart, .rep.c1 .rsent:not(.lead), .rep.c1 .rmnote, .rep.c2 .fac, .rep.c2 .rb > h4 { display: none; }
   .rep.c2 .rb { padding: 4px 0; gap: 3px; }
   .rep.c3 .prev .pnote > span:not(.bad), .rep.c3 .prev .small, .rep.c3 .crow.other, .rep.c3 .rsent.lead { display: none; }
   .rep.c3 .prev { flex-direction: row; flex-wrap: wrap; align-items: center; padding: 2px 0; }
@@ -583,6 +583,11 @@
   .rep.c4 .pbtnrow { gap: 4px; }
   .rep.c4 .pnote { font-size: 11px; }
   .rep.c4 .prev { gap: 2px; }
+  .rep.c6 .pnote > span:not(.bad), .rep.c6 .crow .st, .rep.c6 .prev .tl, .rep.c6 .wline svg { display: none; }
+  .rep.c6 .wline { font-size: 11px; } .rep.c6 .qname { font-size: 12px; } .rep.c6 .rb { padding: 2px 0; gap: 2px; }
+  .nw { white-space: nowrap; }
+  .rep.c6 { padding: 6px 10px; } .rep.c6 .rbtns { padding-top: 2px; } .rep.c6 .prev { padding: 1px 0; } .rep.c6 .block2 { gap: 4px; }
+  .coach.wallpos { top: 2px; max-height: calc(var(--wb) - 4px); display: flex; align-items: center; }
   .rep.compact .ychart { display: none; }
   .rep.compact .rsent { display: none; }
   .rep.compact .egauge .gt { width: 100px; }
@@ -1737,6 +1742,7 @@ var Engine = (function () {
   function preventOptions(st, seat, base) {
     var p = bySeat(st, seat); if (!p) return null;
     base = base || st.dec;
+    var scout = st.event === 'scout' && st.scoutId === p.id;   // 다음 달 스카우트 대상이면 기준 = 60
     var list = [['none', null, 0], ['bonus', 'bonus', 0], ['leave', 'leave', 0]];
     if (base.work > 1) list.push(['workdown', null, 1], ['bonus+workdown', 'bonus', 1], ['leave+workdown', 'leave', 1]);
     var opts = list.map(function (o) {
@@ -1747,19 +1753,20 @@ var Engine = (function () {
       var r = { key: o[0], act: o[1], workdown: !!o[2], work: d.work, valid: valid };
       if (!valid) { r.why = p.sick > 0 ? 'sick' : st.staff.length <= 1 ? 'alone' : 'limit'; return r; }
       var fc = forecast(st, nd), fs = fc.staff[seat];
-      r.H = fs.H1; r.T = fs.T; r.safe = fs.H1 >= fs.T; r.prob = fs.risk || 0; r.cashAfter = fc.cashAfter;
+      r.H = fs.H1; r.T = scout ? K.scoutLine : fs.T; r.safe = fs.H1 >= r.T; r.cashAfter = fc.cashAfter;
+      r.prob = scout ? (r.safe ? 0 : 1) : (fs.risk || 0);   // 스카우트 대상은 60 미만이면 확정 이직
       return r;
     });
     var none = opts[0], singles = opts.filter(function (o) { return o.valid && (o.key === 'bonus' || o.key === 'leave' || o.key === 'workdown'); });
     var anySingle = singles.some(function (o) { return o.safe; });
     var combo = opts.filter(function (o) { return o.valid && o.key.indexOf('+') > 0 && o.safe; }).sort(function (a, b) { return b.H - a.H; })[0] || null;
-    return { seat: seat, name: p.name, H: p.H, T: none.T, sickNext: p.sick > 0, options: opts, anySingle: anySingle, combo: combo, alreadySafe: none.safe };
+    return { seat: seat, name: p.name, H: p.H, T: none.T, scout: scout, sickNext: p.sick > 0, options: opts, anySingle: anySingle, combo: combo, alreadySafe: none.safe };
   }
   function optLabel(o) {
     return { none: '그대로', bonus: '보너스', leave: '휴가', workdown: '업무량↓(' + K.hours[o.work - 1] + 'h)', 'bonus+workdown': '보너스+업무량↓', 'leave+workdown': '휴가+업무량↓' }[o.key];
   }
   function preventText(P) {
-    var s = P.name + ' 다음 달 예상 행복 (기준 ' + P.T + '): ';
+    var s = P.name + (P.scout ? ' 스카우트 대상' : '') + ' 다음 달 예상 행복 (기준 ' + P.T + (P.scout ? ', 60 미만이면 이직' : '') + '): ';
     s += P.options.map(function (o) {
       if (!o.valid) return optLabel(o) + ' 불가(' + (o.why === 'sick' ? '다음 달 병가' : o.why === 'alone' ? '혼자 남음' : '동시 휴가 한도') + ')';
       return optLabel(o) + ' → ' + o.H + (o.safe ? ' ≥ ' + P.T + ' 안전' : ' < ' + P.T + ' 부족');
@@ -1937,8 +1944,12 @@ var Engine = (function () {
     X.cash = '현금 ' + fmt(rep.cashBefore) + ' → ' + fmt(m.cashAfter) + '만';
     X.sales = P.missed > 0 ? '주문 ' + rep.D + '건 중 ' + P.sold + '건 처리 → 놓친 ' + P.missed + '건 = ' + sgn(-P.missed * K.price) + '만원'
       : '주문 ' + rep.D + '건 전부 처리 (생산력 여유 ' + P.slack + ')';
+    // 화면 계수(소수 2자리)를 그대로 곱한 값 + 반올림 = 생산력(소수 1자리)
+    var disp = f.base * r2(f.work) * r2(f.rest) * r2(f.mood) * r2(f.skill) * r2(f.fatigue);
+    X.factorRound = Math.round((Math.round(P.C * 10) / 10 - Math.round(disp * 10) / 10) * 10) / 10;
+    X.factorDisp = Math.round(disp * 10) / 10;
     X.factors = '생산력 ' + P.C.toFixed(1) + ' = 기본 ' + fmt(f.base) + ' × 업무 ×' + f.work.toFixed(2) + ' × 휴식 ×' + f.rest.toFixed(2) +
-      ' × 기분 ×' + f.mood.toFixed(2) + ' × 숙련 ×' + f.skill.toFixed(2) + ' × 피로 ×' + f.fatigue.toFixed(2);
+      ' × 기분 ×' + f.mood.toFixed(2) + ' × 숙련 ×' + f.skill.toFixed(2) + ' × 피로 ×' + f.fatigue.toFixed(2) + ' (= ' + X.factorDisp.toFixed(1) + (X.factorRound ? ', 반올림 ' + tv(X.factorRound) : '') + ')';
     var reason;
     var dd = rep.decision, nLeave = 0;
     for (var ks in dd.actions) if (dd.actions[ks] === 'leave') nLeave++;
@@ -2719,8 +2730,8 @@ if (typeof module !== 'undefined') module.exports = Engine;
     if (!f) return;
     G.firstFlagDone = true;
     var E = deskEls[f.seat]; if (E) ring(E.root);
-    var co = $('coach'); co.textContent = '봉투 = 퇴사 고민. 옆자리까지 흔들릴 수 있어요'; co.classList.add('bottom'); co.hidden = false;
-    setTimeout(function () { if (co.textContent.indexOf('봉투') === 0) { co.hidden = true; co.classList.remove('bottom'); } }, 2400);
+    var co = $('coach'); co.textContent = '봉투 = 퇴사 고민. 옆자리까지 흔들릴 수 있어요'; co.classList.add('wallpos'); co.hidden = false;
+    setTimeout(function () { if (co.textContent.indexOf('봉투') === 0) { co.hidden = true; co.classList.remove('wallpos'); } }, 2400);
   }
   function showEvent(ev, again) {
     var I = EVINFO[ev], st = G.st, html = '';
@@ -2970,7 +2981,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
       renderReport(rep, opts, lim, level);
       if (G.expandStaff || box.classList.contains('sticky')) break;
       if (ov.scrollHeight <= ov.clientHeight + 1) break;
-      if (lim > 1) lim--; else if (level < 2) level++; else if (lim > 0) lim--; else if (level < 4) level++; else break;
+      if (lim > 1) lim--; else if (level < 3) level++; else if (lim > 0) lim--; else if (level < 6) level++; else break;
     }
   }
   function showReport(rep, opts) {
@@ -2992,7 +3003,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
     var X = Engine.explain(rep), ctx = reportCtx(rep), prev = ctx.prev, m = rep.money, P = rep.prod, f = P.factors;
     var wide = L.W >= 860 && L.land, phoneLand = L.land && L.H <= 520, phonePort = !L.land && L.W < 600;
     var box = $('rep');
-    box.className = 'card rep' + (wide || phoneLand ? ' two' : '') + (phoneLand ? ' compact' : '') + (phonePort ? ' narrow' : '') + (level >= 1 ? ' c1' : '') + (level >= 2 ? ' c2' : '') + (level >= 3 ? ' c3' : '') + (level >= 4 ? ' c4' : '');
+    box.className = 'card rep' + (wide || phoneLand ? ' two' : '') + (phoneLand ? ' compact' : '') + (phonePort ? ' narrow' : '') + (level >= 1 ? ' c1' : '') + (level >= 2 ? ' cy' : '') + (level >= 3 ? ' c3' : '') + (level >= 4 ? ' c2' : '') + (level >= 5 ? ' c4' : '') + (level >= 6 ? ' c6' : '');
     var firstJan = rep.month === 1 && !G.best && opts.live;
     // ① 머리줄
     var pf = m.profit, word = pf > 0 ? '흑자' : pf < 0 ? '적자' : '본전';
@@ -3025,7 +3036,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
       return (i ? '<span class="x">×</span>' : '') + chip(x[1], txt, good, changedF ? 'chg' : '');
     }).join('');
     var b3 = '<section class="rb anim" style="animation-delay:360ms" aria-label="매출 이유"><h4>매출 이유</h4><div class="chain">' + chainChips + '</div>' +
-      '<div class="fac">' + facHtml + '<span class="x">=</span>' + chip(null, '생산력 <b class="num">' + P.C.toFixed(1) + '</b>', null) + '</div>' +
+      '<div class="fac">' + facHtml + (X.factorRound ? '<span class="x">+</span>' + chip(null, '반올림 <span class="num">' + tv(X.factorRound) + '</span>', null) : '') + '<span class="x">=</span>' + chip(null, '생산력 <b class="num">' + P.C.toFixed(1) + '</b>', null) + '</div>' +
       '<span class="rsent lead">' + esc(X.reason) + '</span>' +
       (firstJan ? '<span class="rsent">' + use('icWork') + ' 업무량을 올리면 이번 달 처리량이 늘지만, 피로는 다음 달에 쌓여요.</span>' : '') +
       '<span class="sr">' + esc(X.sales + '. ' + X.factors) + '</span></section>';
@@ -3068,7 +3079,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
         b4 += '<span class="rsent lead">' + esc(lead) + '</span>';
       }
       // 확률을 넘기고 남은 ✉ / 다음 달 병가
-      targets.forEach(function (t) { if (t.kind === 'survived') { inChain[t.id] = 1; b4 += '<div class="wline bad">' + use('icLetter') + '<b>' + esc(t.name) + '</b>: 이번 달 <span class="num">' + Math.round(t.prob * 100) + '%</span> 확률을 넘겼어요 — 다음 달도 위험 (<span class="num">' + t.H + '</span> &lt; <span class="num">' + t.T + '</span>)</div>'; } });
+      targets.forEach(function (t) { if (t.kind === 'survived') { inChain[t.id] = 1; b4 += '<div class="wline bad">' + use('icLetter') + '<b>' + esc(t.name) + '</b>: 이번 달 <span class="num">' + Math.round(t.prob * 100) + '%</span> 확률을 넘겼어요 — 다음 달도 위험 <span class="nw">(<span class="num">' + t.H + '</span> &lt; <span class="num">' + t.T + '</span>)</span></div>'; } });
       burns.forEach(function (bn, i) { inChain[bn.id] = 1; b4 += '<div class="wline">' + use('icBed') + '<span>' + esc(X.burnout[rep.burnout.indexOf(bn)]) + ': 일 못 함 · 행복 −5 · 휴가 불가</span></div>'; });
       // 막으려면 (다음 달 조치별 예상 행복 — 엔진 예측)
       targets.forEach(function (t) {
@@ -3155,7 +3166,7 @@ if (typeof module !== 'undefined') module.exports = Engine;
     var bo = O(wd ? 'bonus+workdown' : 'bonus'), lo = O(wd ? 'leave+workdown' : 'leave');
     var cur = O(sel ? (wd ? sel + '+workdown' : sel) : (wd ? 'workdown' : 'none')) || O('none');
     var wo = st.dec.work > 1 ? O(sel ? sel + '+workdown' : 'workdown') : null;
-    var h = '<div class="prev"><div class="block2"><b>막으려면</b>' + empSvg(t.seat, p.hair, t.H, p.F) + '<b>' + esc(t.name) + '</b> <span class="small">다음 달 예상 행복</span> <span class="tl">· 기준 <span class="num">' + P.T + '</span></span><span class="xsl">✓안전 ✗부족</span></div><div class="pbtnrow">';
+    var h = '<div class="prev"><div class="block2"><b>막으려면</b>' + empSvg(t.seat, p.hair, t.H, p.F) + '<b>' + esc(t.name) + '</b> <span class="small">다음 달 예상 행복</span> <span class="tl">· ' + (P.scout ? '스카우트 대상 · ' : '') + '기준 <span class="num">' + P.T + '</span></span>' + (P.scout ? chip('icScout', '다음 달 스카우트 대상 · 60 미만이면 이직', false) : '') + '<span class="xsl">✓안전 ✗부족</span></div><div class="pbtnrow">';
     function btn(o, act, icon, lab, extraCls) {
       var on = act === 'wd' ? wd : sel === act, dis = o && !o.valid;
       return '<button class="secondary actbtn' + (on ? ' on' : '') + (o && o.valid ? (o.safe ? ' safe' : ' short') : '') + (extraCls || '') + '" type="button" ' + (act === 'wd' ? 'data-wd="1"' : 'data-pre="' + t.seat + '" data-act="' + act + '"') + (dis ? ' disabled' : '') +
