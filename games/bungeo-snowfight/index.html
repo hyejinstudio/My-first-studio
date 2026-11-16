@@ -1640,7 +1640,10 @@ const Sound = (function () {
     if (S.mode === 'ai') {
       if (window.Leaderboard) Leaderboard.report({ game: 'bungeo-' + S.diff, score: winner === 1 ? Math.round(p1Pct * 10) : 0,
         eligible: !S.tainted && !S.ai1 && S.aiOn, reason: 'test', slot: slot });
-    } else slot.textContent = '';
+    } else {
+      slot.textContent = '';
+      if (window.Leaderboard && Leaderboard.played) Leaderboard.played({ game: 'bungeo-2p' }); // 2인 판: 통계에만 기록
+    }
     var snd = S.mode === 'ai' ? (winner === 1 ? 'win' : winner === 2 ? 'lose' : 'draw') : (winner ? 'win' : 'draw');
     var wait = Math.max(0, 800 - (performance.now() - whistleAt));
     resultTimer = setTimeout(function () { Sound.play(snd); }, wait);
@@ -2957,6 +2960,6 @@ const Sound = (function () {
   });
 })();
 </script>
-<script src="../../lib/leaderboard.js?v=6" defer></script>
+<script src="../../lib/leaderboard.js?v=7" defer></script>
 </body>
 </html>

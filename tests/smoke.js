@@ -112,6 +112,31 @@ async function seedVisitor(ctx) {
     await gctx.close();
   }
 
+  // 3) 관리자 통계 페이지 (사이트 어디에도 링크 없음, 백엔드 불통): 로드·noindex·비밀번호 입력 → 연결 안 됨 문구, 오류 없음
+  if (!only.length && !LAB) {
+    for (const prof of [profiles[0], profiles[1]]) {
+      const actx = await browser.newContext(prof.opts);
+      await blockBackend(actx);
+      const ap = await actx.newPage();
+      const aprob = [];
+      ap.on('pageerror', e => aprob.push('pageerror: ' + e.message));
+      ap.on('console', m => m.type() === 'error' && !isBackend((m.location() || {}).url) && aprob.push('console: ' + m.text()));
+      try {
+        await ap.goto(origin + 'admin/');
+        const robots = await ap.getAttribute('meta[name="robots"]', 'content');
+        if (!/noindex/.test(robots || '') || !/nofollow/.test(robots || '')) aprob.push('noindex/nofollow 없음');
+        if (await ap.evaluate(() => !!window.Leaderboard)) aprob.push('순위표 모듈을 불러옴');
+        await ap.fill('#pw', 'smoke-test-pw');
+        await ap.click('#go');
+        await ap.waitForFunction(() => /연결되지 않았어요/.test(document.getElementById('msg').textContent), null, { timeout: 20000 });
+        if (await ap.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) aprob.push('가로 스크롤 발생');
+      } catch (e) { aprob.push(String(e.message || e).split('\n')[0]); }
+      report.push(`${aprob.length ? '✗' : '✓'} 관리자 통계 [${prof.name}]${aprob.length ? ' → ' + aprob.join(' | ') : ''}`);
+      if (aprob.length) failed++;
+      await actx.close();
+    }
+  }
+
   const targets = only.length ? only : slugs;
   for (const slug of targets) {
     for (const prof of profiles) {

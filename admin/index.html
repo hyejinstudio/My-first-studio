@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>스튜디오 통계</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="스튜디오 통계">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  :root {
+    --bg: #f4f1ea; --panel: #ffffff; --well: #fbfaf7; --ink: #1f2430; --muted: #6b7280;
+    --line: #e7e2d8; --accent: #e4572e; --accent-soft: #f6c9b8; --err: #c23b3b; --warn: #8a6d3b; --ok: #2f7d47;
+    --bar2: #c9c2b4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --well: #161921; --ink: #eceef3; --muted: #9aa1ae;
+      --line: #262a35; --accent: #ff7a50; --accent-soft: #5a3428; --err: #ff7b7b; --warn: #d9b36c; --ok: #6fd08b;
+      --bar2: #3a3f4c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --well: #161921; --ink: #eceef3; --muted: #9aa1ae;
+    --line: #262a35; --accent: #ff7a50; --accent-soft: #5a3428; --err: #ff7b7b; --warn: #d9b36c; --ok: #6fd08b;
+    --bar2: #3a3f4c;
+  }
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left));
+    -webkit-tap-highlight-color: transparent; line-height: 1.45;
+  }
+  main { max-width: 980px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+  h1 { margin: 0; font-size: 26px; }
+  h1 span { color: var(--accent); }
+  h2 { margin: 0 0 12px; font-size: 18px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); }
+  .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 18px; }
+  .head h1 { flex: 1 1 auto; min-width: 0; }
+  .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); flex-basis: 100%; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+  button, select, input { font: inherit; color: inherit; }
+  .btn {
+    height: 44px; min-width: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); font-size: 15px; font-weight: 700; cursor: pointer;
+    touch-action: manipulation; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+  }
+  .btn:active { background: var(--well); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+  .btn.primary:active { filter: brightness(.92); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  select { height: 44px; padding: 0 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 15px; }
+
+  /* 로그인 */
+  .login { max-width: 420px; margin: 8vh auto 0; }
+  .login p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .login form { display: flex; gap: 8px; }
+  .login input {
+    flex: 1; min-width: 0; height: 48px; padding: 0 14px; font-size: 16px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--well); color: var(--ink); outline: none;
+  }
+  .login input:focus { border-color: var(--accent); }
+  .msg { min-height: 20px; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+  .msg.err { color: var(--err); } .msg.warn { color: var(--warn); } .msg.ok { color: var(--ok); }
+  .help { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .help code { font-size: 12px; background: var(--well); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; word-break: break-all; }
+
+  /* 도구줄 */
+  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .stamp { font-size: 13px; color: var(--muted); }
+
+  /* 요약 카드 */
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; min-width: 0; }
+  .card .k { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .card .v { font-size: 30px; font-weight: 800; margin: 2px 0; font-variant-numeric: tabular-nums; }
+  .card .s { font-size: 12px; color: var(--muted); }
+  @media (max-width: 640px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .card .v { font-size: 26px; } }
+
+  /* 일별 막대 */
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .bar { fill: var(--accent); }
+  .chart .bar2 { fill: var(--bar2); }
+  .chart text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  .chart text.val { fill: var(--ink); font-weight: 700; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+  /* 표 */
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 0 -4px; padding: 0 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { font-size: 12px; color: var(--muted); font-weight: 700; }
+  th:first-child, td:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .gname { font-weight: 700; }
+  .gname small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); white-space: normal; }
+  .barcell { width: 32%; min-width: 120px; }
+  .hbar { height: 12px; border-radius: 6px; background: var(--well); border: 1px solid var(--line); overflow: hidden; }
+  .hbar i { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+  .rank { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--well); border: 1px solid var(--line); font-size: 12px; font-weight: 800; margin-right: 8px; }
+  .rank.r1 { background: var(--accent); color: #fff; border-color: transparent; }
+  .players th:first-child, .players td:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  .players td.zero { color: var(--muted); opacity: .5; }
+  .players td.top { font-weight: 800; color: var(--accent); }
+  .empty { padding: 18px 4px; color: var(--muted); text-align: center; }
+  .foot { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  @media (max-width: 640px) {
+    .barcell { display: none; }
+    th.hide-s, td.hide-s { display: none; }
+    .panel { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <h1>혜진's 스튜디오 <span>통계</span></h1>
+    <div class="tools" id="tools" hidden>
+      <select id="days" aria-label="일별 그래프 기간">
+        <option value="7">최근 7일</option>
+        <option value="14" selected>최근 14일</option>
+        <option value="30">최근 30일</option>
+      </select>
+      <button class="btn" id="refresh" type="button">새로고침</button>
+      <button class="btn" id="logout" type="button">잠그기</button>
+    </div>
+    <p class="sub" id="stamp">관리자 전용 페이지예요.</p>
+  </div>
+
+  <section class="panel login" id="login">
+    <h2>비밀번호</h2>
+    <p>관리자 비밀번호를 넣어 주세요. 이 기기에는 저장되지 않아요.</p>
+    <form id="form" autocomplete="off">
+      <input id="pw" type="password" autocomplete="current-password" aria-label="관리자 비밀번호" aria-describedby="msg" required>
+      <button class="btn primary" id="go" type="submit">보기</button>
+    </form>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    <div class="help" id="help" hidden></div>
+  </section>
+
+  <div id="dash" hidden>
+    <div class="cards" id="cards"></div>
+    <section class="panel chart">
+      <h2 id="dailyTitle">일별 방문</h2>
+      <div id="daily"></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>방문자(기기)</span><span><i style="background:var(--bar2)"></i>페이지뷰</span></div>
+    </section>
+    <section class="panel">
+      <h2>게임 인기 순위 <small class="muted" style="font-size:13px;font-weight:600">끝까지 한 판 수 기준</small></h2>
+      <div class="scroll"><table id="games"></table></div>
+      <p class="foot">방문자 = 그 게임 페이지를 연 기기 수 · 플레이 = 결과 화면까지 간 판 수 · 플레이어 = 닉네임 수 · 닉네임 없음 = 닉네임을 정하지 않은 기기의 판</p>
+    </section>
+    <section class="panel">
+      <h2>닉네임별 플레이 <small class="muted" style="font-size:13px;font-weight:600">상위 50명</small></h2>
+      <div class="scroll"><table class="players" id="players"></table></div>
+    </section>
+    <p class="foot" id="totals"></p>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  // 순위표 모듈(lib/leaderboard.js)과 같은 서버. 이 페이지는 통계 기록(log_event)을 하지 않는다.
+  var URL_ = 'https://zzynabrqpwognuwmznna.supabase.co';
+  var KEY = 'sb_publishable_fctxHgfDR0OqyV4Jwb2zqg_rKHf2mDG';
+  var NAMES = {
+    'parrot-beat': '박자 앵무새', 'poop-rain': '똥비 피하기', 'bungeo-snowfight': '붕어빵 눈싸움', 'mole-pop': '두더지 뿅뿅',
+    'bunny-ten': '개구리 텐', 'snake-garden': '뱀 정원', 'block-stack': '블록 스택', 'tiny-company': '꼬마 사장님', 'fake-evidence': '증거 조작범'
+  };
+  var MODES = { 'bungeo-easy': '쉬움', 'bungeo-normal': '보통', 'bungeo-hard': '어려움', 'bungeo-2p': '2인' };
+  var $ = function (id) { return document.getElementById(id); };
+  var pass = '';        // 이번 방문 동안 메모리에만
+  var busy = false, lockTimer = 0, lockEnd = 0;
+
+  function fmt(n) { n = +n || 0; try { return n.toLocaleString('ko-KR'); } catch (e) { return String(n); } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function gname(p) { return NAMES[p] || p; }
+  function when(iso) {
+    if (!iso) return '-';
+    var d = new Date(iso); if (isNaN(d)) return '-';
+    try { return d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }); }
+    catch (e) { return d.toISOString().slice(5, 16).replace('T', ' '); }
+  }
+  function setMsg(t, kind) { var m = $('msg'); m.textContent = t || ''; m.className = 'msg' + (kind ? ' ' + kind : ''); }
+  function mmss(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+
+  function call(pw, days) {
+    var ctl = null; try { ctl = new AbortController(); } catch (e) {}
+    var timer = setTimeout(function () { try { ctl && ctl.abort(); } catch (e) {} }, 15000);
+    return fetch(URL_ + '/rest/v1/rpc/admin_stats', {
+      method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_pass: pw, p_days: days }), cache: 'no-store', credentials: 'omit',
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (res) {
+      clearTimeout(timer);
+      if (res.status === 404) return { status: 'no_sql' };
+      if (!res.ok) return { status: 'error', code: res.status };
+      return res.json().then(function (d) { return d && typeof d === 'object' ? d : { status: 'error' }; });
+    }, function () { clearTimeout(timer); return { status: 'net' }; });
+  }
+
+  function showLogin() {
+    $('login').hidden = false; $('dash').hidden = true; $('tools').hidden = true;
+    $('stamp').textContent = '관리자 전용 페이지예요.';
+  }
+  function startLock(sec) {
+    clearInterval(lockTimer);
+    lockEnd = Date.now() + sec * 1000;
+    $('go').disabled = true;
+    var tick = function () {
+      var left = (lockEnd - Date.now()) / 1000;
+      if (left <= 0) { clearInterval(lockTimer); $('go').disabled = false; setMsg('다시 넣을 수 있어요', ''); return; }
+      setMsg('비밀번호를 여러 번 틀려서 잠겼어요. ' + mmss(left) + ' 뒤에 다시 할 수 있어요', 'warn');
+    };
+    tick(); lockTimer = setInterval(tick, 1000);
+  }
+
+  function load(pw, fromLogin) {
+    if (busy) return;
+    busy = true;
+    var days = +$('days').value || 14;
+    $('go').disabled = true; $('refresh').disabled = true;
+    if (fromLogin) setMsg('확인하는 중…', ''); else $('stamp').textContent = '불러오는 중…';
+    $('help').hidden = true;
+    call(pw, days).then(function (r) {
+      busy = false;
+      $('go').disabled = false; $('refresh').disabled = false;
+      var s = r.status;
+      if (s === 'ok') { pass = pw; $('pw').value = ''; setMsg(''); render(r); return; }
+      // 대시보드에서 새로고침하다 실패: 네트워크 문제면 화면 유지
+      if (!fromLogin && (s === 'net' || s === 'error')) { $('stamp').textContent = '연결되지 않았어요. 잠시 후 다시 새로고침해 주세요'; return; }
+      pass = ''; showLogin();
+      if (s === 'wrong') { setMsg('비밀번호가 맞지 않아요 · 남은 기회 ' + r.tries_left + '번' + (r.tries_left === 1 ? ' (마지막 기회)' : ''), 'err'); selectPw(); }
+      else if (s === 'locked') startLock(+r.seconds_left || 900);
+      else if (s === 'no_password') {
+        setMsg('아직 관리자 비밀번호를 정하지 않았어요', 'warn');
+        var hp = $('help'); hp.hidden = false;
+        hp.innerHTML = 'Supabase → SQL Editor에서 한 번 실행하세요:<br><code>select public.admin_set_password(\'8자 이상 비밀번호\');</code>';
+      }
+      else if (s === 'no_sql') setMsg('서버에 통계 기능(leaderboard-v6-analytics.sql)이 아직 적용되지 않았어요', 'warn');
+      else if (s === 'net') setMsg('연결되지 않았어요. 잠시 후 다시 해 주세요', 'err');
+      else setMsg('불러오지 못했어요 (' + (r.code || '알 수 없음') + ')', 'err');
+    });
+  }
+  function selectPw() { try { $('pw').focus(); $('pw').select(); } catch (e) {} }
+
+  /* ---------- 그리기 ---------- */
+  function render(d) {
+    $('login').hidden = true; $('dash').hidden = false; $('tools').hidden = false;
+    $('stamp').textContent = '마지막 갱신 ' + when(d.generated_at) + ' (서울 시각)' + (d.visitors && d.visitors.since ? ' · ' + when(d.visitors.since) + '부터 기록' : '');
+    var v = d.visitors || {}, t = d.totals || {};
+    var cards = [
+      ['오늘 방문자', v.today, '페이지뷰 ' + fmt(v.views_today)],
+      ['최근 7일 방문자', v.d7, '페이지뷰 ' + fmt(v.views_d7)],
+      ['최근 30일 방문자', v.d30, '전체 ' + fmt(v.all) + '명 · 페이지뷰 ' + fmt(v.views_all)],
+      ['등록 플레이어', t.players, '플레이한 닉네임 ' + fmt(t.active_players) + '명']
+    ];
+    $('cards').innerHTML = cards.map(function (c) {
+      return '<div class="card"><div class="k">' + esc(c[0]) + '</div><div class="v">' + fmt(c[1]) + '</div><div class="s">' + esc(c[2]) + '</div></div>';
+    }).join('');
+    $('dailyTitle').textContent = '일별 방문 (최근 ' + (d.days || 14) + '일)';
+    renderDaily(d.daily || []);
+    renderGames(d.pages || []);
+    renderPlayers(d.players || [], d.pages || []);
+    $('totals').textContent = '누적 플레이 ' + fmt(v.plays_all) + '판 · 순위 기록 ' + fmt(t.score_rows) + '개 · 저장된 이벤트 ' + fmt(t.events) + '개. ' +
+      '방문자는 기기 단위(같은 사람이 다른 기기로 오면 따로 셈), 같은 페이지는 30분 안에 다시 열어도 1번으로 셉니다.';
+  }
+
+  var lastDaily = null, lastW = 0;
+  function renderDaily(rows) {
+    lastDaily = rows;
+    if (!rows.length) { $('daily').innerHTML = '<div class="empty">아직 기록이 없어요</div>'; return; }
+    // 화면 폭에 맞춘 viewBox → 글자가 실제 크기로 보임(폰에서 작게 줄지 않게)
+    var n = rows.length, W = lastW = Math.max(280, Math.round($('daily').clientWidth || 720)), H = W < 520 ? 180 : 220, padL = 6, padR = 6, top = 22, bottom = 26;
+    var max = 1;
+    rows.forEach(function (r) { max = Math.max(max, +r.views || 0, +r.visitors || 0); });
+    var slot = (W - padL - padR) / n, bw = Math.max(4, Math.min(28, slot * 0.36));
+    var ch = H - top - bottom, every = Math.max(1, Math.ceil(n / Math.max(4, Math.floor(W / 46))));
+    var parts = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="일별 방문자와 페이지뷰">'];
+    parts.push('<line x1="0" x2="' + W + '" y1="' + (top + ch) + '" y2="' + (top + ch) + '" stroke="var(--line)"/>');
+    rows.forEach(function (r, i) {
+      var cx = padL + slot * i + slot / 2;
+      var hv = Math.round(ch * (+r.visitors || 0) / max), hp = Math.round(ch * (+r.views || 0) / max);
+      parts.push('<rect class="bar2" x="' + (cx + 1).toFixed(1) + '" y="' + (top + ch - hp) + '" width="' + bw.toFixed(1) + '" height="' + hp + '" rx="2"><title>' + esc(r.date) + ' 페이지뷰 ' + fmt(r.views) + '</title></rect>');
+      parts.push('<rect class="bar" x="' + (cx - bw - 1).toFixed(1) + '" y="' + (top + ch - hv) + '" width="' + bw.toFixed(1) + '" height="' + hv + '" rx="2"><title>' + esc(r.date) + ' 방문자 ' + fmt(r.visitors) + '</title></rect>');
+      if (+r.visitors > 0 && ((n - 1 - i) % every === 0)) parts.push('<text class="val" x="' + (cx - bw / 2 - 1).toFixed(1) + '" y="' + (top + ch - hv - 5) + '" text-anchor="middle">' + fmt(r.visitors) + '</text>');
+      if ((n - 1 - i) % every === 0) {
+        var ds = String(r.date || '').slice(5).replace('-', '/').replace(/^0/, '').replace('/0', '/');
+        parts.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(ds) + '</text>');
+      }
+    });
+    parts.push('</svg>');
+    $('daily').innerHTML = parts.join('');
+  }
+
+  function renderGames(pages) {
+    var tb = $('games');
+    if (!pages.length) { tb.innerHTML = '<tbody><tr><td class="empty" colspan="7">아직 게임 기록이 없어요</td></tr></tbody>'; return; }
+    var max = 1;
+    pages.forEach(function (p) { max = Math.max(max, +p.plays || 0); });
+    var h = '<thead><tr><th>게임</th><th class="barcell"></th><th>플레이</th><th>최근 7일</th><th class="hide-s">방문자</th><th>플레이어</th><th class="hide-s">닉네임 없음</th></tr></thead><tbody>';
+    pages.forEach(function (p, i) {
+      var modes = (p.modes || []).filter(function (m) { return MODES[m.game]; });
+      var sub = modes.length ? modes.map(function (m) { return MODES[m.game] + ' ' + fmt(m.plays); }).join(' · ') : '';
+      h += '<tr><td><span class="gname"><span class="rank' + (i === 0 && p.plays > 0 ? ' r1' : '') + '">' + (i + 1) + '</span>' + esc(gname(p.page)) +
+        (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></td>' +
+        '<td class="barcell"><div class="hbar"><i style="width:' + Math.round(100 * (+p.plays || 0) / max) + '%"></i></div></td>' +
+        '<td><b>' + fmt(p.plays) + '</b></td><td>' + fmt(p.plays_d7) + '</td><td class="hide-s">' + fmt(p.visitors) + '</td>' +
+        '<td>' + fmt(p.players) + '</td><td class="hide-s">' + fmt(p.anon_plays) + '</td></tr>';
+    });
+    tb.innerHTML = h + '</tbody>';
+  }
+
+  function renderPlayers(players, pages) {
+    var tb = $('players');
+    if (!players.length) { tb.innerHTML = '<tbody><tr><td class="empty">아직 닉네임으로 한 판이 없어요</td></tr></tbody>'; return; }
+    var cols = pages.map(function (p) { return p.page; });
+    players.forEach(function (pl) { for (var k in (pl.games || {})) if (cols.indexOf(k) < 0) cols.push(k); });
+    var h = '<thead><tr><th>닉네임</th><th>합계</th>' + cols.map(function (c) { return '<th>' + esc(gname(c)) + '</th>'; }).join('') + '<th>마지막 플레이</th></tr></thead><tbody>';
+    players.forEach(function (pl) {
+      var g = pl.games || {}, best = 0;
+      cols.forEach(function (c) { best = Math.max(best, +g[c] || 0); });
+      h += '<tr><td><b>' + esc(pl.nickname) + '</b></td><td><b>' + fmt(pl.total) + '</b></td>' +
+        cols.map(function (c) { var n = +g[c] || 0; return '<td class="' + (n ? (n === best ? 'top' : '') : 'zero') + '">' + (n ? fmt(n) : '0') + '</td>'; }).join('') +
+        '<td>' + esc(when(pl.last_at)) + '</td></tr>';
+    });
+    tb.innerHTML = h + '</tbody>';
+  }
+
+  window.addEventListener('resize', function () {
+    if (!lastDaily || $('dash').hidden) return;
+    var w = Math.round($('daily').clientWidth || 0);
+    if (w && Math.abs(w - lastW) > 8) renderDaily(lastDaily);
+  });
+
+  /* ---------- 이벤트 ---------- */
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = $('pw').value;
+    if (!pw || $('go').disabled) return;
+    load(pw, true);
+  });
+  $('refresh').addEventListener('click', function () { if (pass) load(pass, false); });
+  $('days').addEventListener('change', function () { if (pass) load(pass, false); });
+  $('logout').addEventListener('click', function () {
+    pass = ''; $('cards').innerHTML = ''; $('games').innerHTML = ''; $('players').innerHTML = ''; $('daily').innerHTML = '';
+    showLogin(); setMsg('잠갔어요', ''); selectPw();
+  });
+  // 테스트용: 비밀번호가 메모리에만 있는지 확인
+  Object.defineProperty(window, '__admin', { value: Object.freeze({ hasPass: function () { return !!pass; } }) });
+  try { $('pw').focus({ preventScroll: true }); } catch (e) {}
+})();
+</script>
+</body>
+</html>
