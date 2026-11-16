@@ -66,7 +66,8 @@ returns boolean language sql immutable set search_path = public as $$
 $$;
 
 -- 3. 기록 (누구나 호출, 표에는 이 함수로만 씀) -----------------------------
--- 같은 기기·같은 종류·같은 페이지/게임이 최근(visit 30분, play 20초) 안에 있으면 무시.
+-- 같은 기기·같은 종류·같은 페이지/게임이 최근(visit 30분, play 5초) 안에 있으면 무시.
+-- 전체 상한: 최근 1분 300건 · 서울 하루 20000건을 넘으면 무시(기기 번호 위조로 부풀리기 방지).
 -- 기기당 하루(서울 날짜) 500건까지. 잘못된 값이면 raise(400).
 create or replace function public.log_event(p_device uuid, p_kind text, p_page text, p_game text default null, p_eligible boolean default null)
 returns void
@@ -88,7 +89,7 @@ begin
     if v_game is null or public.analytics_page_of(v_game) is null then raise exception 'bad game'; end if;
     if v_page = '' then v_page := public.analytics_page_of(v_game); end if;
     if v_page <> public.analytics_page_of(v_game) then raise exception 'bad page'; end if;
-    v_window := interval '20 seconds';
+    v_window := interval '5 seconds';
   else
     raise exception 'bad kind';
   end if;
@@ -102,6 +103,11 @@ begin
     return;
   end if;
   if (select count(*) from public.events e where e.device_id = p_device and e.at >= v_day0) >= 500 then
+    return;
+  end if;
+  -- 전체 상한(기기 번호를 매번 바꾸는 대량 위조 방지): 최근 1분 300건, 서울 하루 20000건
+  if (select count(*) from public.events e where e.at > now() - interval '1 minute') >= 300
+     or (select count(*) from public.events e where e.at >= v_day0) >= 20000 then
     return;
   end if;
 
