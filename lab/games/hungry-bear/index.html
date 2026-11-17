@@ -1803,7 +1803,7 @@ const Sound = (function () {
     sceneMode('');
     setBearCls(b, 'sel', true);
     setMark(b, ['me']);
-    G.phase = 'judge';
+    G.phase = 'judge'; G.judged = false;
     later(judge, 300);
     return true;
   }
@@ -1820,6 +1820,7 @@ const Sound = (function () {
   }
   function judge() {
     var r = G.round, b = G.pick, ok = b === r.winner;
+    G.judged = true;
     Sound.play(ok ? 'correct' : 'wrong');
     if (ok) { G.score++; } else { G.lives = Math.max(0, G.lives - 1); }
     hud();
@@ -1843,12 +1844,18 @@ const Sound = (function () {
     else main = '아쉬워요. 고른 ' + nmH(p) + TOPIC[p] + ' ' + numH(c[p]) + '마리, ' + nmH(w) + SUBJ[w] + ' ' + numH(c[w]) + '마리로 ' + numH(c[w] - c[p]) + '마리 더 많았어요.';
     var F = f[0] + f[1] + f[2], fake = '';
     if (F > 0) {
-      if (!last.ok && f[p] > 0 && c[p] + f[p] >= c[w]) {
+      var parts = [];
+      for (var b = 0; b < 3; b++) if (f[b]) parts.push(NAMES[b] + ' ' + numH(f[b]));
+      var general = '헛물기 ' + numH(F) + '번은 먹은 게 아니에요 (' + parts.join(', ') + ').';
+      // 특수 문장: 모든 곰을 '진짜+헛물기'로 셌을 때 고른 곰이 최다(동률 포함)인 오답에서만
+      var otherMax = -1;
+      for (var o = 0; o < 3; o++) if (o !== p) otherMax = Math.max(otherMax, c[o] + f[o]);
+      if (!last.ok && f[p] > 0 && c[p] + f[p] >= otherMax) {
         fake = nmH(p) + TOPIC[p] + ' ' + numH(c[p]) + '마리 먹고 ' + numH(f[p]) + '번 헛물었어요. 헛물기까지 세면 ' + numH(c[p] + f[p]) + '번이라 많아 보였을 거예요.';
+        // 다른 곰에게도 헛물기가 있으면 일반 문장(곰별 내역)도 함께
+        if (F > f[p]) fake += ' ' + general;
       } else {
-        var parts = [];
-        for (var b = 0; b < 3; b++) if (f[b]) parts.push(NAMES[b] + ' ' + numH(f[b]));
-        fake = '헛물기 ' + numH(F) + '번은 먹은 게 아니에요 (' + parts.join(', ') + ').';
+        fake = general;
       }
     }
     return { main: main, fake: fake };
@@ -1872,7 +1879,7 @@ const Sound = (function () {
   }
   function showExplain() {
     var last = G.last, r = last.round;
-    G.phase = 'explain';
+    G.phase = 'explain'; G.tallied = false;
     sceneMode('breathing');
     // 하단 줄
     var st = sentences(last);
@@ -1941,7 +1948,7 @@ const Sound = (function () {
       pan.querySelector('.pf').hidden = !r.fakes[b];
       if (b === r.winner) { pan.classList.add('most'); pan.querySelector('.mostpill').hidden = false; }
     });
-    G.tally = null;
+    G.tally = null; G.tallied = true;
     if (!G.replay) restScene();
   }
   function stopTally() { if (G.tally) { clearTimeout(G.tally.timer); G.tally = null; } }
@@ -2099,7 +2106,12 @@ const Sound = (function () {
     if (G.phase === 'title' || G.phase === 'over') return;
     G.paused = true;
     G.pausedPhase = G.phase;
+    G.bannerPending = G.phase === 'banner';
     var msg = '';
+    if (G.phase === 'judge') {
+      // 고른 직후 판정 대기 중 → 판정·해설 진행을 멈췄다가 재개할 때 이어서
+      clearTimers(); clearBearCls(['shake']);
+    }
     if (G.phase === 'feed' || G.phase === 'prep' || G.phase === 'banner') {
       // 먹기 도중 이탈 → 라운드 무효 (목숨 그대로, 같은 레벨 새 순서)
       var wasFeed = G.phase === 'feed';
@@ -2111,7 +2123,12 @@ const Sound = (function () {
       G.phase = 'void';
       Sound.setMusicMode('calm');
     }
-    if (G.phase === 'explain' && G.tally) finishTally();
+    if (G.phase === 'explain' && !G.tallied) {
+      // 집계 시작 전(대기 타이머)이거나 진행 중 → 즉시 완료 (오버레이 뒤에서 진행되지 않게)
+      clearTimers(); clearBearCls(['shake']);
+      if (!G.tally) G.tally = { i: 0, reals: G.last.round.events.filter(function (E) { return E.real; }), n: [0, 0, 0], d: 0, timer: null };
+      finishTally();
+    }
     if (G.replay) { G.replay.base = replayE(performance.now()); }
     $('pauseMsg').textContent = msg; $('pauseMsg').hidden = !msg;
     $('ovPause').hidden = false;
@@ -2124,7 +2141,11 @@ const Sound = (function () {
     if (G.replay) G.replay.startAt = performance.now();
     if (G.phase === 'void') {
       if (G.voided) newRound({ banner: false, delay: 300 });
+      else if (G.bannerPending && BANNERS[G.level]) { restScene(); showBanner(G.level); }
       else { restScene(); startPrep(300); }
+    } else if (G.phase === 'judge') {
+      if (!G.judged) later(judge, 150);
+      else later(showExplain, 150);
     } else if (G.phase === 'choose') { G.chooseAt = performance.now(); }
   }
 
@@ -2252,7 +2273,8 @@ const Sound = (function () {
       if (G.tally) finishTally();
       return G.phase;
     },
-    log: function () { return clone(G.log); }
+    log: function () { return clone(G.log); },
+    sentences: function (round, pick) { var st = sentences({ round: round, pick: pick, ok: pick === round.winner }); return { main: plain(st.main), fake: plain(st.fake) }; }
   };
 
   // ---------- 시작 ----------
