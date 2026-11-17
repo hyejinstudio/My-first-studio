@@ -14,19 +14,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-company: #ebe7f0;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-bear: #e6ecec;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -128,6 +128,30 @@
 
   <!-- 개발진: 출시 전 게임 카드를 맨 앞에 추가. 출시되면 카드를 루트 index.html로 옮긴다 -->
   <div class="grid">
+    <a class="game" href="games/hungry-bear/" aria-label="폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까?">
+      <div class="art" style="--tile: var(--tile-bear)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="2" y="49" width="60" height="11" rx="5.5" fill="#a7c0c4"/>
+          <path d="M8 54 H22 M34 56 H50" stroke="#e9f1f1" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="16" cy="17" r="6" fill="#8a5a3c"/><circle cx="16" cy="17" r="3" fill="#c79a78"/>
+          <circle cx="40" cy="17" r="6" fill="#8a5a3c"/><circle cx="40" cy="17" r="3" fill="#c79a78"/>
+          <ellipse cx="28" cy="30" rx="16" ry="14" fill="#8a5a3c"/>
+          <ellipse cx="28" cy="36" rx="8" ry="6" fill="#dcc09c"/>
+          <ellipse cx="28" cy="32.6" rx="2.8" ry="2" fill="#2e2420"/>
+          <circle cx="22" cy="27" r="1.6" fill="#2a2d36"/><circle cx="34" cy="27" r="1.6" fill="#2a2d36"/>
+          <ellipse cx="28" cy="38.6" rx="3" ry="2.4" fill="#6b3a33"/>
+          <path d="M14 43 Q28 48 42 43 L42 47 Q28 52 14 47 Z" fill="#6f9a8c"/>
+          <g transform="translate(46 38) rotate(32)">
+            <path d="M7 0 L12 -3.6 L11 0 L12 3.6 Z" fill="#9c6b5f"/>
+            <ellipse rx="8" ry="3.6" fill="#d98a6c"/>
+            <circle cx="-4.8" cy="-0.9" r=".9" fill="#2a2d36"/>
+          </g>
+          <ellipse cx="54" cy="50" rx="5" ry="1.6" fill="none" stroke="#e9f1f1" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h2>폭식 불곰을 찾아라</h2>
+      <p>누가 제일 많이 먹었을까?</p>
+    </a>
     <a class="game" href="games/tiny-company/" aria-label="악덕 사장 — 직원도 회사도 웃게!">
       <div class="art" style="--tile: var(--tile-company)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
