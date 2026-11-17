@@ -23,11 +23,13 @@
     --shadow: rgba(40,50,70,.14);
     --sky: #e8ebe4; --ridge: #d3dacb; --pine: #b3c0a8; --bank: #ddd0b6; --bank-edge: #c9b998; --grass: #a9b88f;
     --river: #a7c0c4; --river-deep: #93b0b6; --ripple: #e9f1f1; --stone: #c4c0b6;
-    --fur: #8a5a3c; --fur-dark: #6e4630; --muzzle: #dcc09c; --inner-ear: #c79a78; --nose: #2e2420; --eye: #2a2d36;
-    --mouth-in: #6b3a33; --tongue: #c97a6c;
+    --line: #3a2318; --fur: #9c5a32; --fur-dark: #7c4325; --muzzle: #f0d9b0; --inner-ear: #e5b088; --nose: #2b1a14;
+    --eye-y: #ffcc33; --eye: #1e1410; --mouth-in: #5e2420; --tongue: #d9776a; --tooth: #fffaf0; --flame-o: #f2622a; --flame-y: #ffc533;
     --b1: #6f9a8c; --b2: #c58a3c; --b3: #7d83b8; --b1-ink: #3d6b5d; --b2-ink: #87561a; --b3-ink: #555b94;
     --stripe: rgba(255,255,255,.55); --dot: rgba(255,255,255,.6);
-    --salmon: #d98a6c; --salmon-back: #9c6b5f; --salmon-belly: #f2d0bd; --yum-bg: #fffaf2; --yum-ink: #1f2430;
+    --salmon: #ef8a5f; --salmon-back: #b4553f; --salmon-belly: #fbd9c2;
+    --yum-bg: #fff1d6; --yum-edge: #e8862a; --yum-ink: #7a3510;
+    --miss-bg: #e3ebf2; --miss-edge: #5f7f9c; --miss-ink: #2c4660; --miss-drop: #9fcbee;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -36,11 +38,13 @@
       --shadow: rgba(0,0,0,.35);
       --sky: #171c22; --ridge: #1f272a; --pine: #26322e; --bank: #2a2722; --bank-edge: #36302a; --grass: #3b4634;
       --river: #22333a; --river-deep: #1c2a30; --ripple: #4a6168; --stone: #3a3d42;
-      --fur: #8c6046; --fur-dark: #6f4b37; --muzzle: #b99c7d; --inner-ear: #a37c60; --nose: #1c1714; --eye: #15171c;
-      --mouth-in: #4e2a25; --tongue: #a8645a;
+      --line: #140d0a; --fur: #925c3c; --fur-dark: #6e4329; --muzzle: #cdb38c; --inner-ear: #b58763; --nose: #140d0a;
+      --eye-y: #f5c042; --eye: #120c09; --mouth-in: #4a1d1a; --tongue: #b2625a; --tooth: #efe7d8; --flame-o: #ff7240; --flame-y: #ffd35c;
       --b1: #8fbcae; --b2: #e2ae62; --b3: #a3a8dc; --b1-ink: #9fd0c0; --b2-ink: #ecc07c; --b3-ink: #b8bce6;
       --stripe: rgba(255,255,255,.4); --dot: rgba(255,255,255,.45);
-      --salmon: #d68e72; --salmon-back: #8e6156; --salmon-belly: #e6bba5; --yum-bg: #2a2620; --yum-ink: #eceef3;
+      --salmon: #e98b62; --salmon-back: #a85743; --salmon-belly: #efc4aa;
+      --yum-bg: #3a2a16; --yum-edge: #ffa04d; --yum-ink: #ffd9a8;
+      --miss-bg: #1f2a35; --miss-edge: #8fb0cf; --miss-ink: #cfe1f2; --miss-drop: #6fa3cf;
     }
   }
   :root[data-theme="dark"] {
@@ -49,11 +53,13 @@
     --shadow: rgba(0,0,0,.35);
     --sky: #171c22; --ridge: #1f272a; --pine: #26322e; --bank: #2a2722; --bank-edge: #36302a; --grass: #3b4634;
     --river: #22333a; --river-deep: #1c2a30; --ripple: #4a6168; --stone: #3a3d42;
-    --fur: #8c6046; --fur-dark: #6f4b37; --muzzle: #b99c7d; --inner-ear: #a37c60; --nose: #1c1714; --eye: #15171c;
-    --mouth-in: #4e2a25; --tongue: #a8645a;
+    --line: #140d0a; --fur: #925c3c; --fur-dark: #6e4329; --muzzle: #cdb38c; --inner-ear: #b58763; --nose: #140d0a;
+    --eye-y: #f5c042; --eye: #120c09; --mouth-in: #4a1d1a; --tongue: #b2625a; --tooth: #efe7d8; --flame-o: #ff7240; --flame-y: #ffd35c;
     --b1: #8fbcae; --b2: #e2ae62; --b3: #a3a8dc; --b1-ink: #9fd0c0; --b2-ink: #ecc07c; --b3-ink: #b8bce6;
     --stripe: rgba(255,255,255,.4); --dot: rgba(255,255,255,.45);
-    --salmon: #d68e72; --salmon-back: #8e6156; --salmon-belly: #e6bba5; --yum-bg: #2a2620; --yum-ink: #eceef3;
+    --salmon: #e98b62; --salmon-back: #a85743; --salmon-belly: #efc4aa;
+      --yum-bg: #3a2a16; --yum-edge: #ffa04d; --yum-ink: #ffd9a8;
+      --miss-bg: #1f2a35; --miss-edge: #8fb0cf; --miss-ink: #cfe1f2; --miss-drop: #6fa3cf;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: var(--app-h); overflow: hidden; }
@@ -166,8 +172,19 @@
   .scene .grass { fill: none; stroke: var(--grass); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   .scene .stone { fill: var(--stone); }
   .f-fur { fill: var(--fur); } .f-furd { fill: var(--fur-dark); } .f-muz { fill: var(--muzzle); } .f-ear { fill: var(--inner-ear); }
-  .f-nose { fill: var(--nose); } .f-eye { fill: var(--eye); } .f-hl { fill: #fff; opacity: .7; } .f-mi { fill: var(--mouth-in); } .f-tg { fill: var(--tongue); }
-  .f-sh { fill: var(--shadow); } .s-mouth { fill: none; stroke: var(--nose); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .f-nose { fill: var(--nose); } .f-eye { fill: var(--eye); } .f-eyey { fill: var(--eye-y); } .f-line { fill: var(--line); } .f-hl { fill: #fff; opacity: .5; }
+  .f-mi { fill: var(--mouth-in); } .f-tg { fill: var(--tongue); } .f-tooth { fill: var(--tooth); } .f-fo { fill: var(--flame-o); } .f-fy { fill: var(--flame-y); }
+  .f-drop { fill: var(--miss-drop); } .f-sh { fill: var(--shadow); }
+  /* v2 굵은 외곽선 */
+  .o, .o3, .ol { stroke: var(--line); stroke-linejoin: round; stroke-linecap: round; }
+  .o { stroke-width: 5; } .o3 { stroke-width: 3.5; }
+  .s-none { fill: none; }
+  .s-brow { fill: none; stroke: var(--line); stroke-width: 6; stroke-linecap: round; }
+  .s-teeth { fill: none; stroke: var(--line); stroke-width: 1.6; }
+  .s-spark { fill: none; stroke: var(--miss-edge); stroke-width: 4; stroke-linecap: round; }
+  .flame { transform-box: fill-box; transform-origin: 50% 100%; }
+  .scene .flame { animation: flame 900ms ease-in-out infinite; }
+  @keyframes flame { 0%, 100% { transform: scale(1, 1) skewX(0deg); } 33% { transform: scale(.96, 1.06) skewX(-3deg); } 66% { transform: scale(1.03, .97) skewX(2deg); } }
   .f-panel { fill: var(--panel); }
   .b0 { --bc: var(--b1); --bci: var(--b1-ink); } .b1 { --bc: var(--b2); --bci: var(--b2-ink); } .b2 { --bc: var(--b3); --bci: var(--b3-ink); }
   .scarf { fill: var(--bc); } .scarf-t { fill: none; stroke: var(--bc); stroke-width: 3; stroke-linecap: round; }
@@ -194,13 +211,18 @@
   .bear.sel .ring { opacity: 1; stroke: var(--accent); stroke-width: 4; }
   .bear.ok .ring { opacity: 1; stroke: var(--good); stroke-width: 4; stroke-dasharray: none; }
   .bear.bad .ring { opacity: 1; stroke: var(--danger); stroke-width: 4; stroke-dasharray: 8 6; }
-  .yum rect { fill: var(--yum-bg); stroke: var(--bc); stroke-width: 2.5; }
-  .yum path { fill: var(--yum-bg); stroke: var(--bc); stroke-width: 2.5; stroke-linejoin: round; }
-  .yum .yt { fill: var(--yum-bg); stroke: none; }
-  .yum text { font-size: 22px; font-weight: 800; fill: var(--yum-ink); text-anchor: middle; dominant-baseline: central; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  .yum .ys { fill: var(--yum-bg); stroke: var(--yum-edge); stroke-width: 3.5; stroke-linejoin: round; }
+  .yum .yd { fill: var(--yum-bg); stroke: var(--yum-edge); stroke-width: 2.5; }
+  .yum text, .miss text { text-anchor: middle; dominant-baseline: central; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  .yum text { font-size: 26px; font-weight: 900; fill: var(--yum-ink); }
+  .miss rect { fill: var(--miss-bg); stroke: var(--miss-edge); stroke-width: 3; stroke-dasharray: 7 5; }
+  .miss text { font-size: 22px; font-weight: 800; fill: var(--miss-ink); }
   .rip { fill: none; stroke: var(--ripple); stroke-width: 3; }
   .drop { fill: var(--ripple); }
-  .sal-back { fill: var(--salmon-back); } .sal-body { fill: var(--salmon); } .sal-belly { fill: var(--salmon-belly); } .sal-eye { fill: var(--eye); }
+  .col { stroke: var(--ripple); stroke-width: 3; stroke-linecap: round; fill: none; }
+  .sal-back { fill: var(--salmon-back); } .sal-body { fill: var(--salmon); } .sal-belly { fill: var(--salmon-belly); }
+  .sal-back, .sal-body, .sal-eyew { stroke: var(--line); stroke-linejoin: round; stroke-linecap: round; }
+  .sal-eyew { fill: var(--tooth); } .sal-dot { fill: var(--salmon-back); } .sal-pup { fill: var(--line); } .sal-gill { fill: none; stroke: var(--line); stroke-width: 1.6; stroke-linecap: round; }
 
   /* 곰 선택 버튼 (열 전체 투명) */
   .pick { position: absolute; background: transparent; border: 0; border-radius: 12px; padding: 0; margin: 0; z-index: 2; cursor: pointer; }
@@ -224,7 +246,7 @@
     background: var(--panel); border: 2px solid var(--bc); display: inline-flex; align-items: center; justify-content: center; gap: 4px; pointer-events: none; }
   .chip[hidden] { display: none; }
   .chip .cn { font-size: 18px; color: var(--bci); }
-  .chip .ch { font-size: 13px; font-weight: 800; color: var(--loss-ink); }
+  .chip .ch { font-size: 13px; font-weight: 800; color: var(--miss-ink); }
   .chip .ch[hidden] { display: none; }
 
   /* 해설 (강 위) */
@@ -245,15 +267,16 @@
   .pv .pbn { font-size: 12px; font-weight: 700; color: var(--muted); }
   .mostpill { background: var(--good); color: #10301a; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 8px; animation: pop 180ms ease-out; align-self: center; }
   .mostpill[hidden] { display: none; }
-  .minis { display: grid; grid-template-columns: repeat(5, var(--msw, 18px)); gap: 4px 4px; justify-content: center; }
-  .minis svg { width: var(--msw, 18px); height: calc(var(--msw, 18px) / 2); display: block; animation: drop 140ms ease-out; }
+  .minis { display: grid; grid-template-columns: repeat(5, var(--msw, 24px)); gap: 4px 4px; justify-content: center; align-content: start; flex: none; }
+  .minis svg { width: var(--msw, 24px); height: calc(var(--msw, 24px) / 2); display: block; overflow: visible; animation: drop 140ms ease-out; }
   @keyframes drop { from { transform: translateY(-8px); opacity: 0; } }
   .pf { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
   .pf[hidden] { display: none; }
   .explain.ex-l .pan { padding: 12px 10px 14px; gap: 10px; }
   .explain.ex-l .pf { font-size: 14px; }
   .explain.ex-l .tline { padding: 8px 10px; gap: 6px; }
-  .explain.ex-l .tev.r { width: 22px; height: 11px; }
+  .explain.ex-l .tev.r { width: 26px; height: 13px; }
+  .explain.ex-l .tev.f { width: 14px; height: 14px; }
   .explain.ex-l .ttot { font-size: 18px; }
   .explain.ex-s .minis { display: none; }
   .explain.ex-s .pan { flex-direction: row; justify-content: center; gap: 8px; padding: 2px 6px; }
@@ -269,9 +292,9 @@
   .ttrack { position: relative; flex: 1; height: 100%; }
   .ttrack::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--grid); }
   .tev { position: absolute; top: 50%; transform: translate(-50%, -50%); display: block; }
-  .tev.r { width: 16px; height: 8px; }
+  .tev.r { width: 20px; height: 10px; }
   .tev.r svg { width: 100%; height: 100%; display: block; }
-  .tev.f { width: 11px; height: 11px; border-radius: 50%; border: 1.6px solid var(--muted); background: var(--panel); }
+  .tev.f { width: 12px; height: 12px; border-radius: 50%; border: 1.6px dashed var(--miss-edge); background: var(--panel); }
   .tev.f::before, .tev.f::after { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 1.6px; background: var(--danger); margin: -0.8px 0 0 -3.5px; transform: rotate(45deg); }
   .tev.f::after { transform: rotate(-45deg); }
   .ttot { flex: none; min-width: 2ch; text-align: right; font-size: 14px; color: var(--bci); }
@@ -279,7 +302,7 @@
   .tp[hidden] { display: none; }
   .tline.small .trow { height: 10px; }
   .tline.small .tbadge { width: 14px; height: 14px; font-size: 9px; border-width: 1.5px; }
-  .tline.small .tev.r { width: 12px; height: 6px; }
+  .tline.small .tev.r { width: 14px; height: 7px; }
   .tline.small .tev.f { width: 8px; height: 8px; }
   .tline.small .tev.f::before, .tline.small .tev.f::after { width: 5px; margin-left: -2.5px; }
   .tline.small .ttot { font-size: 11px; }
@@ -294,18 +317,28 @@
   .banner .demo figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; }
   .banner .demo svg { width: 120px; height: 96px; border-radius: 10px; background: var(--sky); }
   .banner .demo .no { color: var(--loss-ink); } .banner .demo .yes { color: var(--good-ink); }
+  /* 6레벨 시연 (2000ms 반복). 연어 머리는 진행 방향 */
   .dm-real { animation: dmReal 2000ms linear infinite; }
+  @keyframes dmReal { 0% { transform: translate(24px, 86px) scale(1); opacity: 1; } 38% { transform: translate(60px, 50px) scale(1); opacity: 1; }
+    44% { transform: translate(60px, 55px) scale(.25); opacity: 0; } 100% { transform: translate(60px, 55px) scale(.25); opacity: 0; } }
   .dm-fake { animation: dmFake 2000ms linear infinite; }
-  @keyframes dmReal { 0% { transform: translate(30px, 70px); opacity: 1; } 45% { transform: translate(60px, 44px); opacity: 1; } 50% { transform: translate(60px, 44px) scale(.3); opacity: 0; } 100% { transform: translate(60px, 44px); opacity: 0; } }
-  @keyframes dmFake { 0% { transform: translate(30px, 70px); opacity: 1; } 45% { transform: translate(60px, 38px); opacity: 1; } 80% { transform: translate(92px, 90px) rotate(200deg); opacity: 1; } 85%, 100% { transform: translate(92px, 96px) rotate(200deg); opacity: 0; } }
+  @keyframes dmFake { 0% { transform: translate(24px, 86px) rotate(0deg); opacity: 1; } 38% { transform: translate(60px, 46px) rotate(0deg); opacity: 1; }
+    54% { transform: translate(78px, 12px) rotate(200deg); opacity: 1; } 72% { transform: translate(98px, 80px) rotate(470deg); opacity: 1; }
+    76%, 100% { transform: translate(100px, 86px) rotate(500deg); opacity: 0; } }
   .dm-yum { opacity: 0; animation: dmYum 2000ms linear infinite; }
-  @keyframes dmYum { 0%, 46% { opacity: 0; } 50%, 70% { opacity: 1; } 76%, 100% { opacity: 0; } }
+  @keyframes dmYum { 0%, 38% { opacity: 0; } 41%, 62% { opacity: 1; } 67%, 100% { opacity: 0; } }
+  .dm-miss { opacity: 0; animation: dmMiss 2000ms linear infinite; }
+  @keyframes dmMiss { 0%, 38% { opacity: 0; } 42%, 60% { opacity: 1; } 65%, 100% { opacity: 0; } }
   .dm-mouth { opacity: 0; animation: dmMouth 2000ms linear infinite; }
-  @keyframes dmMouth { 0%, 40% { opacity: 0; } 41%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-  .dm-mouthf { opacity: 0; animation: dmMouthF 2000ms linear infinite; }
-  @keyframes dmMouthF { 0%, 38% { opacity: 0; } 39%, 43% { opacity: 1; } 44%, 100% { opacity: 0; } }
+  @keyframes dmMouth { 0%, 32% { opacity: 0; } 33%, 41% { opacity: 1; } 42%, 100% { opacity: 0; } }
+  .dm-chomp { opacity: 0; animation: dmChomp 2000ms linear infinite; }
+  @keyframes dmChomp { 0%, 41% { opacity: 0; } 42%, 47% { opacity: 1; } 48%, 51% { opacity: 0; } 52%, 56% { opacity: 1; } 57%, 100% { opacity: 0; } }
+  .dm-chompf { opacity: 0; animation: dmChompF 2000ms linear infinite; }
+  @keyframes dmChompF { 0%, 36% { opacity: 0; } 37%, 38% { opacity: 1; } 39%, 100% { opacity: 0; } }
+  .dm-wide { opacity: 0; animation: dmWide 2000ms linear infinite; }
+  @keyframes dmWide { 0%, 38% { opacity: 0; } 39%, 54% { opacity: 1; } 55%, 100% { opacity: 0; } }
   .dm-splash { opacity: 0; animation: dmSplash 2000ms linear infinite; }
-  @keyframes dmSplash { 0%, 80% { opacity: 0; } 82% { opacity: 1; } 95%, 100% { opacity: 0; } }
+  @keyframes dmSplash { 0%, 74% { opacity: 0; } 76% { opacity: 1; } 88%, 100% { opacity: 0; } }
 
   /* 하단 해설 줄 */
   .sheet { flex: none; width: var(--sw, 600px); min-height: var(--sht, 64px); display: flex; align-items: center; gap: 10px 12px; }
@@ -410,40 +443,28 @@
     .pv .pn.bump { animation: none; }
     @keyframes fadeOnly { from { opacity: 0; } }
     button:active { transform: none; }
-    .dm-real, .dm-fake, .dm-yum, .dm-mouth, .dm-mouthf, .dm-splash { animation: none; }
+    .dm-real, .dm-fake, .dm-yum, .dm-miss, .dm-mouth, .dm-chomp, .dm-chompf, .dm-wide, .dm-splash { animation: none; }
     .dm-real { transform: translate(60px, 50px); }
-    .dm-fake { transform: translate(84px, 76px) rotate(160deg); }
-    .dm-yum, .dm-splash { opacity: 1; }
+    .dm-fake { transform: translate(84px, 16px) rotate(200deg); }
+    .dm-yum, .dm-miss, .dm-splash, .dm-mouth, .dm-wide { opacity: 1; }
+    .scene .flame { animation: none; }
   }
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <symbol id="salmon" viewBox="-30 -14 60 28" overflow="visible">
-      <path class="sal-back" d="M18 0 L29 -9 L26 0 L29 9 Z"/>
-      <path class="sal-body" d="M-26 0 Q-20 -11 0 -10 Q16 -8 20 0 Q16 8 0 10 Q-20 11 -26 0 Z"/>
-      <path class="sal-belly" d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z"/>
-      <path class="sal-back" d="M-4 -9 L4 -14 L8 -8 Z"/>
-      <circle class="sal-eye" cx="-17" cy="-2" r="2.2"/>
-    </symbol>
     <g id="salmonG">
-      <path class="sal-back" d="M18 0 L29 -9 L26 0 L29 9 Z"/>
-      <path class="sal-body" d="M-26 0 Q-20 -11 0 -10 Q16 -8 20 0 Q16 8 0 10 Q-20 11 -26 0 Z"/>
+      <path class="sal-back" stroke-width="2" d="M-4 -10 L4 -15 L9 -9 Z"/>
+      <path class="sal-back" stroke-width="2.4" d="M17 0 L29 -10 L26 0 L29 10 Z"/>
+      <path class="sal-body" stroke-width="2.4" d="M-27 0 Q-21 -12 0 -11 Q16 -9 20 0 Q16 9 0 11 Q-21 12 -27 0 Z"/>
       <path class="sal-belly" d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z"/>
-      <path class="sal-back" d="M-4 -9 L4 -14 L8 -8 Z"/>
-      <circle class="sal-eye" cx="-17" cy="-2" r="2.2"/>
+      <circle class="sal-dot" cx="-4" cy="-6" r="1.3"/><circle class="sal-dot" cx="2" cy="-5" r="1.4"/><circle class="sal-dot" cx="8" cy="-4" r="1.2"/>
+      <path class="sal-gill" d="M-14 -6 Q-11 0 -14 6"/>
+      <circle class="sal-eyew" stroke-width="1.2" cx="-19" cy="-2.5" r="3"/><circle class="sal-pup" cx="-19.6" cy="-2.5" r="1.5"/>
     </g>
-    <!-- 작은 곰 머리 (시작 그림·결과 요약) viewBox 0 0 80 80 -->
-    <g id="bhead">
-      <circle class="f-fur" cx="18" cy="18" r="10"/><circle class="f-ear" cx="18" cy="18" r="5.5"/>
-      <circle class="f-fur" cx="62" cy="18" r="10"/><circle class="f-ear" cx="62" cy="18" r="5.5"/>
-      <ellipse class="f-fur" cx="40" cy="38" rx="30" ry="26"/>
-      <ellipse class="f-muz" cx="40" cy="48" rx="14" ry="10"/>
-      <ellipse class="f-nose" cx="40" cy="43" rx="5" ry="3.4"/>
-      <circle class="f-eye" cx="29" cy="34" r="3"/><circle class="f-eye" cx="51" cy="34" r="3"/>
-      <path class="s-mouth" style="stroke-width:2" d="M35 51 Q37.5 53.5 40 51 Q42.5 53.5 45 51"/>
-    </g>
+    <!-- 작은 곰 머리 (시작 그림·결과 요약·시연) viewBox 0 0 80 80. 내용은 스크립트가 곰 머리와 같은 도형으로 채움 -->
+    <g id="bhead" transform="translate(-10.9 1.2) scale(.46)"></g>
     <symbol id="icHeart" viewBox="0 0 24 24"><path d="M12 20.5s-7.2-4.4-9.3-8.9C1.2 8.4 3.2 4.6 6.9 4.6c2.2 0 3.6 1.2 5.1 3.1 1.5-1.9 2.9-3.1 5.1-3.1 3.7 0 5.7 3.8 4.2 7-2.1 4.5-9.3 8.9-9.3 8.9z"/></symbol>
     <symbol id="icCheck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
     <symbol id="icX" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
@@ -500,18 +521,18 @@
       <p>누가 제일 많이 먹었는지 세어 보세요.</p>
       <div class="steps" aria-hidden="true">
         <figure>
-          <svg viewBox="0 0 80 80"><rect x="0" y="60" width="80" height="20" fill="var(--river)"/><g transform="translate(14 6) scale(.65)"><use href="#bhead"/></g><path d="M62 68 Q66 40 44 40" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 4"/><g transform="translate(60 62) rotate(-70) scale(.42)"><use href="#salmonG"/></g></svg>
+          <svg viewBox="0 0 80 80"><rect x="0" y="60" width="80" height="20" fill="var(--river)"/><g transform="translate(14 6) scale(.65)"><use href="#bhead"/></g><path d="M70 50 Q66 34 50 34" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 4"/><g transform="translate(62 63) rotate(60) scale(.6)"><use href="#salmonG"/></g></svg>
           <figcaption>연어가 날아가요</figcaption>
         </figure>
         <svg class="arr" viewBox="0 0 24 24"><use href="#icArrow"/></svg>
         <figure>
-          <svg viewBox="0 0 80 80"><g class="b0" transform="translate(1 22) scale(.32)"><use href="#bhead"/><rect class="scarf" x="12" y="60" width="56" height="10" rx="5"/></g><g class="b1" transform="translate(27 22) scale(.32)"><use href="#bhead"/><rect class="scarf" x="12" y="60" width="56" height="10" rx="5"/></g><g class="b2" transform="translate(53 22) scale(.32)"><use href="#bhead"/><rect class="scarf" x="12" y="60" width="56" height="10" rx="5"/></g>
+          <svg viewBox="0 0 80 80"><g class="b0" transform="translate(1 22) scale(.32)"><use href="#bhead"/><rect class="scarf o3" style="stroke-width:5" x="12" y="66" width="56" height="10" rx="5"/></g><g class="b1" transform="translate(27 22) scale(.32)"><use href="#bhead"/><rect class="scarf o3" style="stroke-width:5" x="12" y="66" width="56" height="10" rx="5"/></g><g class="b2" transform="translate(53 22) scale(.32)"><use href="#bhead"/><rect class="scarf o3" style="stroke-width:5" x="12" y="66" width="56" height="10" rx="5"/></g>
             <rect x="8" y="58" width="8" height="12" rx="2" fill="var(--b1)"/><rect x="34" y="50" width="8" height="20" rx="2" fill="var(--b2)"/><rect x="60" y="56" width="8" height="14" rx="2" fill="var(--b3)"/></svg>
           <figcaption>누가 몇 마리 먹는지 세요</figcaption>
         </figure>
         <svg class="arr" viewBox="0 0 24 24"><use href="#icArrow"/></svg>
         <figure>
-          <svg viewBox="0 0 80 80"><g transform="translate(14 8) scale(.65)"><use href="#bhead"/></g><g class="b1"><rect class="scarf" x="22" y="48" width="36" height="7" rx="3.5"/></g><circle cx="56" cy="62" r="9" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="56" cy="62" r="4" fill="var(--accent)"/></svg>
+          <svg viewBox="0 0 80 80"><g transform="translate(14 8) scale(.65)"><use href="#bhead"/></g><g class="b1"><rect class="scarf o3" style="stroke-width:1.6" x="22" y="51" width="36" height="7" rx="3.5"/></g><circle cx="56" cy="62" r="9" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="56" cy="62" r="4" fill="var(--accent)"/></svg>
           <figcaption>제일 많이 먹은 곰을 눌러요</figcaption>
         </figure>
       </div>
@@ -1055,8 +1076,8 @@ const Sound = (function () {
       11: { gap: 400,  n: [20, 22], diff: 1, near: 2, sim: .25, fakes: 3, jit: .2,  order: 'revlate' },
       12: { gap: 380,  n: [21, 23], diff: 1, near: 2, sim: .30, fakes: 3, jit: .2,  order: 'revlate' },
       13: { gap: 380,  n: [22, 24], diff: 1, near: 2, sim: .30, fakes: 3, jit: .2,  order: 'revlate' },
-      14: { gap: 380,  n: [23, 25], diff: 1, near: 2, sim: .30, fakes: 4, jit: .2,  order: 'revlate' },
-      15: { gap: 380,  n: [24, 26], diff: 1, near: 2, sim: .30, fakes: 4, jit: .2,  order: 'revlate' }
+      14: { gap: 380,  n: [23, 25], diff: 1, near: 2, sim: .30, fakes: 3, jit: .2,  order: 'revlate' },
+      15: { gap: 380,  n: [24, 26], diff: 1, near: 2, sim: .30, fakes: 3, jit: .2,  order: 'revlate' }
     };
     // 1~15레벨 "가능한 개수 조합" (design.md 표, 검증용)
     var COMBOS = {
@@ -1068,13 +1089,22 @@ const Sound = (function () {
       13: ['8/7/7', '9/8/6', '9/8/7'], 14: ['9/8/6', '9/8/7', '9/8/8'], 15: ['9/8/7', '9/8/8', '10/9/7']
     };
     var MIN_SLOT = 300, MIN_SAME = 500, MAX_RUN = 3, MAX_EMPTY = 2, T0 = 500;
-    var BUBBLE_MS = 360, FAKE_FALL_MS = 420, END_WAIT = 400;
+    // FAKE_FALL_MS = 헛물기 연출 길이 D_f (코에 닿음 → 강에 착수, art-ui v2). 아래 H3·H6이 이 값 하나에서 계산된다.
+    var BUBBLE_MS = 360, FAKE_FALL_MS = 460, FAKE_SPLASH_MS = 180, EAT_VANISH_MS = 110, END_WAIT = 400;
+    // v2 헛물기 격리 규칙 (design.md "v2 개편" H1~H8)
+    var H_PRE = 450,                               // H2: 헛물기 앞 사건과 ≥ 450ms
+        H_POST = Math.max(650, FAKE_FALL_MS + 150), // H3: 헛물기 뒤 사건과 ≥ max(650, D_f + 150)
+        H_SAME_PRE = 900,                          // H5: 같은 곰 직전 사건 ≥ 900ms 전
+        H_FF = 1500, H_FF_REAL = 2,                // H7: 헛물기끼리 ≥ 1500ms, 사이 진짜 ≥ 2
+        H_FIRST = 2,                               // H8: 첫 2슬롯에는 헛물기 없음
+        FAKE_BOOST = 3;
+    function hSamePost(F) { return Math.max(900, FAKE_FALL_MS + F); } // H6: 같은 곰 직후 사건 ≥ max(900, D_f + F)
     function levelCfg(L) {
       L = Math.max(1, L | 0);
       if (TABLE[L]) { var c = TABLE[L], o = {}; for (var k in c) o[k] = c[k]; o.level = L; return o; }
       var center = Math.min(25 + (L - 15), 30);
       return { level: L, gap: 380, n: [center - 1, Math.min(31, center + 1)], diff: 1, near: 2, sim: .30,
-        fakes: Math.min(6, 4 + Math.floor((L - 15) / 2)), jit: .2, order: 'revlate' };
+        fakes: 3, jit: .2, order: 'revlate' }; // v2: 14레벨+ 헛물기 3개 상한
     }
     function flightMs(cfg) { return Math.max(300, Math.min(620, Math.round(1.3 * cfg.gap))); }
     function combos(cfg) {
@@ -1100,58 +1130,92 @@ const Sound = (function () {
       for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
       return a;
     }
-    // 순서 만들기 (한 번 시도). pools[b] = {real, fake} 남은 수
+    // 순서 만들기 (한 번 시도). rem[b] = {real, fake} 남은 수
     function buildSequence(rng, cfg, counts, fakes) {
       var rem = [{ real: counts[0], fake: fakes[0] }, { real: counts[1], fake: fakes[1] }, { real: counts[2], fake: fakes[2] }];
       var left = counts[0] + counts[1] + counts[2] + fakes[0] + fakes[1] + fakes[2];
-      var last = [-1e9, -1e9, -1e9], run = [0, 0, 0];
-      var slots = [], events = [], t = T0, k = 0, emptyRun = 0;
-      var fakeSimOk = cfg.level >= 10, simDebt = 0;
+      var remReal = counts[0] + counts[1] + counts[2];
+      var samePost = hSamePost(flightMs(cfg));
+      var last = [-1e9, -1e9, -1e9], lastFakeB = [-1e9, -1e9, -1e9], run = [0, 0, 0];
+      var slots = [], events = [], t = T0, k = 0, emptyRun = 0, simDebt = 0;
+      var prevEvT = -1e9, prevEvN = 0, lastFakeT = -1e9, realsSinceFake = 99, afterFake = false, soloNext = false, pend = -1, evSlots = 0, simCount = 0;
       while (left > 0) {
         if (k > 0) {
           var dt = cfg.gap * (1 + cfg.jit * (rng() * 2 - 1));
-          t = t + Math.max(MIN_SLOT, Math.round(dt));
+          var step = Math.max(MIN_SLOT, Math.round(dt));
+          if (afterFake) step = Math.max(H_POST, step);        // H3 (빈 슬롯을 끼우지 않고 시각을 미룸)
+          t = t + step;
         }
-        var cand = [], w = [];
+        afterFake = false;
+        var tf = Math.max(t, prevEvT + H_PRE);                // 헛물기가 되면 이 시각으로 미룸 (H2)
+        var fakeSlotOk = k >= H_FIRST && prevEvN === 1 && tf - lastFakeT >= H_FF && realsSinceFake >= H_FF_REAL && remReal >= 1;
+        // 헛물기 예약: 헛물기 가능 슬롯(직전 슬롯 단독 + 그 곰 900ms 휴식)은 저절로는 드물다. 그래서 남은 헛물기/남은 진짜
+        // 비율에 비례한 확률로 헛물기를 낼 곰 하나를 '예약'하고, 예약 중에는 그 곰의 진짜 먹기와 동시 슬롯을 쉬게 해
+        // 조건이 갖춰지는 첫 슬롯에 헛물기를 단독으로 놓는다. (진짜 먹기 간격·속도는 그대로)
+        var fLeft = rem[0].fake + rem[1].fake + rem[2].fake;
+        var tn = t + Math.max(H_PRE, MIN_SLOT, Math.round(cfg.gap * (1 - cfg.jit))); // 다음 슬롯이 헛물기라면 가장 이른 시각
+        if (pend < 0 && fLeft > 0 && k >= 1 && realsSinceFake >= 1 && tn - lastFakeT >= H_FF &&
+            rng() < Math.min(1, FAKE_BOOST * fLeft / Math.max(1, remReal))) {
+          // 다음 슬롯에서 바로 헛물기를 할 수 있을 만큼 이미 쉬고 있는 곰만 예약 (예약이 길어지면 동시 슬롯이 줄어듦)
+          var pc = [], pw = [];
+          for (var pb = 0; pb < 3; pb++) if (rem[pb].fake > 0 && tn - last[pb] >= H_SAME_PRE && tn - lastFakeB[pb] >= samePost) { pc.push(pb); pw.push(rem[pb].fake); }
+          if (pc.length) pend = weighted(rng, pc, pw);
+        }
+        var cand = [], w = [], fo = [false, false, false];
         for (var b = 0; b < 3; b++) {
           var r = rem[b];
           if (r.real + r.fake <= 0) continue;
           if (t - last[b] < MIN_SAME) continue;
           if (run[b] >= MAX_RUN) continue;
+          if (t - lastFakeB[b] < samePost) continue;          // H6
+          fo[b] = fakeSlotOk && r.fake > 0 && tf - last[b] >= H_SAME_PRE; // H5
+          if (r.real <= 0 && !fo[b]) continue;                // 헛물기만 남았는데 지금 헛물기 불가
+          if (b === pend && !fo[b]) continue;                 // 예약된 곰은 헛물기 때까지 쉼
           cand.push(b); w.push(r.real + r.fake);
         }
-        var chosen = [];
+        var chosen = [], kinds = [];
         if (cand.length) {
-          var first = weighted(rng, cand, w);
-          chosen.push(first);
-          // 동시 확률: 간격 규칙 때문에 동시가 불가능했던 슬롯의 몫은 다음 가능한 슬롯으로 2번까지 넘긴다
-          if (k > 0 && cfg.sim > 0 && rng() < cfg.sim) simDebt = Math.min(simDebt + 1, 2);
-          if (k > 0 && simDebt > 0 && cand.length > 1) {
+          if (pend >= 0 && fo[pend]) {
+            chosen.push(pend); kinds.push(false); pend = -1;
+          } else {
+            var fc = [], fw = [];
+            for (var ci = 0; ci < cand.length; ci++) if (rem[cand[ci]].real > 0) { fc.push(cand[ci]); fw.push(w[ci]); }
+            if (!fc.length) { for (ci = 0; ci < cand.length; ci++) { fc.push(cand[ci]); fw.push(w[ci]); } }
+            var first = weighted(rng, fc, fw);
+            chosen.push(first); kinds.push(rem[first].real > 0);
+            if (!kinds[0]) pend = -1;
+          }
+          // 동시 확률: 동시가 불가능했던 슬롯의 몫은 다음 가능한 슬롯으로 넘긴다. v2는 헛물기 앞뒤·예약 중 동시가
+          // 막히므로, 지금까지의 실제 동시 비율이 표 값보다 낮으면 몫을 하나 더 쌓아 따라잡는다(표 값 유지)
+          if (k > 0 && cfg.sim > 0 && (rng() < cfg.sim || simCount + simDebt < cfg.sim * (evSlots + 2) - 0.5)) simDebt = Math.min(simDebt + 1, 2);
+          // 헛물기 슬롯·헛물기 바로 뒤 슬롯·헛물기 예약 중은 동시 금지 (H1·H4), 동시 슬롯은 두 사건 모두 진짜
+          // 예약 곰이 다음 슬롯에서도 아직 헛물기를 못 하면(휴식·헛물기 간격 부족) 이번 슬롯은 동시여도 된다
+          var pendFar = pend < 0 || tn - last[pend] < H_SAME_PRE || tn - lastFakeT < H_FF;
+          if (kinds[0] && !soloNext && pendFar && k > 0 && simDebt > 0 && cand.length > 1) {
             var c2 = [], w2 = [];
             for (var i = 0; i < cand.length; i++) {
-              var bb = cand[i]; if (bb === first) continue;
-              if (!fakeSimOk && rem[bb].real <= 0) continue;
-              c2.push(bb); w2.push(fakeSimOk ? rem[bb].real + rem[bb].fake : rem[bb].real);
+              var bb = cand[i]; if (bb === chosen[0] || rem[bb].real <= 0) continue;
+              c2.push(bb); w2.push(rem[bb].real);
             }
-            if (c2.length && (fakeSimOk || rem[first].real > 0)) { chosen.push(weighted(rng, c2, w2)); simDebt--; }
+            if (c2.length) { chosen.push(weighted(rng, c2, w2)); kinds.push(true); simDebt--; }
           }
         }
         if (k === 0 && chosen.length !== 1) return null;
+        var isFake = chosen.length === 1 && !kinds[0];
+        if (isFake) t = tf;
+        if (chosen.length === 2 && chosen[0] > chosen[1]) { chosen.reverse(); kinds.reverse(); }
         var slotBears = [];
-        chosen.sort(function (a, b) { return a - b; });
-        var simSlot = chosen.length > 1;
         for (var j = 0; j < chosen.length; j++) {
-          var cb = chosen[j], rr = rem[cb], real;
-          if (simSlot && !fakeSimOk) real = true;
-          else real = rng() * (rr.real + rr.fake) < rr.real;
-          if (real) rr.real--; else rr.fake--;
+          var cb = chosen[j], rr = rem[cb], real = kinds[j];
+          if (real) { rr.real--; remReal--; realsSinceFake++; } else { rr.fake--; lastFakeB[cb] = t; lastFakeT = t; realsSinceFake = 0; }
           left--;
           last[cb] = t;
           events.push({ t: t, bear: cb, real: real });
           slotBears.push(cb);
         }
         for (var b2 = 0; b2 < 3; b2++) run[b2] = slotBears.indexOf(b2) >= 0 ? run[b2] + 1 : 0;
-        if (!slotBears.length) { emptyRun++; if (emptyRun > MAX_EMPTY) return null; } else emptyRun = 0;
+        if (!slotBears.length) { emptyRun++; if (emptyRun > MAX_EMPTY) return null; }
+        else { emptyRun = 0; evSlots++; if (slotBears.length === 2) simCount++; prevEvT = t; prevEvN = slotBears.length; soloNext = isFake; afterFake = isFake; }
         slots.push({ t: t, bears: slotBears });
         k++;
         if (k > 400) return null;
@@ -1209,12 +1273,67 @@ const Sound = (function () {
       for (var tk in perT) {
         var g = perT[tk];
         if (g.length > 2) v.push('동시 사건 > 2 @' + tk);
-        if (g.length === 2 && cfg.level < 10 && (!g[0].real || !g[1].real)) v.push('6~9레벨 헛물기가 동시 슬롯에 있음 @' + tk);
       }
+      v = v.concat(fakeViolations(round));
       for (var b3 = 0; b3 < 3; b3++) {
         if (cR[b3] !== round.counts[b3]) v.push('사건 목록과 counts 불일치(곰 ' + (b3 + 1) + ')');
         if (cF[b3] !== round.fakes[b3]) v.push('사건 목록과 fakes 불일치(곰 ' + (b3 + 1) + ')');
       }
+      return v;
+    }
+    // v2 헛물기 격리 규칙 H1~H8 (사건 목록에서 직접 계산)
+    function fakeViolations(round) {
+      var v = [], ev = round.events, F = round.flightMs || 0, samePost = hSamePost(F);
+      var ts = [], byT = {};
+      ev.forEach(function (e) { if (!byT[e.t]) { byT[e.t] = []; ts.push(e.t); } byT[e.t].push(e); });
+      var lastFake = null;
+      for (var i = 0; i < ev.length; i++) {
+        var e = ev[i];
+        if (e.real) continue;
+        var si = ts.indexOf(e.t);
+        if (byT[e.t].length !== 1) v.push('H1 헛물기 슬롯에 사건 ' + byT[e.t].length + '개 @' + e.t);
+        if (si > 0) {
+          if (e.t - ts[si - 1] < H_PRE) v.push('H2 헛물기 앞 간격 ' + (e.t - ts[si - 1]) + 'ms @' + e.t);
+          if (byT[ts[si - 1]].length !== 1) v.push('H4 헛물기 앞 슬롯이 동시 @' + e.t);
+        }
+        if (si < ts.length - 1) {
+          if (ts[si + 1] - e.t < H_POST) v.push('H3 헛물기 뒤 간격 ' + (ts[si + 1] - e.t) + 'ms @' + e.t);
+          if (byT[ts[si + 1]].length !== 1) v.push('H4 헛물기 뒤 슬롯이 동시 @' + e.t);
+        }
+        var pb = null, nb = null;
+        for (var j = i - 1; j >= 0; j--) if (ev[j].bear === e.bear) { pb = ev[j]; break; }
+        for (var k = i + 1; k < ev.length; k++) if (ev[k].bear === e.bear) { nb = ev[k]; break; }
+        if (pb && e.t - pb.t < H_SAME_PRE) v.push('H5 같은 곰 헛물기 직전 ' + (e.t - pb.t) + 'ms @' + e.t);
+        if (nb && nb.t - e.t < samePost) v.push('H6 같은 곰 헛물기 직후 ' + (nb.t - e.t) + 'ms @' + e.t);
+        if (lastFake) {
+          var nReal = 0;
+          for (var q = 0; q < ev.length; q++) if (ev[q].real && ev[q].t > lastFake.t && ev[q].t < e.t) nReal++;
+          if (e.t - lastFake.t < H_FF) v.push('H7 헛물기끼리 ' + (e.t - lastFake.t) + 'ms @' + e.t);
+          if (nReal < H_FF_REAL) v.push('H7 헛물기 사이 진짜 ' + nReal + '개 @' + e.t);
+        }
+        lastFake = e;
+        var sl = round.slots || [];
+        for (var z = 0; z < Math.min(H_FIRST, sl.length); z++) if (sl[z].t === e.t) v.push('H8 헛물기가 첫 2슬롯에 있음 @' + e.t);
+      }
+      if (ev.length && !ev[ev.length - 1].real) v.push('H8 마지막 사건이 헛물기');
+      return v;
+    }
+    // 공중 연어 (design.md v2 4절): 전체 ≤ 4, 열별 ≤ 2, 헛물기 연어 낙하 중 그 열 다른 연어 0
+    function airIntervals(round) {
+      var F = round.flightMs;
+      return round.events.map(function (e) { return { b: e.bear, real: e.real, t: e.t, s: e.t - F, e: e.t + (e.real ? EAT_VANISH_MS : FAKE_FALL_MS) }; });
+    }
+    function airViolations(round) {
+      var v = [], iv = airIntervals(round), maxAll = 0, maxCol = 0;
+      iv.forEach(function (a) {
+        var x = a.s, all = 0, col = [0, 0, 0];
+        iv.forEach(function (c) { if (c.s <= x && x < c.e) { all++; col[c.b]++; } });
+        maxAll = Math.max(maxAll, all); maxCol = Math.max(maxCol, col[0], col[1], col[2]);
+        if (!a.real) iv.forEach(function (c) { if (c !== a && c.b === a.b && c.s < a.e && c.e > a.t) v.push('공중: 헛물기 낙하 중 같은 열 연어 @' + a.t); });
+      });
+      if (maxAll > 4) v.push('공중 연어 ' + maxAll + '마리 > 4');
+      if (maxCol > 2) v.push('한 열 공중 연어 ' + maxCol + '마리 > 2');
+      round.airMax = maxAll; round.airColMax = maxCol;
       return v;
     }
     function validate(round) {
@@ -1234,7 +1353,7 @@ const Sound = (function () {
       if (F > 0 && round.firstFake !== round.second) v.push('첫 헛물기가 2위 곰이 아님');
       if (F > 0 && round.fakes[round.second] < 1) v.push('2위 곰 헛물기 없음');
       if (round.fallback) v.push('fallback(순서 규칙 생략) 발생');
-      v = v.concat(structViolations(cfg, round), orderViolations(cfg, round));
+      v = v.concat(structViolations(cfg, round), orderViolations(cfg, round), airViolations(round));
       if (round.durationMs < 6000 || round.durationMs > 13000) v.push('먹기 시간 ' + round.durationMs + 'ms (6~13초 밖)');
       return v;
     }
@@ -1269,7 +1388,7 @@ const Sound = (function () {
           if (!seq) continue;
           round.events = seq.events; round.slots = seq.slots;
           var lastE = seq.events[seq.events.length - 1];
-          round.durationMs = lastE.t + (lastE.real ? BUBBLE_MS : FAKE_FALL_MS) + END_WAIT;
+          round.durationMs = lastE.t + (lastE.real ? BUBBLE_MS : FAKE_FALL_MS + FAKE_SPLASH_MS) + END_WAIT;
           var bad = structViolations(cfg, round);
           if (!bad.length && useOrder) bad = orderViolations(cfg, round);
           if (!bad.length && (round.durationMs < 6000 || round.durationMs > 13000)) bad.push('dur');
@@ -1284,7 +1403,9 @@ const Sound = (function () {
       return genWith(mulberry32(seed >>> 0 || 1), level, history);
     }
     return { mulberry32: mulberry32, levelCfg: levelCfg, combos: combos, genRound: genRound, genWith: genWith,
-      validate: validate, COMBOS: COMBOS, flightMs: flightMs, BUBBLE_MS: BUBBLE_MS, FAKE_FALL_MS: FAKE_FALL_MS, END_WAIT: END_WAIT };
+      validate: validate, COMBOS: COMBOS, flightMs: flightMs, BUBBLE_MS: BUBBLE_MS, FAKE_FALL_MS: FAKE_FALL_MS, FAKE_SPLASH_MS: FAKE_SPLASH_MS,
+      EAT_VANISH_MS: EAT_VANISH_MS, END_WAIT: END_WAIT,
+      H: { PRE: H_PRE, POST: H_POST, SAME_PRE: H_SAME_PRE, FF: H_FF, FF_REAL: H_FF_REAL, FIRST: H_FIRST, samePost: hSamePost } };
   })();
   // ===================== 게임 =====================
   var $ = function (id) { return document.getElementById(id); };
@@ -1336,50 +1457,84 @@ const Sound = (function () {
   function clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
 
   // ---------- 씬 ----------
-  var S = { VH: 560, yF: 336, s: 1, ox: 0, oy: 0, bears: [], yum: [], salmonPool: [], ripPool: [], fx: null, built: false };
+  var S = { VH: 560, yF: 336, s: 1, ox: 0, oy: 0, bears: [], salmonPool: [], ripPool: [], landPool: [], built: false, high: true };
   function yFor(VH) { return VH >= 900 ? Math.round(VH * 0.52) : Math.round(VH * 0.60); }
+  // ---- v2 곰 (art-ui.md V2-3). 심볼 상자 220×260, translate(cx − 110, yF − 252) ----
+  // 머리 도형: 씬 곰과 작은 머리(#bhead)가 같은 도형을 쓴다. full = 씬용(표정·입 상태 전부)
+  var PART = {
+    wide: '<circle class="ol f-eyey" stroke-width="3" cx="84" cy="92" r="12"/><circle class="f-eye" cx="84" cy="92" r="2.8"/>' +
+      '<circle class="ol f-eyey" stroke-width="3" cx="136" cy="92" r="12"/><circle class="f-eye" cx="136" cy="92" r="2.8"/>' +
+      '<path class="s-brow" d="M66 72 Q82 62 100 70 M154 72 Q138 62 120 70"/>' +
+      '<path class="ol f-drop" stroke-width="2" d="M164 56 Q171 66 164 72 Q157 66 164 56 Z"/>',
+    open: '<path class="o3 f-mi" d="M86 128 Q110 120 134 128 Q132 156 110 158 Q88 156 86 128 Z"/><ellipse class="f-tg" cx="110" cy="150" rx="11" ry="5"/>' +
+      '<path class="ol f-tooth" stroke-width="1.6" d="M88 129 L93 140 L98 128 L104 135 L110 127.5 L116 135 L122 128 L127 140 L132 129 Z M95 155 L98 147 L101 155.5 Z M125 155 L122 147 L119 155.5 Z"/>',
+    chomp: '<path class="o3 f-tooth" d="M90 128 L130 128 Q129 142 110 143 Q91 142 90 128 Z"/><path class="s-teeth" d="M91 135 L129 135 M100 128 V142 M110 128 V143 M120 128 V142"/>',
+    o: '<ellipse class="o3 f-mi" cx="110" cy="140" rx="8" ry="9"/>',
+    spark: 'M90 112 L78 109 M130 112 L142 109 M110 101 L110 91',
+    // 눈·입 덮개: 작은 머리 위에 표정을 겹칠 때 아래 그림을 가림
+    browCover: '<path class="f-fur" d="M60 64 L160 64 L162 104 L58 104 Z"/>',
+    mouthCover: '<ellipse class="f-muz" cx="110" cy="134" rx="22" ry="12"/>'
+  };
+  function headParts(full) {
+    var h = '';
+    h += '<circle class="o f-fur" cx="50" cy="46" r="22"/><circle class="f-ear" cx="52" cy="48" r="11"/>';
+    h += '<circle class="o f-fur" cx="170" cy="46" r="22"/><circle class="f-ear" cx="168" cy="48" r="11"/>';
+    h += '<path class="o f-fur" d="M110 30 C158 30 186 58 186 96 C186 118 178 134 168 142 L176 150 L158 150 C144 158 128 162 110 162 C92 162 76 158 62 150 L44 150 L52 142 C42 134 34 118 34 96 C34 58 62 30 110 30 Z"/>';
+    h += '<ellipse class="o3 f-muz" cx="110" cy="126" rx="38" ry="27"/>';
+    h += '<g class="flame"><path class="ol f-fo" stroke-width="3" d="M110 4 C120 14 128 22 124 32 C130 30 132 26 132 22 C140 32 136 44 124 46 L96 46 C84 44 80 32 88 22 C88 28 92 31 96 32 C92 22 100 14 110 4 Z"/>';
+    h += '<path class="f-fy" d="M110 18 C116 26 120 32 116 41 L104 41 C100 32 104 26 110 18 Z"/></g>';
+    h += '<g class="eyes-angry"><g class="eye"><circle class="ol f-eyey" stroke-width="3" cx="84" cy="94" r="9"/><circle class="f-eye" cx="86" cy="95" r="4"/></g>';
+    h += '<g class="eye"><circle class="ol f-eyey" stroke-width="3" cx="136" cy="94" r="9"/><circle class="f-eye" cx="134" cy="95" r="4"/></g>';
+    h += '<path class="ol f-line" stroke-width="1.5" d="M64 77 L102 88 L101 95 L66 84 Z M156 77 L118 88 L119 95 L154 84 Z"/></g>';
+    if (full) h += '<g class="eyes-wide" hidden>' + PART.wide + '</g>';
+    h += '<path class="f-nose" d="M97 110 Q110 103 123 110 Q119 121 110 122 Q101 121 97 110 Z"/><ellipse class="f-hl" cx="105" cy="110" rx="3" ry="1.6"/>';
+    h += '<g class="mouth-closed"><path class="o3 s-none" d="M110 122 L110 129 M92 131 Q101 138 110 129 Q119 138 128 131"/>';
+    h += '<path class="ol f-tooth" stroke-width="2" d="M96 134 L99.5 143 L103 135.5 Z M124 134 L120.5 143 L117 135.5 Z"/></g>';
+    if (full) {
+      h += '<g class="mouth-open" hidden>' + PART.open + '</g><g class="mouth-chomp" hidden>' + PART.chomp + '</g><g class="mouth-o" hidden>' + PART.o + '</g>';
+      h += '<path class="spark s-spark" hidden d="' + PART.spark + '"/>';
+    }
+    return h;
+  }
+  var SCARF_BAND = 'M42 158 Q110 184 178 158 L180 176 Q110 204 40 176 Z', SCARF_TAIL = 'M66 178 L88 182 L86 210 L64 208 Z';
   function bearSVG(b) {
     var cx = CX[b], yF = S.yF;
     var h = '<g class="bear b' + b + '" id="bear' + b + '" transform="translate(' + (cx - 110) + ' ' + (yF - 252) + ')">';
     h += '<ellipse class="ring" cx="110" cy="252" rx="96" ry="14"/>';
     h += '<ellipse class="f-sh" cx="110" cy="252" rx="84" ry="8"/>';
     h += '<g class="lift"><g class="breath">';
-    h += '<ellipse class="f-furd" cx="64" cy="244" rx="26" ry="13"/><ellipse class="f-furd" cx="156" cy="244" rx="26" ry="13"/>';
-    h += '<ellipse class="f-fur" cx="110" cy="192" rx="82" ry="64"/>';
-    h += '<ellipse class="f-muz" cx="110" cy="206" rx="50" ry="40"/>';
-    h += '<ellipse class="f-fur" cx="50" cy="198" rx="18" ry="34" transform="rotate(12 50 198)"/><ellipse class="f-fur" cx="170" cy="198" rx="18" ry="34" transform="rotate(-12 170 198)"/>';
-    h += '<g class="head">';
-    h += '<circle class="f-fur" cx="56" cy="46" r="22"/><circle class="f-ear" cx="56" cy="46" r="12"/><circle class="f-fur" cx="164" cy="46" r="22"/><circle class="f-ear" cx="164" cy="46" r="12"/>';
-    h += '<ellipse class="f-fur" cx="110" cy="92" rx="70" ry="60"/>';
-    h += '<ellipse class="f-muz" cx="110" cy="120" rx="34" ry="25"/>';
-    h += '<ellipse class="f-nose" cx="110" cy="106" rx="12" ry="8"/>';
-    h += '<g class="eye"><circle class="f-eye" cx="82" cy="84" r="6.5"/><circle class="f-hl" cx="84" cy="82" r="2"/></g>';
-    h += '<g class="eye"><circle class="f-eye" cx="138" cy="84" r="6.5"/><circle class="f-hl" cx="140" cy="82" r="2"/></g>';
-    h += '<g class="mouth-closed"><path class="s-mouth" d="M98 125 Q104 131 110 125 Q116 131 122 125"/></g>';
-    h += '<g class="mouth-open" hidden><ellipse class="f-mi" cx="110" cy="131" rx="13" ry="11"/><ellipse class="f-tg" cx="110" cy="137" rx="8" ry="4"/></g>';
-    h += '</g>';
-    // 목도리
+    h += '<ellipse class="o f-furd" cx="68" cy="242" rx="30" ry="14"/><ellipse class="o f-furd" cx="152" cy="242" rx="30" ry="14"/>';
+    h += '<ellipse class="o f-fur" cx="110" cy="196" rx="84" ry="58"/>';
+    h += '<ellipse class="o3 f-muz" cx="110" cy="206" rx="48" ry="40"/>';
+    h += '<ellipse class="o f-fur" cx="46" cy="192" rx="20" ry="38" transform="rotate(16 46 192)"/><ellipse class="o f-fur" cx="174" cy="192" rx="20" ry="38" transform="rotate(-16 174 192)"/>';
+    h += '<g class="head">' + headParts(true) + '</g>';
+    // 목도리 (끝자락은 왼쪽 — 먹을 때 올라가는 오른 앞발이 가리지 않게)
     h += '<g class="scarfg">';
-    h += '<path class="scarf" d="M42 148 Q110 174 178 148 L180 166 Q110 194 40 166 Z"/>';
-    h += '<path class="scarf" d="M138 168 L160 166 L164 214 L142 216 Z"/>';
-    h += '<path class="scarf-t" d="M146 216 L146 224 M153 215.5 L153 223.5 M160 215 L160 223"/>';
+    h += '<path class="o3 scarf" d="' + SCARF_BAND + '"/><path class="o3 scarf" d="' + SCARF_TAIL + '"/>';
+    h += '<path class="scarf-t" d="M70 210 v8 M76 210.5 v8 M82 211 v8"/>';
     if (b === 1) {
-      h += '<g clip-path="url(#scarfClip)"><path class="stripe" d="M40 155 Q110 181 180 155 M40 161 Q110 187 180 161 M40 167 Q110 193 180 167"/>';
-      h += '<path class="stripe" d="M138 184 L166 183 M138 196 L166 195 M138 207 L166 206"/></g>';
+      h += '<g clip-path="url(#scarfClip)"><path class="stripe" d="M40 165 Q110 191 180 165 M40 171 Q110 197 180 171 M40 177 Q110 203 180 177"/>';
+      h += '<path class="stripe" d="M64 188 L88 190 M64 196 L88 198 M64 204 L88 206"/></g>';
     } else if (b === 2) {
-      h += '<circle class="sdot" cx="70" cy="165" r="4"/><circle class="sdot" cx="100" cy="171" r="4"/><circle class="sdot" cx="128" cy="171" r="4"/><circle class="sdot" cx="160" cy="164" r="4"/>';
-      h += '<circle class="sdot" cx="151" cy="186" r="4"/><circle class="sdot" cx="153" cy="204" r="4"/>';
+      h += '<circle class="sdot" cx="70" cy="175" r="4"/><circle class="sdot" cx="100" cy="181" r="4"/><circle class="sdot" cx="128" cy="181" r="4"/><circle class="sdot" cx="160" cy="174" r="4"/>';
+      h += '<circle class="sdot" cx="76" cy="190" r="4"/><circle class="sdot" cx="76" cy="202" r="4"/>';
     }
     h += '</g>';
-    h += '<circle class="badge-c" cx="110" cy="184" r="17"/><text class="badge-num" x="110" y="185">' + (b + 1) + '</text>';
+    // 앞발 (맨 앞). 먹기 = 오른 앞발이 입 옆으로, 헛물기 = 두 앞발이 바깥으로
+    h += '<g class="paw paw-l"><circle class="o f-fur" cx="52" cy="224" r="24"/><ellipse class="f-furd" cx="52" cy="229" rx="10" ry="7"/>';
+    h += '<path class="ol f-tooth" stroke-width="2" d="M40 244 L43 254 L47 245 Z M49 246 L52 257 L55 246 Z M58 245 L61 254 L64 244 Z"/></g>';
+    h += '<g class="paw paw-r"><circle class="o f-fur" cx="168" cy="224" r="24"/><ellipse class="f-furd" cx="168" cy="229" rx="10" ry="7"/>';
+    h += '<path class="ol f-tooth" stroke-width="2" d="M180 244 L177 254 L173 245 Z M171 246 L168 257 L165 246 Z M162 245 L159 254 L156 244 Z"/></g>';
+    h += '<circle class="badge-c" cx="110" cy="200" r="17"/><text class="badge-num" x="110" y="201">' + (b + 1) + '</text>';
     h += '</g></g></g>';
     return h;
   }
+  var STAR = 'M0 -46 L8 -36 L20 -42 L20 -29 L33 -27 L26 -16 L36 -8 L26 0 L33 11 L20 13 L20 26 L8 20 L0 30 L-8 20 L-20 26 L-20 13 L-33 11 L-26 0 L-36 -8 L-26 -16 L-33 -27 L-20 -29 L-20 -42 L-8 -36 Z';
   function buildScene(VH) {
     S.VH = VH; S.yF = yFor(VH);
     var yF = S.yF, sc = $('scene');
     sc.setAttribute('viewBox', '0 0 960 ' + VH);
-    var h = '<defs><clipPath id="scarfClip"><path d="M42 148 Q110 174 178 148 L180 166 Q110 194 40 166 Z M138 168 L160 166 L164 214 L142 216 Z"/></clipPath></defs>';
+    var h = '<defs><clipPath id="scarfClip"><path d="' + SCARF_BAND + ' ' + SCARF_TAIL + '"/></clipPath></defs>';
     h += '<rect class="sky" x="-10" y="-10" width="980" height="' + (yF + 20) + '"/>';
     h += '<path class="ridge" d="M-10 ' + (yF - 60) + ' L-10 ' + (yF - 125) + ' Q160 ' + (yF - 175) + ' 320 ' + (yF - 138) + ' T640 ' + (yF - 142) + ' T970 ' + (yF - 128) + ' L970 ' + (yF - 60) + ' Z"/>';
     [40, 330, 630, 900].forEach(function (x, i) {
@@ -1394,25 +1549,26 @@ const Sound = (function () {
     h += '<path class="grass" d="M18 ' + (yF - 30) + ' l6 -12 l6 12 M318 ' + (yF - 8) + ' l5 -10 l5 10 M618 ' + (yF - 34) + ' l6 -12 l6 12 M928 ' + (yF - 12) + ' l5 -10 l5 10"/>';
     h += '<ellipse class="stone" cx="330" cy="' + (yF + 4) + '" rx="13" ry="9"/><ellipse class="stone" cx="632" cy="' + (yF + 8) + '" rx="9" ry="6"/><ellipse class="stone" cx="40" cy="' + (yF + 6) + '" rx="12" ry="8"/>';
     for (var b = 0; b < 3; b++) h += bearSVG(b);
-    // 냠 말풍선
-    var high = yF - 262 - 40 >= 4;
+    // '냠!' 별 (머리 오른쪽 위, 주황 실선) / '헛!' 알약 (머리 왼쪽 위, 회청 점선). 평소 α 0
+    S.high = yF - 316 >= 4;
     for (var b2 = 0; b2 < 3; b2++) {
-      var bx = high ? CX[b2] + 64 : CX[b2] + 70, by = high ? yF - 262 : yF - 200; // 왼쪽 아래 꼭지
-      h += '<g class="yum b' + b2 + '" id="yum' + b2 + '" data-ox="' + bx + '" data-oy="' + by + '" opacity="0">';
-      h += '<rect x="' + bx + '" y="' + (by - 40) + '" width="76" height="40" rx="14"/>';
-      h += '<path d="M' + (bx + 10) + ' ' + (by - 2) + ' L' + (bx - 6) + ' ' + (by + 12) + ' L' + (bx + 24) + ' ' + (by - 2) + '"/>';
-      h += '<rect class="yt" x="' + (bx + 8) + ' " y="' + (by - 5) + '" width="20" height="4"/>';
-      h += '<text x="' + (bx + 38) + '" y="' + (by - 19) + '">냠</text></g>';
+      h += '<g class="yum" id="yum' + b2 + '" opacity="0" transform="translate(-999 -999)"><path class="ys" d="' + STAR + '"/>';
+      h += '<circle class="yd" cx="-24" cy="34" r="4"/><circle class="yd" cx="-31" cy="42" r="2.5"/><text x="0" y="-6">냠!</text></g>';
+      h += '<g class="miss" id="miss' + b2 + '" opacity="0" transform="translate(-999 -999)"><rect x="-36" y="-20" width="72" height="40" rx="20"/><text x="0" y="1">헛!</text></g>';
     }
     h += '<g id="fxRip"></g><g id="fxSal"></g>';
     sc.innerHTML = h;
     S.bears = [0, 1, 2].map(function (b) {
-      var g = $('bear' + b);
-      return { g: g, head: g.querySelector('.head'), mo: g.querySelector('.mouth-open'), mc: g.querySelector('.mouth-closed'), yum: $('yum' + b) };
+      var g = $('bear' + b), q = function (c) { return g.querySelector(c); };
+      return { g: g, head: q('.head'), eA: q('.eyes-angry'), eW: q('.eyes-wide'), spark: q('.spark'),
+        m: { c: q('.mouth-closed'), o: q('.mouth-open'), ch: q('.mouth-chomp'), O: q('.mouth-o') },
+        pawL: q('.paw-l'), pawR: q('.paw-r'), yum: $('yum' + b), miss: $('miss' + b),
+        yx: CX[b] + (S.high ? 100 : 104), yy: S.high ? yF - 270 : yF - 206, mx: CX[b] - (S.high ? 100 : 104), my: S.high ? yF - 262 : yF - 200 };
     });
-    S.salmonPool = []; S.ripPool = [];
+    S.salmonPool = []; S.ripPool = []; S.landPool = [];
     S.built = true;
     restoreBearClasses();
+    restScene();
   }
   var bearCls = [{}, {}, {}];
   function setBearCls(b, cls, on) { bearCls[b][cls] = !!on; if (S.bears[b]) S.bears[b].g.classList.toggle(cls, !!on); }
@@ -1433,14 +1589,25 @@ const Sound = (function () {
     }
     return S.salmonPool[i];
   }
+  // 출발 물튀김 (고리 + 물방울 3)
   function ripEl(i) {
     while (S.ripPool.length <= i) {
       var g = document.createElementNS(SVGNS, 'g');
       g.setAttribute('display', 'none');
-      g.innerHTML = '<ellipse class="rip" cx="0" cy="0" rx="10" ry="4"/><circle class="drop" cx="-14" cy="-10" r="3"/><circle class="drop" cx="0" cy="-16" r="3.4"/><circle class="drop" cx="14" cy="-10" r="3"/>';
+      g.innerHTML = '<ellipse class="rip" cx="0" cy="0" rx="10" ry="4"/><circle class="drop" cx="-18" cy="-12" r="4"/><circle class="drop" cx="0" cy="-20" r="4"/><circle class="drop" cx="18" cy="-12" r="4"/>';
       $('fxRip').appendChild(g); S.ripPool.push(g);
     }
     return S.ripPool[i];
+  }
+  // 헛물기 착수 물보라 (고리 + 물방울 5 + 물기둥 3)
+  function landEl(i) {
+    while (S.landPool.length <= i) {
+      var g = document.createElementNS(SVGNS, 'g');
+      g.setAttribute('display', 'none');
+      g.innerHTML = '<ellipse class="rip" cx="0" cy="0" rx="10" ry="4"/>' + [0, 1, 2, 3, 4].map(function () { return '<circle class="drop" cx="0" cy="0" r="3.6"/>'; }).join('') + '<path class="col" d=""/>';
+      $('fxRip').appendChild(g); S.landPool.push(g);
+    }
+    return S.landPool[i];
   }
 
   // cubic-bezier(.3,.6,.4,1)
@@ -1456,121 +1623,191 @@ const Sound = (function () {
   }
   var easeFly = bez(.3, .6, .4, 1);
 
-  // 라운드별 시각 정보(출발 위치 등) — 곰·정답과 무관한 무작위
+  // 라운드별 시각 정보(출발 위치, 헛물기 튕김 방향) — 곰·정답과 무관한 무작위. 출발 오프셋 ±70 (열 안)
   function makeVis(round) {
-    return round.events.map(function () { var r = Math.round(Math.random() * 180 - 90); return { r: r, dir: Math.random() < 0.5 ? -1 : 1 }; });
+    return round.events.map(function () { var r = Math.round(Math.random() * 140 - 70); return { r: r, dir: Math.random() < 0.5 ? -1 : 1 }; });
   }
   function indexByBear(round) {
     var idx = [[], [], []];
     round.events.forEach(function (e, i) { idx[e.bear].push(i); });
     return idx;
   }
+  var easeOut = function (p) { return 1 - (1 - p) * (1 - p); };
+  var easeIn = function (p) { return p * p; };
+  var easeInOut = function (p) { return p < 0.5 ? 2 * p * p : 1 - 2 * (1 - p) * (1 - p); };
+  var easePaw = bez(.2, .8, .3, 1), easeMiss = bez(.3, 1.3, .5, 1);
+  function lerp(a, b, p) { return a + (b - a) * p; }
+  // DOM 쓰기 최소화: 바뀐 값만 반영
+  function setA(el, k, v) { var c = '_c_' + k; if (el[c] === v) return; el[c] = v; if (v === null) el.removeAttribute(k); else el.setAttribute(k, v); }
+  function setH(el, h) { if (el._ch === h) return; el._ch = h; el.toggleAttribute('hidden', h); }
+  function f2(x) { return (Math.round(x * 100) / 100).toString(); }
+  var REST_POSE = { rot: 0, dy: 0, pL: [0, 0, 0], pR: [0, 0, 0], eyes: 'a', mouth: 'c', spark: 0, yum: null, miss: null };
+  // 곰 한 마리의 자세 (사건 시각 e 기준, 상태 없음). 사건 시각 t 전에는 먹기/헛물기가 똑같다(t−20 허공 물기만 다름)
+  function poseAt(e, cur) {
+    var P = { rot: 0, dy: 0, pL: [0, 0, 0], pR: [0, 0, 0], eyes: 'a', mouth: 'c', spark: 0, yum: null, miss: null };
+    if (!cur) return P;
+    var t = cur.t, a = e - t, q;
+    if (a < 0) {
+      if (a < -120) return P;
+      var po = easeOut(clamp((a + 120) / 120, 0, 1));
+      if (!RM) { P.rot = -5 * po; P.pL[1] = P.pR[1] = -6 * po; }
+      if (a >= -100) P.mouth = (!cur.real && a >= -20) ? 'ch' : 'o';
+      return P;
+    }
+    if (cur.real) {
+      if (a >= Engine.BUBBLE_MS) return P;
+      // 오른 앞발: 입 옆까지 올라가 (90) 머물고 (170) 복귀 (290)
+      if (RM) { if (a < 290) P.pR = [-36, -78, -35]; }
+      else if (a < 90) { q = easePaw(a / 90); P.pR = [lerp(0, -36, q), lerp(-6, -78, q), lerp(0, -35, q)]; P.pL[1] = -6; }
+      else if (a < 170) { P.pR = [-36, -78, -35]; P.pL[1] = -6; }
+      else if (a < 290) { q = easeInOut((a - 170) / 120); P.pR = [lerp(-36, 0, q), lerp(-78, 0, q), lerp(-35, 0, q)]; P.pL[1] = lerp(-6, 0, q); }
+      // 입: 삼키기 → 두 번 씹기
+      P.mouth = a < 80 ? 'o' : a < 150 ? 'ch' : a < 210 ? 'o' : a < 290 ? 'ch' : 'c';
+      if (!RM && a < 290) {
+        P.rot = -5 * (1 - easeOut(a / 290));
+        P.dy = a < 80 ? 5 * easeOut(a / 80) : a < 150 ? 5 * (1 - easeOut((a - 80) / 70)) : a < 210 ? 4 * easeOut((a - 150) / 60) : 4 * (1 - easeOut((a - 210) / 80));
+      }
+      // '냠!' 별: 팝 (scale .5→1.15→1, rotate −10→0), 완전 표시 90~270, 퇴장 270~360
+      var al = a < 60 ? a / 60 : a < 270 ? 1 : 1 - easeIn((a - 270) / 90);
+      var sc = RM ? 1 : a < 90 ? 0.5 + 0.65 * easeOut(a / 90) : a < 140 ? 1.15 - 0.15 * (a - 90) / 50 : 1;
+      var ro = RM ? 0 : a < 140 ? -10 * (1 - easeOut(a / 140)) : 0;
+      P.yum = { al: clamp(al, 0, 1), sc: sc, rot: ro };
+      return P;
+    }
+    // 헛물기
+    if (a >= 380) return P;
+    if (a < 140) P.spark = a < 100 ? 1 : (140 - a) / 40;
+    if (a < 320) { P.eyes = 'w'; P.mouth = 'O'; }
+    if (RM) { if (a < 320) { P.pL = [-12, -16, 15]; P.pR = [12, -16, -15]; } }
+    else {
+      if (a < 80) { q = easeOut(a / 80); P.pL = [lerp(0, -12, q), lerp(-6, -16, q), lerp(0, 15, q)]; P.pR = [lerp(0, 12, q), lerp(-6, -16, q), lerp(0, -15, q)]; }
+      else if (a < 220) { P.pL = [-12, -16, 15]; P.pR = [12, -16, -15]; }
+      else if (a < 320) { q = easeInOut((a - 220) / 100); P.pL = [lerp(-12, 0, q), lerp(-16, 0, q), lerp(15, 0, q)]; P.pR = [lerp(12, 0, q), lerp(-16, 0, q), lerp(-15, 0, q)]; }
+      if (a < 80) { q = easeOut(a / 80); P.rot = lerp(-5, 2, q); P.dy = lerp(0, -8, q); }
+      else if (a < 320) { q = easeInOut((a - 80) / 240); P.rot = lerp(2, 0, q); P.dy = lerp(-8, 0, q); }
+    }
+    if (a < 360) {
+      var am = a < 100 ? a / 100 : a < 280 ? 1 : 1 - (a - 280) / 80;
+      P.miss = { al: clamp(am, 0, 1), dy: RM ? 0 : a < 100 ? -12 * (1 - easeMiss(a / 100)) : 0 };
+    }
+    return P;
+  }
+  function pawT(p, ox, oy) { return p[0] || p[1] || p[2] ? 'translate(' + f2(p[0]) + ' ' + f2(p[1]) + ') rotate(' + f2(p[2]) + ' ' + ox + ' ' + oy + ')' : null; }
+  function applyPose(B, P) {
+    setA(B.head, 'transform', P.rot || P.dy ? 'rotate(' + f2(P.rot) + ' 110 150) translate(0 ' + f2(P.dy) + ')' : null);
+    setA(B.pawL, 'transform', pawT(P.pL, 52, 224));
+    setA(B.pawR, 'transform', pawT(P.pR, 168, 224));
+    setH(B.eA, P.eyes !== 'a'); setH(B.eW, P.eyes !== 'w');
+    for (var k in B.m) setH(B.m[k], P.mouth !== k);
+    setH(B.spark, !(P.spark > 0));
+    setA(B.spark, 'opacity', P.spark > 0 && P.spark < 1 ? f2(P.spark) : null);
+    if (P.yum) {
+      setA(B.yum, 'opacity', f2(P.yum.al));
+      setA(B.yum, 'transform', 'translate(' + B.yx + ' ' + B.yy + ')' + (P.yum.rot ? ' rotate(' + f2(P.yum.rot) + ')' : '') + (P.yum.sc !== 1 ? ' scale(' + f2(P.yum.sc) + ')' : ''));
+    } else { setA(B.yum, 'opacity', '0'); setA(B.yum, 'transform', 'translate(-999 -999)'); }
+    if (P.miss) {
+      setA(B.miss, 'opacity', f2(P.miss.al));
+      setA(B.miss, 'transform', 'translate(' + B.mx + ' ' + f2(B.my + P.miss.dy) + ')');
+    } else { setA(B.miss, 'opacity', '0'); setA(B.miss, 'transform', 'translate(-999 -999)'); }
+  }
+  function hideRest(pool, from) { for (var i = from; i < pool.length; i++) setA(pool[i], 'display', 'none'); }
 
   // 사건 목록 + 시각 e(ms)로 한 프레임을 그린다 (상태 없음 → 먹기·다시보기 공용)
   function renderAt(e, round, vis, byBear) {
-    var F = round.flightMs, yF = S.yF, ev = round.events;
-    var mouthY = yF - 122, noseY = yF - 146, landY = yF + 64;
-    // 곰 상태
+    var F = round.flightMs, yF = S.yF, ev = round.events, FF = Engine.FAKE_FALL_MS, SPL = Engine.FAKE_SPLASH_MS;
+    // 연어가 닿는 지점은 먹기·헛물기 공통(코와 입 사이) → 사건 시각 전 비행 경로가 같다
+    var hitY = yF - 126, mouthY = yF - 112, landY = yF + 64, topY = yF - 232;
     for (var b = 0; b < 3; b++) {
       var list = byBear[b], cur = null;
       for (var k = 0; k < list.length; k++) { var x = ev[list[k]]; if (x.t - 120 <= e) cur = x; else break; }
-      var rot = 0, dy = 0, open = false;
-      if (cur && e < cur.t + 140) {
-        if (e < cur.t) { var p = clamp((e - (cur.t - 120)) / 120, 0, 1); rot = -5 * (1 - (1 - p) * (1 - p)); open = e >= cur.t - 100 && (cur.real || e < cur.t - 20); }
-        else { var q = (e - cur.t) / 140; rot = -5 * (1 - q); dy = 3 * Math.sin(Math.PI * q); open = cur.real && e < cur.t + 60; }
-      }
-      var B = S.bears[b];
-      if (RM) { rot = 0; dy = 0; }
-      B.head.setAttribute('transform', rot || dy ? 'rotate(' + rot.toFixed(2) + ' 110 150) translate(0 ' + dy.toFixed(2) + ')' : '');
-      B.mo.toggleAttribute('hidden', !open);
-      B.mc.toggleAttribute('hidden', open);
-      // 냠 말풍선 (진짜 먹기만)
-      var yum = null;
-      for (var k2 = list.length - 1; k2 >= 0; k2--) { var y2 = ev[list[k2]]; if (y2.real && y2.t <= e) { if (e < y2.t + Engine.BUBBLE_MS) yum = y2; break; } }
-      if (yum) {
-        var a = e - yum.t, al = a < 90 ? a / 90 : a > Engine.BUBBLE_MS - 90 ? (Engine.BUBBLE_MS - a) / 90 : 1;
-        var scl = RM ? 1 : (a < 90 ? 0.7 + 0.3 * (a / 90) : 1);
-        var ox = +B.yum.getAttribute('data-ox'), oy = +B.yum.getAttribute('data-oy');
-        B.yum.setAttribute('opacity', clamp(al, 0, 1).toFixed(3));
-        B.yum.setAttribute('transform', scl === 1 ? '' : 'translate(' + ox + ' ' + oy + ') scale(' + scl.toFixed(3) + ') translate(' + (-ox) + ' ' + (-oy) + ')');
-      } else { B.yum.setAttribute('opacity', '0'); B.yum.removeAttribute('transform'); }
+      applyPose(S.bears[b], poseAt(e, cur));
     }
-    // 연어·물튀김
-    var si = 0, ri = 0;
+    var si = 0, ri = 0, li = 0;
     for (var i = 0; i < ev.length; i++) {
       var E = ev[i], v = vis[i], cx = CX[E.bear], t = E.t;
-      var endT = E.real ? t + 80 : t + Engine.FAKE_FALL_MS;
-      if (e < t - F - 10 || e > endT + 270) continue;
+      if (e < t - F - 10 || e > t + FF + SPL + 10) continue;
       var sx = cx + v.r, sy = yF + 70;
-      // 출발 물튀김
+      // 출발 물튀김 (260ms)
       if (e >= t - F && e < t - F + 260) {
         var rp = (e - (t - F)) / 260, rg = ripEl(ri++);
-        rg.setAttribute('display', 'inline');
-        rg.setAttribute('transform', 'translate(' + sx + ' ' + sy + ')');
-        rg.firstChild.setAttribute('rx', RM ? 24 : (34 * rp).toFixed(1)); rg.firstChild.setAttribute('ry', RM ? 8 : (10 * rp).toFixed(1));
-        rg.setAttribute('opacity', (0.9 * (1 - rp)).toFixed(3));
+        setA(rg, 'display', 'inline');
+        setA(rg, 'transform', 'translate(' + sx + ' ' + sy + ')');
+        setA(rg.firstChild, 'rx', RM ? '30' : f2(44 * rp)); setA(rg.firstChild, 'ry', RM ? '9' : f2(13 * rp));
+        setA(rg, 'opacity', f2(0.9 * (1 - rp)));
       }
-      // 헛물기 착수 물튀김
-      if (!E.real) {
-        var lx = cx + v.dir * 96;
-        if (e >= t + Engine.FAKE_FALL_MS && e < t + Engine.FAKE_FALL_MS + 260) {
-          var rp2 = (e - t - Engine.FAKE_FALL_MS) / 260, rg2 = ripEl(ri++);
-          rg2.setAttribute('display', 'inline');
-          rg2.setAttribute('transform', 'translate(' + (RM ? cx : lx) + ' ' + landY + ')');
-          rg2.firstChild.setAttribute('rx', RM ? 24 : (34 * rp2).toFixed(1)); rg2.firstChild.setAttribute('ry', RM ? 8 : (10 * rp2).toFixed(1));
-          rg2.setAttribute('opacity', (0.9 * (1 - rp2)).toFixed(3));
+      // 헛물기 착수 물보라 (t+460 ~ t+640)
+      if (!E.real && e >= t + FF && e < t + FF + SPL) {
+        var lp = (e - t - FF) / SPL, lg = landEl(li++), kids = lg.childNodes;
+        setA(lg, 'display', 'inline');
+        setA(lg, 'transform', 'translate(' + (cx + v.dir * 88) + ' ' + landY + ')');
+        setA(lg, 'opacity', f2(0.95 * (1 - lp)));
+        var rl = RM ? 1 : easeOut(lp);
+        setA(kids[0], 'rx', RM ? '40' : f2(56 * rl)); setA(kids[0], 'ry', RM ? '12' : f2(16 * rl));
+        for (var d = 0; d < 5; d++) {
+          var dx0 = (d - 2) * 12;
+          setA(kids[1 + d], 'cx', RM ? f2(dx0 * 1.4) : f2(dx0 * (0.5 + 1.1 * lp)));
+          setA(kids[1 + d], 'cy', RM ? '-12' : f2(-4 - 4 * 24 * lp * (1 - lp) * (d % 2 ? 0.8 : 1)));
+        }
+        var hc = RM ? 14 : 26 * Math.sin(Math.PI * lp);
+        setA(kids[6], 'd', 'M-12 -2 v' + f2(-hc * 0.8) + ' M0 -2 v' + f2(-hc) + ' M12 -2 v' + f2(-hc * 0.8));
+      }
+      var endT = E.real ? t + Engine.EAT_VANISH_MS : t + FF;
+      if (e < t - F || e >= endT) continue;
+      var px, py, ang, sc = 1, op = 1, a = e - t;
+      if (a < 0) {
+        if (RM) {
+          if (a < -240) continue;
+          var r1 = a + 240;
+          op = r1 < 80 ? r1 / 80 : 1;
+          px = cx; py = hitY + 40 - 40 * clamp((r1 - 80) / 160, 0, 1); ang = 90;
+        } else {
+          var Pq = easeFly(clamp((e - (t - F)) / F, 0, 1)), mx = (sx + cx) / 2, u = 1 - Pq;
+          px = u * u * sx + 2 * u * Pq * mx + Pq * Pq * cx;
+          py = u * u * sy + 2 * u * Pq * topY + Pq * Pq * hitY;
+          var ddx = 2 * u * (mx - sx) + 2 * Pq * (cx - mx), ddy = 2 * u * (topY - sy) + 2 * Pq * (hitY - topY);
+          ang = Math.atan2(ddy, ddx) * 180 / Math.PI + 180;
+        }
+      } else if (E.real) {
+        // 입 속으로: 진행 방향으로 14 더 들어가며 작아지고 사라짐 (110ms)
+        var qe = a / Engine.EAT_VANISH_MS;
+        op = a < 70 ? 1 : 1 - (a - 70) / 40;
+        if (RM) { px = cx; py = mouthY; ang = 90; }
+        else {
+          var vx = cx - (sx + cx) / 2, vy = hitY - topY, vl = Math.sqrt(vx * vx + vy * vy) || 1;
+          px = cx + vx / vl * 14 * easeIn(qe); py = hitY + vy / vl * 14 * easeIn(qe);
+          ang = Math.atan2(vy, vx) * 180 / Math.PI + 180; sc = 1 - 0.75 * easeIn(qe);
+        }
+      } else {
+        // 헛물기: 코에 맞고 머리 위로 높이 튕겨 빙글빙글 돌며 강으로 (460ms)
+        var fq = a / FF;
+        if (RM) {
+          px = cx + v.dir * 60; py = hitY - 14 - 90; ang = 180 + v.dir * 20;
+          op = a < 300 ? 1 : 1 - (a - 300) / 160;
+        } else {
+          var Hh = Math.min(150, Math.max(40, (hitY - 8 + 27) * 150 / 141));
+          px = cx + v.dir * 88 * fq;
+          py = hitY - 4 * Hh * fq * (1 - fq) + (landY - hitY) * fq * fq;
+          ang = 90 + v.dir * 540 * fq;
+          op = fq > 0.88 ? (1 - fq) / 0.12 : 1;
         }
       }
-      if (e < t - F || e >= endT) continue;
-      var px, py, ang, sc = 1, op = 1;
-      if (RM) {
-        if (e < t) {
-          if (e < t - 240) continue;
-          var r1 = e - (t - 240);
-          op = r1 < 80 ? r1 / 80 : 1;
-          var yy = (E.real ? mouthY : noseY) + 40 - 40 * clamp((r1 - 80) / 160, 0, 1);
-          px = cx; py = yy; ang = 90;
-        } else if (E.real) { px = cx; py = mouthY; ang = 90; op = 1 - (e - t) / 80; }
-        else { var fq = (e - t) / Engine.FAKE_FALL_MS; px = cx; py = noseY + 70 * fq; ang = 90; op = fq > 0.8 ? (1 - fq) / 0.2 : 1; }
-      } else if (e < t) {
-        var P = easeFly(clamp((e - (t - F)) / F, 0, 1));
-        var ex = cx, ey = E.real ? mouthY : noseY, mx = (sx + ex) / 2, my = mouthY - 110;
-        var u = 1 - P;
-        px = u * u * sx + 2 * u * P * mx + P * P * ex;
-        py = u * u * sy + 2 * u * P * my + P * P * ey;
-        var dx = 2 * u * (mx - sx) + 2 * P * (ex - mx), dyy = 2 * u * (my - sy) + 2 * P * (ey - my);
-        ang = Math.atan2(dyy, dx) * 180 / Math.PI + 180;
-      } else if (E.real) {
-        var sq = (e - t) / 80;
-        px = cx; py = mouthY; sc = 1 - 0.7 * sq; op = 1 - sq; ang = 90;
-      } else {
-        var fq2 = (e - t) / Engine.FAKE_FALL_MS;
-        px = cx + v.dir * 96 * fq2;
-        py = noseY - 120 * fq2 + (landY - noseY + 120) * fq2 * fq2;
-        ang = 90 + v.dir * 220 * fq2;
-        op = fq2 > 0.88 ? (1 - fq2) / 0.12 : 1;
-      }
       var el = salEl(si++);
-      el.setAttribute('display', 'inline');
-      el.setAttribute('transform', 'translate(' + px.toFixed(1) + ' ' + py.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')' + (sc !== 1 ? ' scale(' + sc.toFixed(3) + ')' : ''));
-      el.setAttribute('opacity', clamp(op, 0, 1).toFixed(3));
+      setA(el, 'display', 'inline');
+      setA(el, 'transform', 'translate(' + f2(px) + ' ' + f2(py) + ') rotate(' + f2(ang) + ') scale(' + f2(1.9 * sc) + ')');
+      setA(el, 'opacity', f2(clamp(op, 0, 1)));
     }
-    for (; si < S.salmonPool.length; si++) S.salmonPool[si].setAttribute('display', 'none');
-    for (; ri < S.ripPool.length; ri++) S.ripPool[ri].setAttribute('display', 'none');
+    hideRest(S.salmonPool, si); hideRest(S.ripPool, ri); hideRest(S.landPool, li);
   }
-  // 대기 자세로 완전히 되돌림 (공정성: 세 곰 같은 상태)
+  // 대기 자세로 완전히 되돌림 (공정성: 세 곰 같은 상태 — 눈·입·앞발·머리·말풍선·연어·물보라)
   function restScene() {
     if (!S.built) return;
     for (var b = 0; b < 3; b++) {
-      var B = S.bears[b];
-      B.head.setAttribute('transform', '');
-      B.mo.toggleAttribute('hidden', true); B.mc.toggleAttribute('hidden', false);
-      B.yum.setAttribute('opacity', '0'); B.yum.removeAttribute('transform');
-      B.g.classList.remove('blink');
+      applyPose(S.bears[b], REST_POSE);
+      S.bears[b].g.classList.remove('blink');
     }
-    S.salmonPool.forEach(function (x) { x.setAttribute('display', 'none'); });
-    S.ripPool.forEach(function (x) { x.setAttribute('display', 'none'); });
+    hideRest(S.salmonPool, 0); hideRest(S.ripPool, 0); hideRest(S.landPool, 0);
   }
+  function setMouth(b, m) { var B = S.bears[b]; for (var k in B.m) setH(B.m[k], m !== k); }
   // 소리·기록: 이전 시각 → 현재 시각 사이에 지난 사건
   function fireBetween(e0, e1, round, onEat, onFake) {
     var F = round.flightMs;
@@ -1638,7 +1875,7 @@ const Sound = (function () {
     });
     document.querySelectorAll('.chip').forEach(function (c) {
       var b = +c.getAttribute('data-b');
-      c.style.left = (S.ox + CX[b] * s).toFixed(1) + 'px'; c.style.top = Math.max(18, S.oy + (yF - 250) * s).toFixed(1) + 'px';
+      c.style.left = (S.ox + CX[b] * s).toFixed(1) + 'px'; c.style.top = Math.max(18, S.oy + (yF - 282) * s).toFixed(1) + 'px';
     });
     // 해설 영역 (강 위)
     var ex = $('explain');
@@ -1648,10 +1885,28 @@ const Sound = (function () {
     var exH = exBot - exTop, colW = 300 * s - 12;
     ex.classList.toggle('ex-s', exH < 130);
     ex.style.setProperty('--pnf', clamp(Math.round(colW * 0.16), 24, 44) + 'px');
-    ex.style.setProperty('--msw', (colW < 130 ? 14 : exH > 300 && colW > 200 ? 28 : 18) + 'px');
+    // 미니 연어 (v2): clamp(12, floor((판 안쪽 폭 − 16) / 5), 24). 판 높이가 모자라면 fitMinis가 더 줄인다
+    S.msw = clamp(Math.floor((colW - 16 - 16) / 5), 12, 24);
+    ex.style.setProperty('--msw', S.msw + 'px');
     ex.style.setProperty('--trh', (exH < 130 ? 8 : exH < 190 ? 12 : exH > 300 ? 22 : 16) + 'px');
     ex.classList.toggle('ex-l', exH > 300);
     $('tline').classList.toggle('small', exH < 190);
+    fitMinis();
+  }
+  // 해설 판: 최종 마릿수만큼 미니 연어 자리를 미리 잡고, 판 안에 다 들어가도록 크기를 줄인다(판 잘림 0)
+  function fitMinis() {
+    var ex = $('explain'); if (ex.hidden || !G.last) return;
+    var r = G.last.round, rows = Math.ceil(Math.max(r.counts[0], r.counts[1], r.counts[2]) / 5);
+    var pans = ex.querySelectorAll('.pan'); if (!pans.length || ex.classList.contains('ex-s')) return;
+    var m = S.msw || 24;
+    for (; m >= 12; m--) {
+      ex.style.setProperty('--msw', m + 'px');
+      var h = rows * Math.ceil(m / 2) + (rows - 1) * 4;
+      ex.querySelectorAll('.minis').forEach(function (x) { x.style.minHeight = h + 'px'; });
+      var over = false;
+      pans.forEach(function (p) { if (p.scrollHeight > p.clientHeight + 1) over = true; });
+      if (!over) break;
+    }
   }
 
   // ---------- HUD ----------
@@ -1716,13 +1971,23 @@ const Sound = (function () {
     if (level !== 6) later(closeBanner, 1500);
     else { var ok = $('bannerOk'); ok.addEventListener('click', function (e) { e.stopPropagation(); Sound.unlock(); Sound.play('button'); closeBanner(); }); setTimeout(function () { try { ok.focus({ preventScroll: true }); } catch (e) {} }, 50); }
   }
+  // 6레벨 시연 그림 (120×96): 꿀꺽 = 연어가 입으로 들어가 사라짐 + '냠!' 별 / 헛물기 = 코에 맞고 머리 위로 튕겨 강으로 + '헛!' 알약
   function demoArt(fake) {
+    var HT = 'translate(30 4) scale(.75) translate(-10.9 1.2) scale(.46)'; // #bhead와 같은 좌표계
     var h = '<rect x="0" y="72" width="120" height="24" fill="var(--river)"/>';
-    h += '<g transform="translate(36 6) scale(.6)"><use href="#bhead"/></g>';
-    h += '<ellipse class="' + (fake ? 'dm-mouthf' : 'dm-mouth') + '" cx="60" cy="38" rx="5" ry="4" fill="var(--mouth-in)"/>';
-    h += '<g class="' + (fake ? 'dm-fake' : 'dm-real') + '"><g transform="scale(.5) rotate(-60)"><use href="#salmonG"/></g></g>';
-    if (fake) h += '<ellipse class="dm-splash rip" cx="94" cy="84" rx="14" ry="4"/>';
-    else h += '<g class="dm-yum"><rect x="78" y="4" width="34" height="20" rx="8" fill="var(--yum-bg)" stroke="var(--muted)" stroke-width="1.5"/><text x="95" y="15" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="var(--yum-ink)">냠</text></g>';
+    h += '<g transform="translate(30 4) scale(.75)"><use href="#bhead"/></g>';
+    if (!fake) {
+      h += '<g class="dm-mouth" transform="' + HT + '">' + PART.mouthCover + PART.open + '</g>';
+      h += '<g class="dm-chomp" transform="' + HT + '">' + PART.mouthCover + PART.chomp + '</g>';
+      h += '<g class="dm-real"><g transform="rotate(130) scale(.75)"><use href="#salmonG"/></g></g>';
+      h += '<g class="yum dm-yum" transform="translate(99 22) scale(.4)"><path class="ys" d="' + STAR + '"/><text x="0" y="-6">냠!</text></g>';
+    } else {
+      h += '<g class="dm-chompf" transform="' + HT + '">' + PART.mouthCover + PART.chomp + '</g>';
+      h += '<g class="dm-wide" transform="' + HT + '">' + PART.browCover + PART.wide + PART.mouthCover + PART.o + '<path class="s-spark" d="' + PART.spark + '"/></g>';
+      h += '<g class="dm-fake"><g transform="rotate(130) scale(.75)"><use href="#salmonG"/></g></g>';
+      h += '<ellipse class="dm-splash rip" cx="100" cy="86" rx="16" ry="5"/>';
+      h += '<g class="miss dm-miss" transform="translate(20 14) scale(.45)"><rect x="-36" y="-20" width="72" height="40" rx="20"/><text x="0" y="1">헛!</text></g>';
+    }
     return h;
   }
   function closeBanner() {
@@ -1759,7 +2024,7 @@ const Sound = (function () {
   }
   function feedFrame(now) {
     var f = G.feed; if (!f) return;
-    var e = now - f.t0 - f.lead;
+    var e = f.frozen != null ? f.frozen : now - f.t0 - f.lead;
     if (e > f.round.durationMs) e = f.round.durationMs;
     fireBetween(f.prevE, e, f.round, function (E, i, at) {
       G.log.push({ bear: E.bear, real: true, scheduledT: E.t, shownT: Math.round(at * 10) / 10 });
@@ -1861,7 +2126,7 @@ const Sound = (function () {
     return { main: main, fake: fake };
   }
   function plain(html) { var d = document.createElement('div'); d.innerHTML = html; return d.textContent; }
-  function miniSalmon() { return '<svg viewBox="-30 -14 60 28" aria-hidden="true"><use href="#salmonG"/></svg>'; }
+  function miniSalmon() { return '<svg viewBox="-32 -16 64 32" aria-hidden="true"><use href="#salmonG"/></svg>'; }
   function renderTimeline(el, r) {
     var lastT = r.events[r.events.length - 1].t, span = lastT + 300;
     var h = '';
@@ -1900,6 +2165,7 @@ const Sound = (function () {
     renderTimeline($('tline'), r);
     $('explain').hidden = false;
     layout();
+    fitMinis();
     live(plain(st.main + ' ' + st.fake));
     later(startTally, 300);
     try { $('nextBtn').focus({ preventScroll: true }); } catch (e) {}
@@ -1933,8 +2199,8 @@ const Sound = (function () {
     if (anim) { pn.classList.remove('bump'); void pn.offsetWidth; pn.classList.add('bump'); Sound.play('tally', { n: T.n[b] }); }
     var mi = pan.querySelector('.minis'); mi.insertAdjacentHTML('beforeend', miniSalmon());
     if (anim && S.bears[b] && G.phase === 'explain' && !G.replay) {
-      var B = S.bears[b]; B.mo.toggleAttribute('hidden', false); B.mc.toggleAttribute('hidden', true);
-      setTimeout(function () { if (!G.replay) { B.mo.toggleAttribute('hidden', true); B.mc.toggleAttribute('hidden', false); } }, 90);
+      setMouth(b, 'o');
+      setTimeout(function () { if (!G.replay && S.bears[b]) setMouth(b, 'c'); }, 90);
     }
   }
   function finishTally() {
@@ -2044,7 +2310,7 @@ const Sound = (function () {
     }
   }
   function headSVG(b) {
-    return '<svg class="hh b' + b + '" viewBox="0 0 80 80" aria-hidden="true"><use href="#bhead"/><rect class="scarf" x="14" y="62" width="52" height="10" rx="5"/></svg>';
+    return '<svg class="hh b' + b + '" viewBox="0 0 80 80" aria-hidden="true"><use href="#bhead"/><rect class="scarf o3" style="stroke-width:1.6" x="14" y="67" width="52" height="10" rx="5"/></svg>';
   }
   function gameOver() {
     G.phase = 'over';
@@ -2259,6 +2525,8 @@ const Sound = (function () {
     levelCfg: function (L) { return Engine.levelCfg(L); },
     combos: function (L) { return Engine.combos(Engine.levelCfg(L)); },
     COMBOS: clone(Engine.COMBOS),
+    consts: { BUBBLE_MS: Engine.BUBBLE_MS, FAKE_FALL_MS: Engine.FAKE_FALL_MS, FAKE_SPLASH_MS: Engine.FAKE_SPLASH_MS, EAT_VANISH_MS: Engine.EAT_VANISH_MS,
+      END_WAIT: Engine.END_WAIT, H_PRE: Engine.H.PRE, H_POST: Engine.H.POST, H_SAME_PRE: Engine.H.SAME_PRE, H_FF: Engine.H.FF, H_FF_REAL: Engine.H.FF_REAL, H_FIRST: Engine.H.FIRST },
     state: function () {
       return clone({ screen: G.phase, level: G.level, lives: G.lives, score: G.score, best: G.best, round: G.round, pick: G.pick,
         paused: G.paused, eligible: G.eligible, seed: G.seed, last: G.last ? { pick: G.last.pick, ok: G.last.ok, level: G.last.level, round: G.last.round } : null,
@@ -2274,10 +2542,17 @@ const Sound = (function () {
       return G.phase;
     },
     log: function () { return clone(G.log); },
+    // 테스트·스크린샷 전용: 먹기 화면을 사건 시각 e(ms)에 멈춤 / null이면 그 시각부터 다시 진행
+    freeze: function (e) {
+      var f = G.feed; if (!f) return false;
+      if (e == null) { if (f.frozen != null) { f.t0 = performance.now() - f.frozen - f.lead; f.frozen = null; } return true; }
+      f.frozen = e; f.prevE = e; return true;
+    },
     sentences: function (round, pick) { var st = sentences({ round: round, pick: pick, ok: pick === round.winner }); return { main: plain(st.main), fake: plain(st.fake) }; }
   };
 
   // ---------- 시작 ----------
+  $('bhead').innerHTML = headParts(false);
   syncMute();
   layout();
   showTitle();
