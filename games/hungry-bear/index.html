@@ -707,6 +707,42 @@ const Sound = (function () {
     tone('sine', f * 5.4, 0, t, Math.min(0.04, dur * 0.3), vol * 0.12, 0.001, dest, track);
   }
 
+  // ---- 냠 전용 부드러운 블록: 선형 어택(지수 어택은 끝에서 급히 솟아 '퍽'처럼 들림) + 지수 꼬리 ----
+  function softEnv(g, t, vol, a, dur) {
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + a);
+    g.gain.setTargetAtTime(0, t + a, Math.max(0.004, (dur - a) / 5));
+  }
+  function wetNoise(t, dur, vol, f0, f1, q, a, dest) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = 'bandpass'; f.Q.value = q;
+      f.frequency.setValueAtTime(f0, t);
+      f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      softEnv(g, t, vol, a, dur);
+      s.connect(f); f.connect(g); g.connect(dest);
+      s.start(t, Math.random() * 0.2); s.stop(t + dur + 0.04);
+    } catch (e) {}
+  }
+  function wetTone(t, dur, vol, f0, f1, a, dest) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      softEnv(g, t, vol, a, dur);
+      o.connect(g); g.connect(dest);
+      o.start(t); o.stop(t + dur + 0.04);
+    } catch (e) {}
+  }
+  // '씹기' 한 번: 좁은 밴드패스 노이즈(Q 5, 1300→700Hz 하강, 촉촉한 질감) + 작은 모음 sine(600→430Hz).
+  // k = 음량 배수, r = 음높이 배수
+  function chew(t, dur, k, r, dest) {
+    wetNoise(t, dur, 0.66 * k, 1300 * r, 700 * r, 5, 0.012, dest);
+    wetTone(t + 0.004, dur * 0.8, 0.05 * k, 600 * r, 430 * r, 0.014, dest);
+  }
+
   // 첨벙·냠 전용 보이스: 동시 발음이 HIT_CAP을 넘으면 가장 오래된 소리를 10ms 안에 줄여 없앤다
   function hitVoice(t, dur) {
     var keep = [];
@@ -770,22 +806,30 @@ const Sound = (function () {
       noise(t, dur, 0.13 * dens, 'bandpass', 2400 * r, 800 * r, 0.9, 0.006, v);
       tone('sine', 900 * r, 1500 * r, t + 0.025, 0.035, 0.035 * dens, 0.002, v);
     },
-    // 냠: 곰이 연어를 먹을 때. 세 곰 모두 완전히 같은 소리(인자 없음, 패닝 없음).
-    // 짧은 '앙' 깨물기(로우패스 노이즈) + 낮은 '냠'(triangle 하강, 2kHz 로우패스) + 작은 윗소리.
-    // 음높이 무작위 ±3%는 모든 호출 동일 분포. 연속이면 간격에 따라 자동으로 작고 짧게
+    // 냠(v2): 곰이 연어를 덥석 물고 씹는 소리. 세 곰 모두 완전히 같은 소리(인자 없음, 패닝 없음).
+    // ① '앙/덥석' 입 닫힘: 부드러운 밴드패스 노이즈(입 모양 공명) + 작은 'ㅁ' 허밍. 선형 어택 15ms(날카로운 타격 없음)
+    // ② '냠냠' 씹기 2번: 좁은 밴드패스 노이즈(촉촉한 질감) 중심 주파수 하강 + 작은 모음 sine. 선형 어택 12ms. 두 번째는 낮고 작게
+    // 전체를 180Hz 하이패스로 걸러 킥 드럼 같은 저역 펀치를 없앤다.
+    // 음높이 무작위 ±3%·노이즈 시작 위치는 모든 호출 동일 분포. 연속이면 직전 냠과의 간격(곰과 무관)에 따라
+    // 시간 축을 압축하고(0.3초 이상이면 원형), 0.2초 미만이면 씹기를 1번만, 음량도 자동으로 작게.
     eat: function (t) {
       if (throttled('eat', t, 0.04)) return;
       var gap = density('eat', t);
       var dens = clamp(0.65 + gap * 1.2, 0.65, 1);
-      var dur = clamp(gap * 0.75, 0.06, 0.1);
+      var sp = clamp(gap / 0.3, 0.45, 1);                 // 시간 압축 계수
+      var two = gap >= 0.2;                                // 씹기 2번(느릴 때) / 1번(빠를 때)
       var r = 0.97 + Math.random() * 0.06;
-      var v = hitVoice(t, dur + 0.05);
-      var lp;
-      try { lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2000; lp.Q.value = 0.6; lp.connect(v); }
-      catch (e) { lp = v; }
-      noise(t, dur * 0.5, 0.12 * dens, 'lowpass', 1400, 400, 0.7, 0.002, v);
-      tone('triangle', 330 * r, 230 * r, t + 0.004, dur, 0.17 * dens, 0.006, lp);
-      tone('sine', 520 * r, 380 * r, t + 0.012, dur * 0.6, 0.05 * dens, 0.004, lp);
+      var c1 = 0.075 * sp, c2 = 0.165 * sp, cd = 0.07 * clamp(sp, 0.75, 1);
+      var v = hitVoice(t, (two ? c2 : c1) + cd + 0.03);
+      var hp;
+      try { hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 180; hp.Q.value = 0.7; hp.connect(v); }
+      catch (e) { hp = v; }
+      // ① 앙/덥석
+      wetNoise(t, 0.065 * clamp(sp, 0.75, 1), 0.44 * dens, 1100 * r, 650 * r, 2.2, 0.015, hp);
+      wetTone(t, 0.07, 0.04 * dens, 380 * r, 300 * r, 0.015, hp);
+      // ② 냠냠
+      chew(t + c1, cd, 1.0 * dens, r, hp);
+      if (two) chew(t + c2, cd, 0.7 * dens, r * 0.88, hp);
     },
     // 곰 선택(정답 확인 전): 나무 '툭' + 작은 B4
     select: function (t) {
