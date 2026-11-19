@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>혜진's 스튜디오 — 시안 A · 에디토리얼</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2ebdd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191714" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+  /* ── 시안 A: 게임 잡지 / 에디토리얼 ──────────────────────────
+     종이(크림) + 잉크(먹색) + 주홍 잉크 1색. 강렬함은 타이포·괘선·비대칭으로. */
+  :root {
+    --paper: #f2ebdd; --paper-2: #e9dfcc; --ink: #1f1c18; --ink-2: #5a5248;
+    --red: #b23a24; --rule: #1f1c18; --hair: #cbbfa9;
+    --cover: #cfdcd5; --dot: rgba(31, 28, 24, .09);
+    --noise-op: .35;
+    --display: "Black Han Sans", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    --serif: "Gowun Batang", "AppleMyungjo", "Nanum Myeongjo", "Noto Serif KR", serif;
+    --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #191714; --paper-2: #221f1b; --ink: #ece4d3; --ink-2: #a89f90;
+      --red: #e0866a; --rule: #ece4d3; --hair: #3a352e;
+      --cover: #223029; --dot: rgba(236, 228, 211, .06);
+      --noise-op: .18;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink); background: var(--paper);
+    font-family: var(--sans);
+    padding: 0 max(18px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  /* 종이 결: 인라인 SVG 노이즈 (외부 파일 아님) */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: var(--noise-op); mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  @media (prefers-color-scheme: dark) { body::before { mix-blend-mode: screen; } }
+  .page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+
+  /* ── 상단 띠: 호수 · 발행일 · 버튼 ── */
+  .strip {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 12.5px; letter-spacing: .08em; color: var(--ink-2);
+  }
+  .strip .issue { font-weight: 800; color: var(--ink); letter-spacing: .14em; }
+  .strip .sep { width: 1px; height: 12px; background: var(--hair); }
+  .strip .tools { margin-left: auto; display: flex; gap: 8px; }
+  .tbtn {
+    display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 14px;
+    background: transparent; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 0;
+    font: 700 14px/1 var(--sans); letter-spacing: .02em; cursor: pointer;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
+    transition: background-color 140ms ease-out, color 140ms ease-out;
+  }
+  .tbtn svg { width: 18px; height: 18px; flex: none; }
+  .tbtn.me { border-color: transparent; color: var(--ink-2); padding: 0 10px; }
+  .tbtn.me span { max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tbtn.rank { background: var(--ink); color: var(--paper); }
+  .tbtn:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+  .tbtn:active { transform: translateY(1px); }
+  @media (hover: hover) {
+    .tbtn.rank:hover { background: var(--red); border-color: var(--red); }
+    .tbtn.me:hover { border-color: var(--ink); color: var(--ink); }
+  }
+
+  /* ── 제호 ── */
+  .mast { padding: 14px 0 0; }
+  .mast h1 {
+    margin: 0; font-family: var(--display); font-weight: 400;
+    font-size: clamp(46px, 12.4vw, 150px); line-height: .92; letter-spacing: -.035em;
+    word-break: keep-all; white-space: nowrap;
+  }
+  .mast h1 .ap { color: var(--red); }
+  .mast h1 small {
+    font-size: .2em; letter-spacing: .02em; vertical-align: top; margin-left: .35em;
+    font-family: var(--serif); font-weight: 700; color: var(--ink-2); position: relative; top: .5em;
+  }
+  .rule-double { border: 0; height: 7px; margin: 12px 0 0; border-top: 4px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .tagline {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    padding: 9px 0 10px; border-bottom: 1px solid var(--rule);
+    font-family: var(--serif); font-size: 15px; color: var(--ink-2);
+  }
+  .tagline b { color: var(--ink); font-weight: 700; }
+  .tagline .since { font-family: var(--sans); font-size: 12.5px; letter-spacing: .1em; }
+
+  /* ── 본문: 표지 기사 + 목차 (비대칭) ── */
+  .issue-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 18px; }
+  @media (min-width: 900px) {
+    .issue-body { grid-template-columns: minmax(0, 1.28fr) minmax(0, 1fr); column-gap: 0; }
+    .toc { border-left: 1px solid var(--rule); padding-left: 26px; margin-left: 26px; }
+  }
+
+  /* 표지 기사 */
+  .cover {
+    position: relative; display: block; overflow: hidden; color: inherit; text-decoration: none;
+    background-color: var(--cover);
+    background-image: radial-gradient(var(--dot) 1.1px, transparent 1.6px);
+    background-size: 9px 9px;
+    min-height: 330px; padding: 22px 24px 20px;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
+    border: 1.5px solid var(--rule);
+  }
+  .cover:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+  .cover .kicker {
+    display: inline-block; margin: 0 0 14px; padding: 5px 9px 4px;
+    background: var(--red); color: #fbf6ec;
+    font: 800 12px/1 var(--sans); letter-spacing: .16em;
+  }
+  @media (prefers-color-scheme: dark) { .cover .kicker { color: #1a1714; } }
+  .cover h2 {
+    position: relative; z-index: 2; margin: 0; max-width: 7.2em;
+    font-family: var(--display); font-weight: 400; font-size: clamp(46px, 8.6vw, 92px);
+    line-height: .98; letter-spacing: -.03em; word-break: keep-all;
+  }
+  .cover .deck {
+    position: relative; z-index: 2; margin: 14px 0 0; max-width: 15em;
+    font-family: var(--serif); font-size: clamp(17px, 2.2vw, 21px); line-height: 1.45; color: var(--ink); word-break: keep-all;
+  }
+  .cover .deck::before { content: "“"; color: var(--red); font-weight: 700; margin-right: 2px; }
+  .cover .deck::after { content: "”"; color: var(--red); font-weight: 700; margin-left: 2px; }
+  .cover .cta {
+    position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 20px; min-height: 48px; padding: 0 18px;
+    background: var(--ink); color: var(--paper); font: 800 16px/1 var(--sans); letter-spacing: .03em;
+    transition: background-color 140ms ease-out;
+  }
+  .cover .cta svg { width: 18px; height: 18px; transition: transform 160ms ease-out; }
+  .cover .art {
+    position: absolute; z-index: 1; right: -2%; bottom: -4%;
+    width: min(58%, 420px); aspect-ratio: 1; pointer-events: none;
+  }
+  .cover .art svg { width: 100%; height: 100%; transition: transform 220ms cubic-bezier(.2, .7, .3, 1); transform-origin: 60% 90%; }
+  .cover .stamp {
+    position: absolute; z-index: 3; top: 18px; right: 18px; width: 78px; height: 78px; border-radius: 50%;
+    display: grid; place-items: center; text-align: center;
+    border: 2px solid var(--red); color: var(--red); transform: rotate(9deg);
+    font: 400 20px/1 var(--display); letter-spacing: .02em;
+  }
+  .cover .stamp span { display: block; font: 800 9px/1 var(--sans); letter-spacing: .18em; margin-top: 4px; }
+  .cover .pg {
+    position: absolute; z-index: 3; left: 24px; bottom: 14px;
+    font: 700 12px/1 var(--sans); letter-spacing: .14em; color: var(--ink-2);
+  }
+  .cover .cta { margin-bottom: 26px; }
+  @media (hover: hover) {
+    .cover:hover .cta { background: var(--red); }
+    .cover:hover .cta svg { transform: translateX(4px); }
+    .cover:hover .art svg { transform: rotate(-3deg) scale(1.03); }
+  }
+  .cover:active .cta { transform: translateY(1px); }
+  @media (min-width: 600px) and (max-width: 899px) {
+    .cover { min-height: 370px; }
+    .cover .art { width: 50%; right: 0; bottom: -6%; }
+  }
+  @media (min-width: 900px) { .cover { min-height: 100%; padding: 28px 30px 24px; } .cover .art { width: min(56%, 400px); right: -3%; bottom: -5%; } }
+
+  /* 목차 */
+  .toc { padding-top: 22px; }
+  @media (min-width: 900px) { .toc { padding-top: 0; } }
+  .toc-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: 4px solid var(--rule); }
+  .toc-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 34px; letter-spacing: -.01em; line-height: 1; }
+  .toc-head .en { font: 800 12px/1 var(--sans); letter-spacing: .24em; color: var(--red); }
+  .toc-head .hint { margin-left: auto; font-family: var(--serif); font-size: 14px; color: var(--ink-2); }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 600px) and (max-width: 899px) {
+    .toc ol { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; }
+  }
+  .toc li { border-bottom: 1px solid var(--hair); }
+  .entry {
+    display: grid; grid-template-columns: 34px 52px minmax(0, 1fr) auto; align-items: center; column-gap: 12px;
+    min-height: 68px; padding: 8px 4px 8px 2px; color: inherit; text-decoration: none;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
+    transition: background-color 140ms ease-out;
+    animation: rise 260ms ease-out both;
+  }
+  .toc li:nth-child(2) .entry { animation-delay: 30ms; } .toc li:nth-child(3) .entry { animation-delay: 60ms; }
+  .toc li:nth-child(4) .entry { animation-delay: 90ms; } .toc li:nth-child(5) .entry { animation-delay: 120ms; }
+  .toc li:nth-child(6) .entry { animation-delay: 150ms; } .toc li:nth-child(7) .entry { animation-delay: 180ms; }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px); } }
+  .entry:focus-visible { outline: 3px solid var(--red); outline-offset: -1px; }
+  .entry .no { font: 400 30px/1 var(--display); color: var(--red); letter-spacing: -.02em; text-align: left; }
+  .entry .ico {
+    width: 52px; height: 52px; border: 1.5px solid var(--ink); background: var(--paper-2);
+    display: grid; place-items: center; overflow: hidden;
+  }
+  .entry .ico svg { width: 82%; height: 82%; transition: transform 160ms ease-out; }
+  .entry .t { min-width: 0; }
+  .entry h3 { margin: 0 0 3px; font: 400 20px/1.15 var(--display); letter-spacing: -.01em; word-break: keep-all; }
+  .entry p { margin: 0; font-family: var(--serif); font-size: 14.5px; line-height: 1.4; color: var(--ink-2); word-break: keep-all; overflow-wrap: break-word; }
+  .entry .pg { font: 700 12px/1 var(--sans); letter-spacing: .1em; color: var(--ink-2); white-space: nowrap; }
+  .entry .pg::before { content: ""; display: inline-block; width: 18px; border-top: 1px dotted var(--ink-2); vertical-align: middle; margin-right: 6px; opacity: .7; }
+  @media (hover: hover) {
+    .entry:hover { background: var(--paper-2); }
+    .entry:hover h3 { color: var(--red); }
+    .entry:hover .ico svg { transform: scale(1.1) rotate(-4deg); }
+  }
+  .entry:active { background: var(--paper-2); }
+
+  /* ── 편집 후기 / 판권 ── */
+  .colophon {
+    margin-top: 30px; border-top: 4px solid var(--rule); padding-top: 12px;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
+  }
+  @media (min-width: 700px) { .colophon { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 30px; } }
+  .colophon .note { margin: 0; font-family: var(--serif); font-size: 15px; line-height: 1.75; color: var(--ink); }
+  .colophon .note::first-letter { font-family: var(--display); font-size: 2.6em; float: left; line-height: .9; margin: 4px 8px 0 0; color: var(--red); }
+  .colophon dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 12.5px; letter-spacing: .04em; color: var(--ink-2); align-content: start; }
+  .colophon dt { font-weight: 800; color: var(--ink); letter-spacing: .14em; }
+  .colophon dd { margin: 0; }
+  .folio { display: flex; justify-content: space-between; margin-top: 22px; padding-top: 8px; border-top: 1px solid var(--rule); font: 700 11.5px/1 var(--sans); letter-spacing: .16em; color: var(--ink-2); }
+
+  /* ── 작은 화면 ── */
+  @media (max-width: 599px) {
+    .strip { font-size: 11px; gap: 8px; }
+    .strip .sep, .strip .date { display: none; }
+    .tagline { font-size: 14px; }
+    .cover { min-height: 0; padding: 16px 16px 14px; }
+    .cover h2 { font-size: clamp(38px, 11vw, 46px); }
+    .cover .cta { margin-top: 14px; margin-bottom: 22px; }
+    .cover .art { width: 50%; right: -5%; bottom: -4%; }
+    .cover .stamp { width: 64px; height: 64px; font-size: 16px; top: 14px; right: 14px; }
+    .cover .deck { max-width: 13em; }
+    .entry { grid-template-columns: 28px 48px minmax(0, 1fr) auto; column-gap: 10px; }
+    .entry .ico { width: 48px; height: 48px; }
+    .entry .no { font-size: 24px; }
+    .entry h3 { font-size: 18px; }
+    .entry p { font-size: 13.5px; }
+    .entry .pg::before { display: none; }
+    .toc-head .hint { display: none; }
+  }
+  @media (max-width: 359px) {
+    .cover .stamp { display: none; }
+    .tbtn.rank span { display: none; } .tbtn.rank { width: 44px; padding: 0; justify-content: center; }
+    .entry .pg { display: none; }
+    .entry { grid-template-columns: 24px 44px minmax(0, 1fr); }
+    .entry .ico { width: 44px; height: 44px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry { animation: none; }
+    .cover .art svg, .entry .ico svg, .cover .cta svg { transition: none; transform: none !important; }
+    .tbtn:active, .cover:active .cta { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="strip" role="banner">
+    <span class="issue">VOL.1 · No.08</span>
+    <span class="sep" aria-hidden="true"></span>
+    <span class="date">2026년 11월호</span>
+    <div class="tools">
+      <!-- 실제 적용 시: id="meBtn" (닉네임 있을 때만 표시) -->
+      <button class="tbtn me" id="meBtn" type="button" aria-label="내 닉네임 혜진. 닉네임 정보 열기">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span id="meNick">혜진</span>
+      </button>
+      <!-- 실제 적용 시: id="rankBtn" -->
+      <button class="tbtn rank" id="rankBtn" type="button" aria-label="순위표">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4.4M17 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 14v4M8.5 20.5h7M9.5 18h5"/></svg>
+        <span>순위</span>
+      </button>
+    </div>
+  </div>
+
+  <header class="mast">
+    <h1>혜진<span class="ap">'s</span> 스튜디오</h1>
+    <hr class="rule-double">
+    <div class="tagline">
+      <span>손으로 만든 작은 게임들의 월간지 — <b>이번 호 8편 수록</b></span>
+      <span class="since">since 2026.11.13.</span>
+    </div>
+  </header>
+
+  <main class="issue-body">
+
+    <!-- 표지 기사: 최신 게임 1편 -->
+    <a class="cover" href="../../games/hungry-bear/" aria-label="표지 기사, 폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까? 지금 플레이">
+      <p class="kicker">COVER STORY</p>
+      <h2>폭식 불곰을<br>찾아라</h2>
+      <p class="deck">누가 제일 많이 먹었을까?</p>
+      <span class="cta">지금 플레이
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </span>
+      <div class="stamp" aria-hidden="true"><div>신작<span>NEW</span></div></div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <rect x="2" y="49" width="60" height="11" rx="5.5" fill="#a7c0c4"/>
+          <path d="M8 56 H20 M36 57 H46" stroke="#e9f1f1" stroke-width="1.6" stroke-linecap="round"/>
+          <g stroke="#3a2318" stroke-linejoin="round" stroke-linecap="round">
+          <circle cx="15" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+          <circle cx="41" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+          <path d="M14 46 Q28 40 42 46 L42 50 L14 50 Z" fill="#9c5a32" stroke-width="1.6"/>
+          <ellipse cx="28" cy="30" rx="16" ry="14" fill="#9c5a32" stroke-width="1.8"/>
+          <path d="M28 4 C31 7 33 10 32 13 C34 12 35 10 35 9 C37 12 36 16 32 17 L24 17 C20 16 19 12 21 9 C21 11 22 12 24 13 C23 10 25 7 28 4 Z" fill="#f2622a" stroke-width="1.2"/>
+          <ellipse cx="28" cy="36" rx="8.5" ry="6" fill="#f0d9b0" stroke-width="1.2"/>
+          <circle cx="21.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+          <circle cx="34.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+          <path d="M23.5 37 Q28 35.8 32.5 37 Q32 42 28 42.4 Q24 42 23.5 37 Z" fill="#5e2420" stroke-width="1"/>
+          <path d="M14 43.5 Q28 48.5 42 43.5 L42 47.5 Q28 52.5 14 47.5 Z" fill="#6f9a8c" stroke-width="1.2"/>
+          <circle cx="16" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+          <circle cx="40" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+          </g>
+          <circle cx="16" cy="17" r="3" fill="#e5b088"/><circle cx="40" cy="17" r="3" fill="#e5b088"/>
+          <path d="M28 9 C30 11 31 13 30 16 L26 16 C25 13 26 11 28 9 Z" fill="#ffc533"/>
+          <circle cx="22" cy="28.3" r="1.2" fill="#1e1410"/><circle cx="34" cy="28.3" r="1.2" fill="#1e1410"/>
+          <path d="M16.5 23.6 L26 26.6 L25.8 28.4 L16.8 25.6 Z M39.5 23.6 L30 26.6 L30.2 28.4 L39.2 25.6 Z" fill="#3a2318"/>
+          <path d="M25 32 Q28 30.6 31 32 Q30 34.4 28 34.6 Q26 34.4 25 32 Z" fill="#2b1a14"/>
+          <path d="M24.6 37.1 L25.7 39.6 L26.7 36.8 Z M31.4 37.1 L30.3 39.6 L29.3 36.8 Z" fill="#fffaf0"/>
+          <path d="M13.6 53.2 v2.2 M16 53.8 v2.4 M18.4 53.2 v2.2 M37.6 53.2 v2.2 M40 53.8 v2.4 M42.4 53.2 v2.2" stroke="#fffaf0" stroke-width="1.2" stroke-linecap="round"/>
+          <g transform="translate(51 35) rotate(-58) scale(.42)" stroke="#3a2318" stroke-linejoin="round">
+          <path d="M17 0 L29 -10 L26 0 L29 10 Z" fill="#b4553f" stroke-width="2.6"/>
+          <path d="M-27 0 Q-21 -12 0 -11 Q16 -9 20 0 Q16 9 0 11 Q-21 12 -27 0 Z" fill="#ef8a5f" stroke-width="2.6"/>
+          <path d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z" fill="#fbd9c2" stroke="none"/>
+          <circle cx="-19" cy="-2.5" r="3" fill="#fffaf0" stroke-width="1.4"/><circle cx="-19.6" cy="-2.5" r="1.5" fill="#3a2318" stroke="none"/>
+          </g>
+          <ellipse cx="54" cy="52" rx="6" ry="1.8" fill="none" stroke="#e9f1f1" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <span class="pg" aria-hidden="true">p.01</span>
+    </a>
+
+    <!-- 목차: 나머지 7편 (최신순) -->
+    <nav class="toc" aria-labelledby="tocTitle">
+      <div class="toc-head">
+        <h2 id="tocTitle">목차</h2><span class="en" aria-hidden="true">CONTENTS</span>
+        <span class="hint">하고 싶은 게임을 골라보세요</span>
+      </div>
+      <ol>
+        <li><a class="entry" href="../../games/parrot-beat/" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!">
+          <span class="no" aria-hidden="true">02</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dfe6d8"/>
+            <path d="M16 46 Q9 52 8 57 Q12 56 18 50 Z" fill="#5d9170"/>
+            <path d="M26 21 C33 21 39 30 39 37 C39 45 33 51 26 51 C19 51 13 45 13 37 C13 30 19 21 26 21 Z" fill="#93c19f" stroke="#5d9170" stroke-width="1.6"/>
+            <ellipse cx="26" cy="42" rx="8" ry="7" fill="#e9f3e9"/>
+            <path d="M26 21 q-1 -5 3 -5 q3 .5 1 3" fill="none" stroke="#5d9170" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="22" cy="32" r="1.4" fill="#2a2d36"/><circle cx="30" cy="32" r="1.4" fill="#2a2d36"/>
+            <circle cx="19" cy="36" r="2" fill="#f0b4a8" opacity=".55"/><circle cx="33" cy="36" r="2" fill="#f0b4a8" opacity=".55"/>
+            <path d="M23.6 34 Q26 32 28.4 34 Q28 38 25.2 38.6 Q26.2 36.2 23.6 34 Z" fill="#e8bf73"/>
+            <rect x="29" y="45" width="18" height="6" rx="2" fill="#c98d68" stroke="#9a6647" stroke-width="1"/>
+            <ellipse cx="38" cy="45" rx="9" ry="2.6" fill="#f6efe2" stroke="#9a6647" stroke-width="1"/>
+            <path d="M48.5 37.5 A5 5 0 0 1 48.5 44.5 M51.5 34.5 A9 9 0 0 1 51.5 47.5" fill="none" stroke="#3f7752" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+            <circle cx="44" cy="18" r="4" fill="#c9694a"/>
+            <rect x="49.9" y="12.9" width="4.2" height="4.2" rx=".8" transform="rotate(45 52 15)" fill="#4b958f"/>
+            <circle cx="58" cy="18" r="4" fill="#c9694a"/>
+          </svg></span>
+          <div class="t"><h3>박자 앵무새</h3><p>듣고 똑같이 톡톡!</p></div>
+          <span class="pg" aria-hidden="true">p.02</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/poop-rain/" aria-label="똥비 피하기 — 똥은 피하고 별사탕은 줍기!">
+          <span class="no" aria-hidden="true">03</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <defs><g id="poopRainShape"><ellipse cx="0" cy="-3.4" rx="10" ry="3.4"/><ellipse cx="0" cy="-8.4" rx="7.6" ry="3"/><ellipse cx="0" cy="-12.6" rx="5" ry="2.6"/><path d="M-2.6 -14 Q-2 -17.2 0.8 -18.2 Q2.6 -18.6 1.8 -16.8 Q1.4 -15.4 2.8 -14 Z"/></g></defs>
+            <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dbe3d1"/>
+            <ellipse cx="17" cy="52.4" rx="7" ry="1.9" fill="#5c4a38" opacity=".2"/>
+            <g transform="translate(17 30)">
+              <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="2.4" stroke-linejoin="round"/>
+              <use href="#poopRainShape" fill="#a87a55"/>
+            </g>
+            <g transform="translate(47 21) scale(.68)">
+              <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="3" stroke-linejoin="round"/>
+              <use href="#poopRainShape" fill="#a87a55"/>
+            </g>
+            <rect x="27" y="40" width="11" height="10.5" rx="4.4" fill="#86c3b0" stroke="#c7a283" stroke-width="1.2"/>
+            <circle cx="32.5" cy="34.6" r="6.4" fill="#f3d9c1" stroke="#c7a283" stroke-width="1.2"/>
+            <path d="M26 34.6 A6.5 6.5 0 0 1 39 34.6 Q35 32.8 32 33.2 Q28.6 33.8 26 34.6 Z" fill="#6b5444"/>
+            <circle cx="30.4" cy="36" r=".9" fill="#3a2f28"/><circle cx="34.6" cy="36" r=".9" fill="#3a2f28"/>
+            <path d="M24.6 27.6 q1.8 2.6 0 3.6 q-1.8 -1 0 -3.6 Z" fill="#8fbfe0"/>
+          </svg></span>
+          <div class="t"><h3>똥비 피하기</h3><p>똥은 피하고 별사탕은 줍기!</p></div>
+          <span class="pg" aria-hidden="true">p.03</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/bungeo-snowfight/" aria-label="붕어빵 눈싸움 — 붕어빵 던져 눈밭 땅따먹기">
+          <span class="no" aria-hidden="true">04</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <defs><path id="bungeoFish" d="M48 0C48-17 33-27 12-27C-8-27-22-19-30-8Q-38-16-45-20Q-50-21-48-15Q-42 0-48 15Q-50 21-45 20Q-38 16-30 8C-22 19-8 27 12 27C33 27 48 17 48 0Z"/></defs>
+            <rect x="6" y="36" width="26" height="22" rx="5" fill="#6f96c9"/>
+            <rect x="32" y="36" width="26" height="22" rx="5" fill="#ebb2c0"/>
+            <rect x="27" y="36" width="10" height="22" fill="#eef2f6"/>
+            <path d="M10 54 L19 40 M17.5 54 L26 40" stroke="#5f86ba" stroke-width="1.6" stroke-linecap="round"/>
+            <g fill="#d495a6"><circle cx="41" cy="41" r="1.5"/><circle cx="54" cy="41" r="1.5"/><circle cx="41" cy="53.5" r="1.5"/><circle cx="54" cy="53.5" r="1.5"/></g>
+            <path d="M13 32 Q22 8 37 13" fill="none" stroke="#8a93a3" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5"/>
+            <g transform="translate(46 17) rotate(22)">
+              <use href="#bungeoFish" transform="scale(.28)" fill="#9a6442" stroke="#5e3a24" stroke-width="4"/>
+              <ellipse cx="-1" cy="0" rx="4.2" ry="2.3" fill="#5a2b2b" opacity=".55"/>
+            </g>
+            <g transform="translate(46 47.5) rotate(-12)">
+              <use href="#bungeoFish" transform="scale(.2)" fill="#e6bd68" stroke="#9c7425" stroke-width="5.2"/>
+              <ellipse cx="-.5" cy="0" rx="2.7" ry="1.4" fill="#fff4d2"/>
+            </g>
+          </svg></span>
+          <div class="t"><h3>붕어빵 눈싸움</h3><p>붕어빵 던져 눈밭 땅따먹기</p></div>
+          <span class="pg" aria-hidden="true">p.04</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/mole-pop/" aria-label="두더지 뿅뿅 — 쏙 올라오는 두더지를 톡!">
+          <span class="no" aria-hidden="true">05</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <defs><clipPath id="molePopClip"><rect x="0" y="0" width="64" height="47"/><ellipse cx="32" cy="47" rx="17" ry="5"/></clipPath></defs>
+            <ellipse cx="32" cy="50" rx="27" ry="9" fill="#e3d3bb" stroke="#bfa98b" stroke-width="1.4"/>
+            <ellipse cx="32" cy="47" rx="17" ry="5" fill="#9c8670"/>
+            <g clip-path="url(#molePopClip)">
+              <rect x="19" y="14" width="26" height="40" rx="13" fill="#c4ab93" stroke="#8f765f" stroke-width="1.4"/>
+              <circle cx="27.5" cy="27" r="1.9" fill="#3a2f28"/><circle cx="36.5" cy="27" r="1.9" fill="#3a2f28"/>
+              <ellipse cx="32" cy="32.5" rx="2.8" ry="2" fill="#c98a83"/>
+              <ellipse cx="24.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+              <ellipse cx="39.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+            </g>
+            <path d="M51 7 L52.6 11.9 L57.5 13.5 L52.6 15.1 L51 20 L49.4 15.1 L44.5 13.5 L49.4 11.9 Z" fill="#e2b54e"/>
+            <path d="M10 18 L10.9 20.6 L13.5 21.5 L10.9 22.4 L10 25 L9.1 22.4 L6.5 21.5 L9.1 20.6 Z" fill="#e2b54e" opacity=".7"/>
+          </svg></span>
+          <div class="t"><h3>두더지 뿅뿅</h3><p>쏙 올라오는 두더지를 톡!</p></div>
+          <span class="pg" aria-hidden="true">p.05</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/bunny-ten/" aria-label="개구리 텐 — 합이 10이 되게 묶는 숫자 퍼즐">
+          <span class="no" aria-hidden="true">06</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <rect x="7" y="10" width="50" height="48" rx="9" fill="#1f6fc4" fill-opacity=".12" stroke="#3f74ad" stroke-width="2.5"/>
+            <g fill="none" stroke="#7f9a8b" stroke-width="3.2">
+              <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+              <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+              <ellipse cx="32" cy="37" rx="20" ry="14"/>
+            </g>
+            <g fill="#d4e7bb">
+              <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+              <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+              <ellipse cx="32" cy="37" rx="20" ry="14"/>
+            </g>
+            <path d="M24.5 33 L27 31 L27 43" fill="none" stroke="#1b2e26" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="35.5" cy="37" rx="3.8" ry="5.6" fill="none" stroke="#1b2e26" stroke-width="3.4"/>
+          </svg></span>
+          <div class="t"><h3>개구리 텐</h3><p>합이 10이 되게 묶는 숫자 퍼즐</p></div>
+          <span class="pg" aria-hidden="true">p.06</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/snake-garden/" aria-label="뱀 정원 — 열매 먹고 길어지는 뱀">
+          <span class="no" aria-hidden="true">07</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <path d="M12 50 C 12 38, 30 40, 30 30 S 46 18, 46 14" fill="none" stroke="#3f8d55" stroke-width="9" stroke-linecap="round"/>
+            <path d="M8 54 L12 50" stroke="#3f8d55" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="16" cy="43" r="1.8" fill="#8fc89b"/><circle cx="27" cy="35" r="1.8" fill="#8fc89b"/><circle cx="36" cy="25" r="1.8" fill="#8fc89b"/>
+            <circle cx="47" cy="13" r="7" fill="#2f7444"/>
+            <circle cx="44.5" cy="10.5" r="2.2" fill="#fff"/><circle cx="50" cy="12" r="2.2" fill="#fff"/>
+            <circle cx="45" cy="10" r="1.1" fill="#1f2430"/><circle cx="50.6" cy="11.6" r="1.1" fill="#1f2430"/>
+            <path d="M53 8 l3 -2 m-3 2 l3.4 0.6" fill="none" stroke="#b23a24" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="46" r="6" fill="#c8374a"/>
+            <circle cx="48" cy="46" r="0.9" fill="#ffd6dc"/><circle cx="52" cy="46.5" r="0.9" fill="#ffd6dc"/><circle cx="50" cy="49" r="0.9" fill="#ffd6dc"/>
+            <ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f8d55"/>
+            <ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f8d55"/>
+          </svg></span>
+          <div class="t"><h3>뱀 정원</h3><p>열매 먹고 길어지는 뱀</p></div>
+          <span class="pg" aria-hidden="true">p.07</span>
+        </a></li>
+
+        <li><a class="entry" href="../../games/block-stack/" aria-label="블록 스택 — 블록 쌓아 줄 지우는 퍼즐">
+          <span class="no" aria-hidden="true">08</span>
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 64 64">
+            <g>
+              <rect x="8" y="46" width="11" height="11" rx="2.5" fill="#3a97a8"/><rect x="20" y="46" width="11" height="11" rx="2.5" fill="#3a97a8"/>
+              <rect x="32" y="46" width="11" height="11" rx="2.5" fill="#3a97a8"/><rect x="44" y="46" width="11" height="11" rx="2.5" fill="#3a97a8"/>
+              <rect x="8" y="34" width="11" height="11" rx="2.5" fill="#e0a73a"/><rect x="20" y="34" width="11" height="11" rx="2.5" fill="#e0a73a"/>
+              <rect x="8" y="22" width="11" height="11" rx="2.5" fill="#e0a73a"/><rect x="20" y="22" width="11" height="11" rx="2.5" fill="#e0a73a"/>
+              <rect x="32" y="34" width="11" height="11" rx="2.5" fill="#8a72c4"/>
+              <rect x="44" y="34" width="11" height="11" rx="2.5" fill="#d98a48"/><rect x="44" y="22" width="11" height="11" rx="2.5" fill="#d98a48"/>
+              <rect x="26" y="4" width="11" height="11" rx="2.5" fill="#c9553a"/><rect x="38" y="4" width="11" height="11" rx="2.5" fill="#c9553a"/>
+            </g>
+            <line x1="37.5" y1="17" x2="37.5" y2="21" stroke="#c9553a" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          </svg></span>
+          <div class="t"><h3>블록 스택</h3><p>블록 쌓아 줄 지우는 퍼즐</p></div>
+          <span class="pg" aria-hidden="true">p.08</span>
+        </a></li>
+      </ol>
+    </nav>
+  </main>
+
+  <footer class="colophon">
+    <p class="note">이번 호에는 여덟 편의 작은 게임을 실었습니다. 쉬는 시간에 한 판, 잠들기 전에 한 판 — 손가락 하나로 바로 시작할 수 있어요. 새 게임이 나오면 표지가 바뀝니다.</p>
+    <dl>
+      <dt>발행</dt><dd>혜진's 스튜디오</dd>
+      <dt>창간</dt><dd>2026.11.13.</dd>
+      <dt>수록</dt><dd>게임 8편 · iPad · PC · 폰</dd>
+    </dl>
+  </footer>
+  <div class="folio" aria-hidden="true"><span>혜진's 스튜디오</span><span>VOL.1 · No.08</span></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>혜진's 스튜디오 — 시안 B: 손으로 만든 작업실</title>
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="혜진's 스튜디오">
+<meta name="theme-color" content="#f3ecdf" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1e1c1a" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  /* ───────── 색상 토큰: 낮의 작업실 ───────── */
+  :root {
+    --desk: #f3ecdf;            /* 모눈 노트 바탕 */
+    --grid: rgba(92, 118, 140, .13);
+    --grid-major: rgba(92, 118, 140, .2);
+    --paper: #fffdf8;           /* 폴라로이드 종이 */
+    --ink: #2b2620;
+    --muted: #6b6155;
+    --accent: #b5502d;          /* 도장 잉크(테라코타) */
+    --pencil: #7c8794;          /* 연필 낙서 */
+    --kraft: #d7bd94;
+    --kraft-ink: #35281a;
+    --note: #f2e3a8;            /* 포스트잇(채도 낮춤) */
+    --note-ink: #4a3d1e;
+    --shadow: rgba(80, 56, 30, .26);
+    --tape-a: rgba(226, 168, 140, .72);
+    --tape-b: rgba(156, 190, 165, .72);
+    --tape-c: rgba(165, 184, 212, .72);
+    --tape-d: rgba(228, 202, 136, .78);
+    --tag: #fbf3e2;
+    --lamp: transparent;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-bear: #e6ecec;
+    --hand: "Gaegu", "Nanum Pen Script", "Apple SD Gothic Neo", cursive;
+    --body: "Gowun Dodum", system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  /* ───────── 밤의 작업실 (스탠드 불빛) ───────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --desk: #1e1c1a;
+      --grid: rgba(236, 220, 192, .045);
+      --grid-major: rgba(236, 220, 192, .075);
+      --paper: #2c2925;
+      --ink: #ece3d4;
+      --muted: #ab9f8e;
+      --accent: #e0916c;
+      --pencil: #8f8a82;
+      --kraft: #4a3b2b;
+      --kraft-ink: #f1e3cc;
+      --note: #4a4431;
+      --note-ink: #efe4c4;
+      --shadow: rgba(0, 0, 0, .55);
+      --tape-a: rgba(196, 130, 104, .45);
+      --tape-b: rgba(120, 156, 132, .45);
+      --tape-c: rgba(126, 144, 176, .45);
+      --tape-d: rgba(190, 162, 98, .45);
+      --tag: #36312b;
+      --lamp: rgba(255, 196, 128, .07);
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-bear: #172126;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh;
+    color: var(--ink); font-family: var(--body);
+    background-color: var(--desk);
+    background-image:
+      radial-gradient(ellipse 70% 50% at 12% 0%, var(--lamp), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(var(--grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 100% 100%, 180px 180px, 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    padding:
+      max(20px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      max(32px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left));
+    -webkit-tap-highlight-color: transparent;
+  }
+  main { max-width: 1120px; margin: 0 auto; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ───────── 머리말: 크라프트 라벨 + 날짜 도장 + 꼬리표 버튼 ───────── */
+  .top {
+    display: grid; align-items: start; column-gap: 18px;
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-areas: "label stamp . tools";
+    margin-bottom: 14px;
+  }
+  .label {
+    grid-area: label; position: relative;
+    background: var(--kraft); color: var(--kraft-ink);
+    padding: 16px 26px 22px 22px;
+    transform: rotate(-1.2deg); transform-origin: 20% 50%;
+    box-shadow: 0 8px 16px -10px var(--shadow);
+    /* 아래쪽만 찢은 종이 가장자리 */
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 96% 93%, 91% 89%, 86% 95%, 80% 90%, 74% 96%, 68% 91%, 61% 96%, 55% 90%, 48% 95%, 42% 89%, 35% 96%, 29% 90%, 22% 95%, 16% 89%, 10% 95%, 5% 90%, 0 94%);
+  }
+  .label::after { /* 크라프트 결 */
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background: repeating-linear-gradient(98deg, transparent 0 7px, rgba(90, 60, 30, .05) 7px 8px);
+  }
+  .kicker {
+    margin: 0 0 2px; font: 600 11px/1.3 var(--mono); letter-spacing: .16em; text-transform: uppercase; opacity: .78;
+  }
+  h1 {
+    margin: 0; font-family: var(--hand); font-weight: 700;
+    font-size: clamp(40px, 6.4vw, 64px); line-height: 1; letter-spacing: -.03em; white-space: nowrap;
+  }
+  h1 .hl {
+    background: linear-gradient(transparent 58%, rgba(181, 80, 45, .28) 58%, rgba(181, 80, 45, .28) 90%, transparent 90%);
+    padding: 0 .06em;
+  }
+  @media (prefers-color-scheme: dark) { h1 .hl { background: linear-gradient(transparent 58%, rgba(224, 145, 108, .3) 58%, rgba(224, 145, 108, .3) 90%, transparent 90%); } }
+
+  .stamp {
+    grid-area: stamp; align-self: center;
+    margin: 6px 0 0; width: 100px; height: 100px; border-radius: 50%;
+    display: grid; place-content: center; text-align: center;
+    color: var(--accent); border: 2.5px solid currentColor;
+    box-shadow: inset 0 0 0 4px var(--desk), inset 0 0 0 5.5px currentColor;
+    font-family: var(--mono); transform: rotate(-12deg); opacity: .82;
+    /* 잉크가 덜 묻은 도장 질감 */
+    -webkit-mask-image: radial-gradient(circle at 30% 70%, #000 55%, rgba(0,0,0,.75) 80%);
+            mask-image: radial-gradient(circle at 30% 70%, #000 55%, rgba(0,0,0,.75) 80%);
+  }
+  .stamp span { display: block; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; font-weight: 700; padding-left: .3em; }
+  .stamp b { display: block; font-size: 11.5px; letter-spacing: -.02em; margin-top: 3px; border-top: 1.5px solid currentColor; padding-top: 3px; }
+
+  .tools { grid-area: tools; display: flex; gap: 10px; align-items: center; padding-top: 8px; }
+  .btn {
+    position: relative; display: inline-flex; align-items: center; gap: 8px;
+    height: 44px; min-width: 44px; padding: 0 14px 0 26px;
+    font: 700 15px/1 var(--body); color: var(--ink); cursor: pointer;
+    background: var(--tag); border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
+    border-radius: 6px 10px 10px 6px;
+    box-shadow: 0 4px 8px -5px var(--shadow);
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: transform 160ms ease-out, border-color 160ms ease-out;
+  }
+  .btn::before { /* 꼬리표 구멍 */
+    content: ""; position: absolute; left: 9px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
+    border-radius: 50%; background: var(--desk); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 30%, transparent);
+  }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .rankbtn { transform: rotate(2deg); }
+  .mebtn { transform: rotate(-1.5deg); padding-left: 12px; gap: 0; overflow: hidden; }
+  .mebtn::before { display: none; }
+  .mebtn .who {
+    display: inline-flex; align-items: center; align-self: stretch; margin: -1.5px 10px -1.5px -12px; padding: 0 9px;
+    background: var(--accent); color: var(--paper);
+  }
+  .mebtn .who svg { width: 17px; height: 17px; }
+  .mebtn .nick { font-family: var(--hand); font-size: 21px; font-weight: 700; max-width: 7.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 2px; }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .btn:active { transform: rotate(0) scale(.97); }
+  @media (hover: hover) { .btn:hover { transform: rotate(0) translateY(-1px); border-color: var(--accent); } }
+
+  /* 손글씨 한마디 */
+  .hello {
+    position: relative; display: inline-block; margin: 6px 0 22px 6px;
+    font-family: var(--hand); font-size: clamp(21px, 2.6vw, 25px); color: var(--muted); word-break: keep-all; letter-spacing: -.02em;
+  }
+  .hello strong { color: var(--ink); font-weight: 700; }
+  .hello .scribble { position: absolute; left: -4px; right: -8px; bottom: -9px; width: calc(100% + 12px); height: 12px; color: var(--pencil); }
+
+  /* ───────── 게임 보드 ───────── */
+  .shelf {
+    display: flex; align-items: baseline; gap: 12px; margin: 0 0 18px; padding-bottom: 6px;
+    border-bottom: 1.5px dashed color-mix(in srgb, var(--ink) 25%, transparent);
+  }
+  .shelf h2 { margin: 0; font: 700 12px/1.2 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .shelf .count { font: 700 12px var(--mono); color: var(--accent); }
+  .shelf .order { margin-left: auto; font-family: var(--hand); font-size: 19px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+  .shelf .order svg { width: 34px; height: 14px; color: var(--pencil); }
+
+  .board {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: 30px 26px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .board > li { display: flex; min-width: 0; }
+  .board > .feat { grid-column: span 2; grid-row: span 2; }
+  @media (max-width: 899px) { .board { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 22px; } }
+  @media (max-width: 599px) {
+    .board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+    .board > .feat { grid-row: span 1; }
+  }
+  @media (max-width: 339px) { .board { grid-template-columns: minmax(0, 1fr); } .board > .feat { grid-column: span 1; } }
+
+  /* 폴라로이드 카드 */
+  .card {
+    --r: 0deg; --tr: -3deg; --tape: var(--tape-a);
+    position: relative; flex: 1; display: flex; flex-direction: column; min-width: 0;
+    text-decoration: none; color: inherit;
+    background: var(--paper); border-radius: 3px;
+    padding: 10px 10px 14px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 10px 18px -12px var(--shadow), 0 2px 4px -2px var(--shadow);
+    transform: rotate(var(--r));
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: transform 180ms cubic-bezier(.2,.7,.3,1), box-shadow 180ms ease-out;
+    animation: place 320ms cubic-bezier(.2,.7,.3,1) both;
+  }
+  .card::before { /* 마스킹테이프 */
+    content: ""; position: absolute; z-index: 2; top: -11px; left: 50%;
+    width: 78px; height: 22px; margin-left: -39px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.18) 0 2px, transparent 2px 6px),
+      var(--tape);
+    transform: rotate(var(--tr));
+    clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 88% 0, 92% 8%, 96% 0, 100% 10%, 100% 92%, 96% 100%, 92% 90%, 88% 100%, 12% 100%, 8% 92%, 4% 100%, 0 90%);
+  }
+  .art {
+    position: relative; aspect-ratio: 4 / 3; background: var(--tile);
+    display: grid; place-items: center; overflow: hidden; border-radius: 1px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.04);
+  }
+  .art svg { width: 64%; height: auto; max-height: 84%; transition: transform 180ms ease-out; }
+  .cap { padding: 10px 4px 0; }
+  .no { display: block; font: 700 10.5px/1 var(--mono); letter-spacing: .14em; color: var(--muted); margin-bottom: 4px; }
+  .card h3 {
+    margin: 0; font-family: var(--hand); font-weight: 700; font-size: 25px; line-height: 1.08; letter-spacing: -.03em;
+    color: var(--ink); word-break: keep-all; overflow-wrap: break-word;
+  }
+  .card p { margin: 5px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); word-break: keep-all; overflow-wrap: break-word; }
+
+  /* 대표(최신) 카드 */
+  .feat .card { padding: 14px 14px 18px; }
+  .feat .card::before { width: 120px; margin-left: -60px; height: 26px; top: -13px; }
+  .feat .art { aspect-ratio: auto; flex: 1; min-height: 220px; }
+  .feat .art svg { width: 46%; max-height: 80%; }
+  .feat .cap { display: flex; align-items: flex-end; gap: 12px; padding-top: 14px; }
+  .feat .cap > div { min-width: 0; }
+  .feat h3 { font-size: clamp(30px, 3.6vw, 40px); }
+  .feat p { font-size: 16px; }
+  .new {
+    position: absolute; top: 14px; right: 14px; width: 74px; height: 74px; border-radius: 50%;
+    display: grid; place-content: center; text-align: center;
+    color: var(--accent); border: 2.5px solid currentColor; transform: rotate(14deg);
+    font: 700 17px/1 var(--mono); letter-spacing: .08em; opacity: .85;
+    box-shadow: inset 0 0 0 3px var(--tile), inset 0 0 0 4.5px currentColor;
+  }
+  .new small { display: block; font: 700 14px/1 var(--hand); letter-spacing: 0; margin-top: 3px; }
+  .memo-new {
+    margin-left: auto; flex: none; display: flex; align-items: center; gap: 2px;
+    font-family: var(--hand); font-size: 20px; line-height: 1.1; color: var(--accent); transform: rotate(-4deg); text-align: right;
+  }
+  .memo-new svg { width: 40px; height: 34px; color: var(--accent); }
+
+  /* 작업대 메모 (게임 아님) */
+  .note {
+    position: relative; flex: 1; min-width: 0;
+    background: var(--note); color: var(--note-ink);
+    padding: 26px 18px 18px; transform: rotate(1.8deg);
+    box-shadow: 0 12px 16px -12px var(--shadow);
+    font-family: var(--hand); font-size: 20px; line-height: 1.35; word-break: keep-all; letter-spacing: -.02em;
+    background-image: linear-gradient(transparent 0 calc(100% - 1px), rgba(120, 100, 40, .16) calc(100% - 1px));
+    background-size: 100% 27px; background-position: 0 20px;
+  }
+  .note::after { /* 접힌 귀퉁이 */
+    content: ""; position: absolute; right: 0; bottom: 0; width: 26px; height: 26px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--note) 70%, #000 12%) 50%, var(--desk) 50%);
+  }
+  .note .pin { position: absolute; top: -8px; left: 50%; width: 22px; height: 22px; margin-left: -11px; }
+  .note h3 { margin: 0 0 4px; font-size: 23px; font-weight: 700; }
+  .note ul { margin: 0; padding: 0; list-style: none; }
+  .note li::before { content: "– "; }
+  .note .sign { display: block; margin-top: 8px; text-align: right; font-size: 18px; opacity: .8; }
+
+  footer {
+    margin-top: 40px; padding-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: space-between;
+    border-top: 1.5px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+    font: 11px/1.5 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase;
+  }
+
+  /* 기울기 리듬 (손으로 붙인 느낌, 최대 ±1.6°) */
+  .board > li:nth-child(2) .card { --r: 1.3deg;  --tr: 4deg;  --tape: var(--tape-b); }
+  .board > li:nth-child(3) .card { --r: -1.1deg; --tr: -2deg; --tape: var(--tape-c); }
+  .board > li:nth-child(4) .card { --r: .7deg;   --tr: -5deg; --tape: var(--tape-d); }
+  .board > li:nth-child(5) .card { --r: -1.5deg; --tr: 3deg;  --tape: var(--tape-a); }
+  .board > li:nth-child(6) .card { --r: 1deg;    --tr: -3deg; --tape: var(--tape-c); }
+  .board > li:nth-child(7) .card { --r: -.6deg;  --tr: 5deg;  --tape: var(--tape-b); }
+  .board > li:nth-child(8) .card { --r: 1.6deg;  --tr: -4deg; --tape: var(--tape-d); }
+  .board > li.feat .card        { --r: -.8deg;  --tr: -2deg; --tape: var(--tape-d); }
+
+  .board > li:nth-child(2) .card { animation-delay: 40ms; }
+  .board > li:nth-child(3) .card { animation-delay: 80ms; }
+  .board > li:nth-child(4) .card { animation-delay: 120ms; }
+  .board > li:nth-child(5) .card { animation-delay: 160ms; }
+  .board > li:nth-child(n+6) .card { animation-delay: 200ms; }
+  @keyframes place { from { opacity: 0; transform: translateY(-8px) rotate(calc(var(--r) * 2.5)); } }
+
+  .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+  .card:active { transform: rotate(0) scale(.98); transition-duration: 90ms; }
+  @media (hover: hover) {
+    .card:hover, .card:focus-visible {
+      transform: rotate(0) translateY(-4px);
+      box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 18px 26px -14px var(--shadow), 0 2px 4px -2px var(--shadow);
+    }
+    .card:hover .art svg { transform: scale(1.05) rotate(-2deg); }
+  }
+
+  @media (min-width: 900px) { .art { aspect-ratio: 3 / 2; } .hello { margin-bottom: 16px; } .top { margin-bottom: 8px; } }
+
+  /* ───────── 반응형 머리말 ───────── */
+  @media (max-width: 899px) {
+    .top { grid-template-columns: auto 1fr auto; grid-template-areas: "label stamp tools"; column-gap: 14px; }
+    .stamp { width: 84px; height: 84px; justify-self: start; }
+    .stamp b { font-size: 11px; }
+  }
+  @media (max-width: 699px) {
+    .top { grid-template-columns: auto 1fr; grid-template-areas: "tools tools" "label stamp"; row-gap: 10px; }
+    .tools { justify-content: flex-end; padding-top: 0; }
+  }
+  @media (max-width: 599px) {
+    body { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+    .label { padding: 12px 18px 18px 16px; }
+    .kicker { font-size: 9.5px; letter-spacing: .12em; }
+    .kicker .kk { display: none; }
+    h1 { font-size: clamp(34px, 10vw, 44px); }
+    .stamp { width: 76px; height: 76px; margin-top: 2px; }
+    .stamp span { font-size: 8.5px; }
+    .stamp b { font-size: 8.5px; letter-spacing: -.04em; }
+    .hello { margin-bottom: 18px; }
+    .card { padding: 8px 8px 12px; }
+    .card::before { width: 58px; margin-left: -29px; height: 18px; top: -9px; }
+    .card h3 { font-size: 21px; }
+    .card p { font-size: 13px; }
+    .feat .art { aspect-ratio: 16 / 9; min-height: 0; flex: none; }
+    .feat .art svg { width: 34%; }
+    .feat h3 { font-size: 30px; }
+    .feat p { font-size: 14.5px; }
+    .new { width: 60px; height: 60px; font-size: 14px; top: 10px; right: 10px; }
+    .new small { font-size: 12px; }
+    .memo-new { font-size: 17px; }
+    .memo-new svg { width: 30px; height: 26px; }
+    .note { font-size: 18px; padding: 22px 14px 14px; }
+    .note h3 { font-size: 21px; }
+    .shelf .order { font-size: 17px; }
+  }
+  @media (max-width: 379px) {
+    h1 { font-size: 31px; }
+    .label { padding: 10px 14px 16px 12px; }
+    .stamp { width: 64px; height: 64px; }
+    .stamp span { font-size: 7.5px; letter-spacing: .2em; }
+    .stamp b { font-size: 7.2px; }
+    .tools { gap: 8px; }
+    .mebtn .nick { max-width: 4.5em; }
+    .memo-new span { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .btn, .art svg { animation: none !important; transition: none !important; }
+    .card:hover, .card:focus-visible, .card:active { transform: rotate(var(--r)); }
+    .card:hover .art svg { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="label">
+      <p class="kicker">small game workshop<span class="kk"> · 손으로 만드는 게임</span></p>
+      <h1>혜진's <span class="hl">스튜디오</span></h1>
+    </div>
+    <p class="stamp"><span>since</span> <b>2026.11.13.</b></p>
+    <div class="tools">
+      <button class="btn mebtn" id="meBtn" type="button" aria-label="내 닉네임 손님. 닉네임 정보 열기">
+        <span class="who"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+        <span class="nick" id="meNick">손님</span>
+      </button>
+      <button class="btn rankbtn" id="rankBtn" type="button" aria-label="순위표">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4.4M17 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 14v4M8.5 20.5h7M9.5 18h5"/></svg>
+        <span>순위</span>
+      </button>
+    </div>
+  </header>
+
+  <p class="hello"><strong>오늘은 뭐 하고 놀까?</strong> 하고 싶은 게임을 골라보세요.
+    <svg class="scribble" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 C 40 3, 80 10, 120 6 S 200 3, 240 7 S 285 8, 298 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M60 10 C 110 8, 170 11, 230 9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".6"/></svg>
+  </p>
+
+  <section aria-labelledby="shelfTitle">
+    <div class="shelf">
+      <h2 id="shelfTitle">게임 서랍</h2>
+      <span class="count">8개</span>
+      <span class="order">최신순
+        <svg viewBox="0 0 34 14" aria-hidden="true"><path d="M2 8 C 10 4, 20 11, 30 6 M25 2.5 L31 6 L26 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+
+    <!-- 새 게임은 이 목록 맨 앞에 추가 (최신 순). 첫 번째 li가 대표 카드(.feat) -->
+    <ul class="board">
+      <li class="feat">
+        <a class="card" href="../../games/hungry-bear/" aria-label="폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까? (새 게임)">
+          <div class="art" style="--tile: var(--tile-bear)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <rect x="2" y="49" width="60" height="11" rx="5.5" fill="#a7c0c4"/>
+              <path d="M8 56 H20 M36 57 H46" stroke="#e9f1f1" stroke-width="1.6" stroke-linecap="round"/>
+              <g stroke="#3a2318" stroke-linejoin="round" stroke-linecap="round">
+              <circle cx="15" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+              <circle cx="41" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+              <path d="M14 46 Q28 40 42 46 L42 50 L14 50 Z" fill="#9c5a32" stroke-width="1.6"/>
+              <ellipse cx="28" cy="30" rx="16" ry="14" fill="#9c5a32" stroke-width="1.8"/>
+              <path d="M28 4 C31 7 33 10 32 13 C34 12 35 10 35 9 C37 12 36 16 32 17 L24 17 C20 16 19 12 21 9 C21 11 22 12 24 13 C23 10 25 7 28 4 Z" fill="#f2622a" stroke-width="1.2"/>
+              <ellipse cx="28" cy="36" rx="8.5" ry="6" fill="#f0d9b0" stroke-width="1.2"/>
+              <circle cx="21.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+              <circle cx="34.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+              <path d="M23.5 37 Q28 35.8 32.5 37 Q32 42 28 42.4 Q24 42 23.5 37 Z" fill="#5e2420" stroke-width="1"/>
+              <path d="M14 43.5 Q28 48.5 42 43.5 L42 47.5 Q28 52.5 14 47.5 Z" fill="#6f9a8c" stroke-width="1.2"/>
+              <circle cx="16" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+              <circle cx="40" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+              </g>
+              <circle cx="16" cy="17" r="3" fill="#e5b088"/><circle cx="40" cy="17" r="3" fill="#e5b088"/>
+              <path d="M28 9 C30 11 31 13 30 16 L26 16 C25 13 26 11 28 9 Z" fill="#ffc533"/>
+              <circle cx="22" cy="28.3" r="1.2" fill="#1e1410"/><circle cx="34" cy="28.3" r="1.2" fill="#1e1410"/>
+              <path d="M16.5 23.6 L26 26.6 L25.8 28.4 L16.8 25.6 Z M39.5 23.6 L30 26.6 L30.2 28.4 L39.2 25.6 Z" fill="#3a2318"/>
+              <path d="M25 32 Q28 30.6 31 32 Q30 34.4 28 34.6 Q26 34.4 25 32 Z" fill="#2b1a14"/>
+              <path d="M24.6 37.1 L25.7 39.6 L26.7 36.8 Z M31.4 37.1 L30.3 39.6 L29.3 36.8 Z" fill="#fffaf0"/>
+              <path d="M13.6 53.2 v2.2 M16 53.8 v2.4 M18.4 53.2 v2.2 M37.6 53.2 v2.2 M40 53.8 v2.4 M42.4 53.2 v2.2" stroke="#fffaf0" stroke-width="1.2" stroke-linecap="round"/>
+              <g transform="translate(51 35) rotate(-58) scale(.42)" stroke="#3a2318" stroke-linejoin="round">
+              <path d="M17 0 L29 -10 L26 0 L29 10 Z" fill="#b4553f" stroke-width="2.6"/>
+              <path d="M-27 0 Q-21 -12 0 -11 Q16 -9 20 0 Q16 9 0 11 Q-21 12 -27 0 Z" fill="#ef8a5f" stroke-width="2.6"/>
+              <path d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z" fill="#fbd9c2" stroke="none"/>
+              <circle cx="-19" cy="-2.5" r="3" fill="#fffaf0" stroke-width="1.4"/><circle cx="-19.6" cy="-2.5" r="1.5" fill="#3a2318" stroke="none"/>
+              </g>
+              <ellipse cx="54" cy="52" rx="6" ry="1.8" fill="none" stroke="#e9f1f1" stroke-width="1.2"/>
+            </svg>
+            <span class="new" aria-hidden="true">NEW<small>갓 나옴</small></span>
+          </div>
+          <div class="cap">
+            <div>
+              <span class="no">NO.08</span>
+              <h3>폭식 불곰을 찾아라</h3>
+              <p>누가 제일 많이 먹었을까?</p>
+            </div>
+            <span class="memo-new" aria-hidden="true"><span>따끈한<br>신작!</span>
+              <svg viewBox="0 0 40 34"><path d="M4 30 C 6 16, 18 8, 34 6 M27 2 L35 6 L29 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/parrot-beat/" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!">
+          <div class="art" style="--tile: var(--tile-parrot)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dfe6d8"/>
+              <path d="M16 46 Q9 52 8 57 Q12 56 18 50 Z" fill="#5d9170"/>
+              <path d="M26 21 C33 21 39 30 39 37 C39 45 33 51 26 51 C19 51 13 45 13 37 C13 30 19 21 26 21 Z" fill="#93c19f" stroke="#5d9170" stroke-width="1.6"/>
+              <ellipse cx="26" cy="42" rx="8" ry="7" fill="#e9f3e9"/>
+              <path d="M26 21 q-1 -5 3 -5 q3 .5 1 3" fill="none" stroke="#5d9170" stroke-width="1.6" stroke-linecap="round"/>
+              <circle cx="22" cy="32" r="1.4" fill="#2a2d36"/><circle cx="30" cy="32" r="1.4" fill="#2a2d36"/>
+              <circle cx="19" cy="36" r="2" fill="#f0b4a8" opacity=".55"/><circle cx="33" cy="36" r="2" fill="#f0b4a8" opacity=".55"/>
+              <path d="M23.6 34 Q26 32 28.4 34 Q28 38 25.2 38.6 Q26.2 36.2 23.6 34 Z" fill="#e8bf73"/>
+              <rect x="29" y="45" width="18" height="6" rx="2" fill="#c98d68" stroke="#9a6647" stroke-width="1"/>
+              <ellipse cx="38" cy="45" rx="9" ry="2.6" fill="#f6efe2" stroke="#9a6647" stroke-width="1"/>
+              <path d="M48.5 37.5 A5 5 0 0 1 48.5 44.5 M51.5 34.5 A9 9 0 0 1 51.5 47.5" fill="none" stroke="#3f7752" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+              <circle cx="44" cy="18" r="4" fill="#c9694a"/>
+              <rect x="49.9" y="12.9" width="4.2" height="4.2" rx=".8" transform="rotate(45 52 15)" fill="#4b958f"/>
+              <circle cx="58" cy="18" r="4" fill="#c9694a"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.07</span>
+            <h3>박자 앵무새</h3>
+            <p>듣고 똑같이 톡톡!</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/poop-rain/" aria-label="똥비 피하기 — 똥은 피하고 별사탕은 줍기!">
+          <div class="art" style="--tile: var(--tile-poop)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs><g id="poopRainShape"><ellipse cx="0" cy="-3.4" rx="10" ry="3.4"/><ellipse cx="0" cy="-8.4" rx="7.6" ry="3"/><ellipse cx="0" cy="-12.6" rx="5" ry="2.6"/><path d="M-2.6 -14 Q-2 -17.2 0.8 -18.2 Q2.6 -18.6 1.8 -16.8 Q1.4 -15.4 2.8 -14 Z"/></g></defs>
+              <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dbe3d1"/>
+              <ellipse cx="17" cy="52.4" rx="7" ry="1.9" fill="#5c4a38" opacity=".2"/>
+              <ellipse cx="47" cy="52.4" rx="4.6" ry="1.4" fill="#5c4a38" opacity=".14"/>
+              <g transform="translate(17 30)">
+                <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="2.4" stroke-linejoin="round"/>
+                <use href="#poopRainShape" fill="#a87a55"/>
+                <path d="M-6.8 -6 Q0 -4.8 6.8 -6 M-4.4 -10.6 Q0 -9.6 4.4 -10.6" fill="none" stroke="#8a6244" stroke-width="1" opacity=".5"/>
+                <ellipse cx="-3.4" cy="-9" rx="1.4" ry=".7" transform="rotate(-17 -3.4 -9)" fill="#fff" opacity=".35"/>
+              </g>
+              <g transform="translate(47 21) scale(.68)">
+                <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="3" stroke-linejoin="round"/>
+                <use href="#poopRainShape" fill="#a87a55"/>
+              </g>
+              <rect x="27" y="40" width="11" height="10.5" rx="4.4" fill="#86c3b0" stroke="#c7a283" stroke-width="1.2"/>
+              <circle cx="32.5" cy="34.6" r="6.4" fill="#f3d9c1" stroke="#c7a283" stroke-width="1.2"/>
+              <path d="M26 34.6 A6.5 6.5 0 0 1 39 34.6 Q35 32.8 32 33.2 Q28.6 33.8 26 34.6 Z" fill="#6b5444"/>
+              <circle cx="30.4" cy="36" r=".9" fill="#3a2f28"/><circle cx="34.6" cy="36" r=".9" fill="#3a2f28"/>
+              <path d="M41 41.5 h4.5 M42 45.5 h3" stroke="#9aa3ad" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M24.6 27.6 q1.8 2.6 0 3.6 q-1.8 -1 0 -3.6 Z" fill="#8fbfe0"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.06</span>
+            <h3>똥비 피하기</h3>
+            <p>똥은 피하고 별사탕은 줍기!</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/bungeo-snowfight/" aria-label="붕어빵 눈싸움 — 붕어빵 던져 눈밭 땅따먹기">
+          <div class="art" style="--tile: var(--tile-bungeo)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs><path id="bungeoFish" d="M48 0C48-17 33-27 12-27C-8-27-22-19-30-8Q-38-16-45-20Q-50-21-48-15Q-42 0-48 15Q-50 21-45 20Q-38 16-30 8C-22 19-8 27 12 27C33 27 48 17 48 0Z"/></defs>
+              <rect x="6" y="36" width="26" height="22" rx="5" fill="#6f96c9"/>
+              <rect x="32" y="36" width="26" height="22" rx="5" fill="#ebb2c0"/>
+              <rect x="27" y="36" width="10" height="22" fill="#eef2f6"/>
+              <path d="M10 54 L19 40 M17.5 54 L26 40" stroke="#5f86ba" stroke-width="1.6" stroke-linecap="round"/>
+              <g fill="#d495a6"><circle cx="41" cy="41" r="1.5"/><circle cx="54" cy="41" r="1.5"/><circle cx="41" cy="53.5" r="1.5"/><circle cx="54" cy="53.5" r="1.5"/></g>
+              <path d="M13 32 Q22 8 37 13" fill="none" stroke="#8a93a3" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5"/>
+              <g transform="translate(46 17) rotate(22)">
+                <use href="#bungeoFish" transform="scale(.28)" fill="#9a6442" stroke="#5e3a24" stroke-width="4"/>
+                <ellipse cx="-1" cy="0" rx="4.2" ry="2.3" fill="#5a2b2b" opacity=".55"/>
+              </g>
+              <g transform="translate(46 47.5) rotate(-12)">
+                <use href="#bungeoFish" transform="scale(.2)" fill="#e6bd68" stroke="#9c7425" stroke-width="5.2"/>
+                <ellipse cx="-.5" cy="0" rx="2.7" ry="1.4" fill="#fff4d2"/>
+              </g>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.05</span>
+            <h3>붕어빵 눈싸움</h3>
+            <p>붕어빵 던져 눈밭 땅따먹기</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/mole-pop/" aria-label="두더지 뿅뿅 — 쏙 올라오는 두더지를 톡!">
+          <div class="art" style="--tile: var(--tile-mole)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs><clipPath id="molePopClip"><rect x="0" y="0" width="64" height="47"/><ellipse cx="32" cy="47" rx="17" ry="5"/></clipPath></defs>
+              <ellipse cx="32" cy="50" rx="27" ry="9" fill="#e3d3bb" stroke="#bfa98b" stroke-width="1.4"/>
+              <ellipse cx="32" cy="47" rx="17" ry="5" fill="#9c8670"/>
+              <g clip-path="url(#molePopClip)">
+                <rect x="19" y="14" width="26" height="40" rx="13" fill="#c4ab93" stroke="#8f765f" stroke-width="1.4"/>
+                <circle cx="27.5" cy="27" r="1.9" fill="#3a2f28"/><circle cx="36.5" cy="27" r="1.9" fill="#3a2f28"/>
+                <ellipse cx="32" cy="32.5" rx="2.8" ry="2" fill="#c98a83"/>
+                <ellipse cx="24.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+                <ellipse cx="39.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+              </g>
+              <path d="M51 7 L52.6 11.9 L57.5 13.5 L52.6 15.1 L51 20 L49.4 15.1 L44.5 13.5 L49.4 11.9 Z" fill="#f2c75c"/>
+              <path d="M10 18 L10.9 20.6 L13.5 21.5 L10.9 22.4 L10 25 L9.1 22.4 L6.5 21.5 L9.1 20.6 Z" fill="#f2c75c" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.04</span>
+            <h3>두더지 뿅뿅</h3>
+            <p>쏙 올라오는 두더지를 톡!</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/bunny-ten/" aria-label="개구리 텐 — 합이 10이 되게 묶는 숫자 퍼즐">
+          <div class="art" style="--tile: var(--tile-bunny)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <rect x="7" y="10" width="50" height="48" rx="9" fill="#1f6fc4" fill-opacity=".12" stroke="#1f6fc4" stroke-width="2.5"/>
+              <g fill="none" stroke="#7f9a8b" stroke-width="3.2">
+                <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+                <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+                <ellipse cx="32" cy="37" rx="20" ry="14"/>
+              </g>
+              <g fill="#d4e7bb">
+                <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+                <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+                <ellipse cx="32" cy="37" rx="20" ry="14"/>
+              </g>
+              <path d="M24.5 33 L27 31 L27 43" fill="none" stroke="#1b2e26" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <ellipse cx="35.5" cy="37" rx="3.8" ry="5.6" fill="none" stroke="#1b2e26" stroke-width="3.4"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.03</span>
+            <h3>개구리 텐</h3>
+            <p>합이 10이 되게 묶는 숫자 퍼즐</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/snake-garden/" aria-label="뱀 정원 — 열매 먹고 길어지는 뱀">
+          <div class="art" style="--tile: var(--tile-snake)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <path d="M12 50 C 12 38, 30 40, 30 30 S 46 18, 46 14" fill="none" stroke="#3f9d5a" stroke-width="9" stroke-linecap="round"/>
+              <path d="M8 54 L12 50" stroke="#3f9d5a" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="16" cy="43" r="1.8" fill="#8fd19e"/>
+              <circle cx="27" cy="35" r="1.8" fill="#8fd19e"/>
+              <circle cx="36" cy="25" r="1.8" fill="#8fd19e"/>
+              <circle cx="47" cy="13" r="7" fill="#2f8049"/>
+              <circle cx="44.5" cy="10.5" r="2.2" fill="#fff"/>
+              <circle cx="50" cy="12" r="2.2" fill="#fff"/>
+              <circle cx="45" cy="10" r="1.1" fill="#1f2430"/>
+              <circle cx="50.6" cy="11.6" r="1.1" fill="#1f2430"/>
+              <path d="M53 8 l3 -2 m-3 2 l3.4 0.6" fill="none" stroke="#e4572e" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="50" cy="46" r="6" fill="#e0374f"/>
+              <circle cx="48" cy="46" r="0.9" fill="#ffd6dc"/>
+              <circle cx="52" cy="46.5" r="0.9" fill="#ffd6dc"/>
+              <circle cx="50" cy="49" r="0.9" fill="#ffd6dc"/>
+              <circle cx="47.6" cy="43.6" r="1.5" fill="#fff" opacity=".5"/>
+              <ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f9d5a"/>
+              <ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f9d5a"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.02</span>
+            <h3>뱀 정원</h3>
+            <p>열매 먹고 길어지는 뱀</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="../../games/block-stack/" aria-label="블록 스택 — 블록 쌓아 줄 지우는 퍼즐">
+          <div class="art" style="--tile: var(--tile-block)">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <g>
+                <rect x="8" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+                <rect x="20" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+                <rect x="32" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+                <rect x="44" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+                <rect x="8" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+                <rect x="20" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+                <rect x="8" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+                <rect x="20" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+                <rect x="32" y="34" width="11" height="11" rx="2.5" fill="#8e6fd8"/>
+                <rect x="44" y="34" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+                <rect x="44" y="22" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+                <rect x="26" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+                <rect x="38" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+              </g>
+              <g fill="#fff" opacity=".35">
+                <rect x="10" y="48" width="7" height="2" rx="1"/><rect x="22" y="48" width="7" height="2" rx="1"/>
+                <rect x="34" y="48" width="7" height="2" rx="1"/><rect x="46" y="48" width="7" height="2" rx="1"/>
+                <rect x="10" y="36" width="7" height="2" rx="1"/><rect x="22" y="36" width="7" height="2" rx="1"/>
+                <rect x="10" y="24" width="7" height="2" rx="1"/><rect x="22" y="24" width="7" height="2" rx="1"/>
+                <rect x="34" y="36" width="7" height="2" rx="1"/><rect x="46" y="36" width="7" height="2" rx="1"/>
+                <rect x="46" y="24" width="7" height="2" rx="1"/>
+                <rect x="28" y="6" width="7" height="2" rx="1"/><rect x="40" y="6" width="7" height="2" rx="1"/>
+              </g>
+              <line x1="37.5" y1="17" x2="37.5" y2="21" stroke="#e4572e" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+            </svg>
+          </div>
+          <div class="cap">
+            <span class="no">NO.01</span>
+            <h3>블록 스택</h3>
+            <p>블록 쌓아 줄 지우는 퍼즐</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <aside class="note" aria-label="작업대 메모">
+          <svg class="pin" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="10" r="7" fill="#b5502d" opacity=".85"/><circle cx="8.6" cy="7.6" r="2.2" fill="#fff" opacity=".45"/></svg>
+          <h3>작업대 메모</h3>
+          <ul>
+            <li>번호 클수록 새 게임</li>
+            <li>순위는 위쪽 꼬리표</li>
+            <li>다음 게임 만드는 중…</li>
+          </ul>
+          <span class="sign">— 혜진</span>
+        </aside>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>혜진's 스튜디오 · handmade web games</span>
+    <span>iPad · phone · PC</span>
+  </footer>
+</main>
+</body>
+</html>
