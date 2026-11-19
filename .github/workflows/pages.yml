@@ -30,6 +30,7 @@ jobs:
           cp -r games _site/
           cp -r lib _site/
           cp -r lab _site/
+          cp -r preview _site/
           cp -r admin _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
