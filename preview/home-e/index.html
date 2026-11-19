@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>혜진's 스튜디오 — 시안 E (놀이공원 매표소)</title>
+<meta name="theme-color" content="#dbe9f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131c33" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gothic+A1:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== 색상 토큰 ===== */
+  :root {
+    --sky-top: #d3e5f2; --sky: #dbe9f4; --sky-bot: #ecf3f9;
+    --ink: #1c2a3e; --muted: #4a5b71; --line: #c3d4e4;
+    --paper: #fffdf8; --perf: #b9c7d6; --shadow: rgba(48, 82, 120, .16); --edge: rgba(48, 82, 120, .12);
+    --accent: #b84e38;            /* 차분한 산호 — 흰 글자 대비 5.3:1 */
+    --accent-ink: #fffaf2;
+    --board: #2b4566; --board-ink: #fff6e3; --board-sub: #c9d8ea; --gold: #f2d58c;
+    --bulb: #f3e6c4; --bulb-glow: transparent;
+    --awn-a: #e8b9ab; --awn-b: #fbf4ea;
+    --wheel: #b8cfe3; --cloud: #f7fbfe; --hole: #dbe9f4;
+    --counter: #fffdf8;
+    --c-bear: #f4dcc8; --c-parrot: #d6eadb; --c-poop: #f1e5c3; --c-bungeo: #d5e3f2;
+    --c-mole: #e7dccb; --c-bunny: #d2e7e3; --c-snake: #dbe9cb; --c-block: #e2dbef;
+    --t-bear: #e6ecec; --t-parrot: #e8efe6; --t-poop: #efe8dc; --t-bungeo: #e4ebf1;
+    --t-mole: #e3e9d9; --t-bunny: #dbe6e3; --t-snake: #e4f0d6; --t-block: #fdebe3;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky-top: #0f172b; --sky: #131c33; --sky-bot: #1a2643;
+      --ink: #edf1f7; --muted: #a9b6c8; --line: #2c3b5a;
+      --paper: #1f2c48; --perf: #42557a; --shadow: rgba(0, 0, 0, .35); --edge: rgba(0, 0, 0, .25);
+      --accent: #e08a72; --accent-ink: #1a1420;
+      --board: #22345a; --board-ink: #fff3da; --board-sub: #b9c8de; --gold: #f2d58c;
+      --bulb: #f4d48a; --bulb-glow: rgba(244, 212, 138, .55);
+      --awn-a: #9a5a52; --awn-b: #d9cdb9;
+      --wheel: #2d3e63; --cloud: #1b2745; --hole: #131c33;
+      --counter: #1f2c48;
+      --c-bear: #46362f; --c-parrot: #2c4436; --c-poop: #463f2b; --c-bungeo: #2b3c56;
+      --c-mole: #403829; --c-bunny: #27423f; --c-snake: #33452a; --c-block: #3a3352;
+      --t-bear: #172126; --t-parrot: #18211c; --t-poop: #221e1a; --t-bungeo: #1a2129;
+      --t-mole: #18201b; --t-bunny: #16242a; --t-snake: #18241c; --t-block: #2a1f1b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  /* ===== 기본 ===== */
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink);
+    background: linear-gradient(180deg, var(--sky-top) 0, var(--sky) 380px, var(--sky-bot) 100%) fixed, var(--sky);
+    font-family: "Gothic A1", system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    position: relative; overflow-x: hidden;
+  }
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1040px; margin: 0 auto;
+    padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+
+  /* ===== 배경: 전구 줄, 구름, 관람차 ===== */
+  .scene { position: absolute; inset: 0 0 auto 0; height: 560px; overflow: hidden; pointer-events: none; z-index: 0; }
+  .lights {
+    position: absolute; left: 0; right: 0; top: 0; height: 40px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 6 Q60 34 120 6' fill='none' stroke='%237e93ad' stroke-width='1.2'/%3E%3Cg fill='%23f3e6c4' stroke='%238ea2ba' stroke-width='.8'%3E%3Ccircle cx='20' cy='15.5' r='3.6'/%3E%3Ccircle cx='60' cy='23' r='3.6'/%3E%3Ccircle cx='100' cy='15.5' r='3.6'/%3E%3C/g%3E%3C/svg%3E") repeat-x 0 0 / 120px 40px;
+    opacity: .9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .lights {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 6 Q60 34 120 6' fill='none' stroke='%234a5c80' stroke-width='1.2'/%3E%3Cg fill='%23f4d48a'%3E%3Ccircle cx='20' cy='15.5' r='3.4'/%3E%3Ccircle cx='60' cy='23' r='3.4'/%3E%3Ccircle cx='100' cy='15.5' r='3.4'/%3E%3C/g%3E%3Cg fill='%23f4d48a' opacity='.18'%3E%3Ccircle cx='20' cy='15.5' r='8'/%3E%3Ccircle cx='60' cy='23' r='8'/%3E%3Ccircle cx='100' cy='15.5' r='8'/%3E%3C/g%3E%3C/svg%3E");
+      opacity: 1;
+    }
+  }
+  .cloud { position: absolute; fill: var(--cloud); }
+  .cloud.c1 { width: 220px; left: -40px; top: 120px; }
+  .cloud.c2 { width: 170px; right: 6%; top: 330px; opacity: .85; }
+  .cloud.c3 { width: 130px; left: 30%; top: 56px; opacity: .7; }
+  .wheel {
+    position: absolute; right: -60px; top: 40px; width: 320px; height: 360px;
+    color: var(--wheel);
+  }
+  .wheel .rot { transform-origin: 160px 160px; animation: spin 120s linear infinite; }
+  .wheel .cab { fill: var(--wheel); }
+  .wheel .glow { fill: var(--bulb); opacity: 0; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wheel .glow { opacity: .55; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== 매표소 간판 ===== */
+  .booth { display: flex; flex-direction: column; align-items: center; margin: 28px 0 0; }
+  .awning {
+    width: min(560px, 100%); height: 38px; position: relative; z-index: 2;
+    background: repeating-linear-gradient(90deg, var(--awn-a) 0 28px, var(--awn-b) 28px 56px);
+    border-radius: 10px 10px 0 0;
+    -webkit-mask: radial-gradient(circle 14px at 14px 0, #000 98%, transparent) 0 24px / 28px 14px repeat-x,
+                  linear-gradient(#000, #000) 0 0 / 100% 24px no-repeat;
+            mask: radial-gradient(circle 14px at 14px 0, #000 98%, transparent) 0 24px / 28px 14px repeat-x,
+                  linear-gradient(#000, #000) 0 0 / 100% 24px no-repeat;
+  }
+  .board {
+    width: min(520px, calc(100% - 24px)); margin-top: -10px; position: relative;
+    background: var(--board); color: var(--board-ink);
+    border-radius: 0 0 22px 22px; padding: 26px 28px 24px; text-align: center;
+    box-shadow: 0 10px 22px var(--shadow);
+  }
+  .board::before { /* 전구 테두리 — 깜빡임 없음 */
+    content: ""; position: absolute; inset: 9px; border-radius: 0 0 16px 16px;
+    border: 5px dotted var(--bulb); border-top-color: transparent; pointer-events: none;
+    filter: drop-shadow(0 0 3px var(--bulb-glow));
+  }
+  .kicker {
+    margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .22em; color: var(--board-sub);
+  }
+  h1 {
+    margin: 0; font-family: "Jua", "Gothic A1", sans-serif; font-weight: 400;
+    font-size: clamp(32px, 6vw, 46px); line-height: 1.1; letter-spacing: -.01em; word-break: keep-all;
+  }
+  h1 span { color: var(--gold); }
+  .since { margin: 8px 0 0; font-size: 13px; color: var(--board-sub); letter-spacing: .04em; }
+  .since b { display: inline-block; padding: 2px 8px; margin-right: 6px; border-radius: 999px; background: rgba(255,255,255,.12); color: var(--board-ink); font-weight: 700; }
+
+  .counter {
+    width: min(600px, 100%); margin-top: -2px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--counter); border: 1px solid var(--line); border-radius: 16px;
+    padding: 8px 8px 8px 18px; box-shadow: 0 4px 12px var(--shadow);
+  }
+  .counter p { margin: 0; flex: 1 1 180px; font-size: 15px; color: var(--muted); word-break: keep-all; }
+  .counter p strong { color: var(--ink); }
+  .btns { display: flex; gap: 8px; margin-left: auto; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; height: 44px; min-width: 44px; padding: 0 14px;
+    border-radius: 999px; border: 1px solid var(--line); background: var(--sky-bot); color: var(--ink);
+    font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: border-color 140ms ease-out, transform 80ms ease-out;
+  }
+  .pill svg { width: 18px; height: 18px; flex: none; }
+  .pill.me { color: var(--muted); background: transparent; }
+  .pill.me span { max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill.rank { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .pill:active { transform: scale(.97); }
+  .pill:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .pill.rank:focus-visible { outline-color: var(--ink); }
+  @media (hover: hover) { .pill:hover { border-color: var(--accent); } .pill.rank:hover { border-color: var(--ink); } }
+
+  /* ===== 섹션 제목 ===== */
+  .sec {
+    display: flex; align-items: center; gap: 12px; margin: 36px 4px 16px;
+    font-family: "Jua", sans-serif; font-weight: 400; font-size: 22px; color: var(--ink);
+  }
+  .sec::after { content: ""; flex: 1; border-top: 2px dashed var(--perf); }
+  .sec small { font-family: "Gothic A1", sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); }
+
+  /* ===== 입장권 ===== */
+  .tickets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 22px; }
+  .ticket {
+    position: relative; display: block; color: inherit; text-decoration: none; border-radius: 16px;
+    filter: drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 6px 10px var(--shadow));
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: transform 160ms ease-out;
+    animation: enter 260ms ease-out both;
+  }
+  .ticket:nth-child(2) { animation-delay: 50ms; } .ticket:nth-child(3) { animation-delay: 90ms; }
+  .ticket:nth-child(4) { animation-delay: 130ms; } .ticket:nth-child(n+5) { animation-delay: 170ms; }
+  @keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+  .ticket:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  .ticket:active { transform: scale(.985); transition-duration: 80ms; }
+  @media (hover: hover) {
+    .ticket:hover, .ticket:focus-visible { transform: translateY(-3px) rotate(-.4deg); }
+    .ticket:hover .go, .ticket:focus-visible .go { color: var(--accent); }
+  }
+
+  .tk {
+    --stub: 96px; --r: 11px;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) var(--stub);
+    height: 100%; min-height: 136px; background: var(--paper); border-radius: 16px; overflow: hidden;
+    -webkit-mask: radial-gradient(circle at calc(100% - var(--stub)) 0, transparent var(--r), #000 calc(var(--r) + .5px)) top / 100% 51% no-repeat,
+                  radial-gradient(circle at calc(100% - var(--stub)) 100%, transparent var(--r), #000 calc(var(--r) + .5px)) bottom / 100% 51% no-repeat;
+            mask: radial-gradient(circle at calc(100% - var(--stub)) 0, transparent var(--r), #000 calc(var(--r) + .5px)) top / 100% 51% no-repeat,
+                  radial-gradient(circle at calc(100% - var(--stub)) 100%, transparent var(--r), #000 calc(var(--r) + .5px)) bottom / 100% 51% no-repeat;
+  }
+  .art {
+    width: 96px; height: 96px; margin: 20px 4px 20px 18px; align-self: center;
+    background: var(--tile); border-radius: 14px; display: grid; place-items: center;
+    box-shadow: inset 0 0 0 2px var(--c);
+  }
+  .art svg { width: 76%; height: auto; }
+  .info { padding: 18px 14px 16px 14px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  .info .tag { font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--muted); margin: 0 0 4px; }
+  .info h2 {
+    margin: 0; font-family: "Jua", "Gothic A1", sans-serif; font-weight: 400; font-size: 22px; line-height: 1.25;
+    color: var(--ink); word-break: keep-all; overflow-wrap: break-word;
+  }
+  .info p { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); word-break: keep-all; overflow-wrap: break-word; }
+  .go { margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--ink); transition: color 140ms ease-out; }
+  .go { white-space: nowrap; }
+  .go::after { content: "→"; margin-left: 5px; }
+
+  .stub {
+    position: relative; background: var(--c); border-left: 2px dashed var(--perf);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    padding: 26px 6px 14px; text-align: center;
+  }
+  .stub::before { /* 펀치 구멍 */
+    content: ""; position: absolute; top: 12px; left: 50%; width: 12px; height: 12px; margin-left: -6px;
+    border-radius: 50%; background: var(--hole); box-shadow: inset 0 1.5px 2px var(--shadow);
+  }
+  .stub .adm { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--ink); }
+  .stub .no { font-size: 10px; letter-spacing: .1em; color: var(--muted); margin-top: 4px; font-weight: 700; }
+  .stub .num { font-family: "Jua", sans-serif; font-size: 26px; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stub .bar {
+    width: 56px; height: 14px; margin-top: 8px; opacity: .55;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 13px);
+  }
+
+  /* ----- 신규 개장(최신 게임) ----- */
+  .ticket.feature { grid-column: 1 / -1; }
+  .feature .tk { --stub: 136px; --r: 13px; min-height: 196px; }
+  .feature .art { width: 150px; height: 150px; margin: 22px 8px 22px 26px; }
+  .feature .info { padding: 22px 18px; }
+  .feature .info h2 { font-size: 32px; }
+  .feature .info p { font-size: 16px; }
+  .feature .stub .num { font-size: 34px; }
+  .feature .info .tag { color: var(--accent); }
+  .feature .go {
+    align-self: flex-start; margin-top: 14px; display: inline-flex; align-items: center; min-height: 40px;
+    padding: 0 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 14px;
+  }
+  @media (hover: hover) { .feature:hover .go, .feature:focus-visible .go { color: var(--accent-ink); } }
+  .stamp {
+    position: absolute; z-index: 2; left: -10px; top: -16px; width: 78px; height: 78px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink); transform: rotate(-12deg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .stamp::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 1.5px dashed currentColor; opacity: .75; }
+  .stamp b { font-family: "Jua", sans-serif; font-weight: 400; font-size: 25px; letter-spacing: .04em; }
+  .stamp small { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: .06em; }
+  .open-day { font-size: 10px; font-weight: 700; color: var(--accent); margin-top: 6px; letter-spacing: .06em; }
+
+  footer { margin: 40px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+  footer span { display: inline-block; padding: 0 6px; }
+
+  /* ===== 반응형 ===== */
+  @media (min-width: 1024px) {
+    .booth { margin-top: 36px; }
+  }
+  @media (max-width: 767px) {
+    .wheel { right: -130px; top: 20px; opacity: .8; }
+  }
+  @media (max-width: 639px) {
+    .tickets { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .tk { --stub: 82px; min-height: 120px; }
+    .art { width: 76px; height: 76px; margin: 16px 2px 16px 14px; }
+    .info { padding: 14px 10px; }
+    .info h2 { font-size: 20px; }
+    .info p { font-size: 13px; }
+    .stub .num { font-size: 22px; }
+    .feature .tk { --stub: 92px; min-height: 160px; }
+    .feature .art { width: 100px; height: 100px; margin: 18px 2px 18px 16px; }
+    .feature .art { width: 84px; height: 84px; margin: 18px 0 18px 14px; }
+    .feature .info { padding: 18px 10px 16px 12px; }
+    .feature .info .tag { letter-spacing: .04em; }
+    .feature .go { padding: 0 14px; }
+    .feature .info h2 { font-size: 23px; }
+    .feature .info p { font-size: 14px; }
+    .feature .stub .num { font-size: 26px; }
+    .stamp { width: 66px; height: 66px; left: -6px; top: -14px; }
+    .stamp b { font-size: 21px; }
+    .board { padding: 24px 18px 22px; }
+    .counter { padding: 10px 10px 10px 16px; }
+    .sec { font-size: 20px; margin-top: 30px; }
+    .cloud.c1 { width: 160px; top: 140px; }
+  }
+  @media (max-width: 359px) {
+    .art, .feature .art { display: none; }
+    .tk { grid-template-columns: minmax(0, 1fr) var(--stub); }
+    .feature .info { padding-left: 18px; }
+    .info { padding-left: 16px; }
+    .pill.me span { max-width: 4em; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel .rot { animation: none; }
+    .ticket { animation: none; transition: none; }
+    .ticket:hover, .ticket:focus-visible, .ticket:active { transform: none; }
+    .pill:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="lights"></div>
+  <svg class="cloud c1" viewBox="0 0 220 80"><path d="M30 70 Q6 70 8 52 Q10 36 30 38 Q34 14 62 16 Q80 0 104 12 Q126 2 140 22 Q168 16 174 40 Q204 38 206 56 Q206 70 186 70 Z"/></svg>
+  <svg class="cloud c2" viewBox="0 0 220 80"><path d="M24 70 Q4 70 8 54 Q12 42 28 44 Q32 24 58 26 Q74 8 100 18 Q122 10 134 30 Q160 26 166 46 Q196 44 198 60 Q198 70 182 70 Z"/></svg>
+  <svg class="cloud c3" viewBox="0 0 220 80"><path d="M30 70 Q8 70 12 54 Q16 40 34 44 Q42 20 74 24 Q96 6 122 22 Q156 18 162 44 Q196 42 196 60 Q196 70 178 70 Z"/></svg>
+  <svg class="wheel" viewBox="0 0 320 360">
+    <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
+      <path d="M160 160 L92 350 M160 160 L228 350 M110 300 H210"/>
+    </g>
+    <g class="rot">
+      <g fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="160" cy="160" r="128" stroke-width="5"/>
+        <circle cx="160" cy="160" r="112" stroke-width="2"/>
+        <circle cx="160" cy="160" r="12" stroke-width="5"/>
+        <g stroke-width="2.5">
+          <path d="M160 32 V288 M32 160 H288 M69.5 69.5 L250.5 250.5 M250.5 69.5 L69.5 250.5"/>
+          <path d="M111 41.7 L209 278.3 M41.7 111 L278.3 209 M209 41.7 L111 278.3 M278.3 111 L41.7 209"/>
+        </g>
+      </g>
+      <g class="cab">
+        <circle cx="160" cy="32" r="11"/><circle cx="288" cy="160" r="11"/><circle cx="160" cy="288" r="11"/><circle cx="32" cy="160" r="11"/>
+        <circle cx="250.5" cy="69.5" r="11"/><circle cx="250.5" cy="250.5" r="11"/><circle cx="69.5" cy="250.5" r="11"/><circle cx="69.5" cy="69.5" r="11"/>
+      </g>
+      <g class="glow">
+        <circle cx="160" cy="32" r="3"/><circle cx="288" cy="160" r="3"/><circle cx="160" cy="288" r="3"/><circle cx="32" cy="160" r="3"/>
+        <circle cx="250.5" cy="69.5" r="3"/><circle cx="250.5" cy="250.5" r="3"/><circle cx="69.5" cy="250.5" r="3"/><circle cx="69.5" cy="69.5" r="3"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<div class="wrap">
+  <header class="booth">
+    <div class="awning" aria-hidden="true"></div>
+    <div class="board">
+      <p class="kicker">TICKET BOOTH · 매표소</p>
+      <h1>혜진's <span>스튜디오</span></h1>
+      <p class="since"><b>매일 개장</b>since 2026.11.13.</p>
+    </div>
+    <div class="counter">
+      <p><strong>입장권을 골라</strong> 바로 탑승하세요.</p>
+      <div class="btns">
+        <button class="pill me" id="meBtn" type="button" aria-label="내 닉네임 손님. 닉네임 정보 열기">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <span id="meNick">손님</span>
+        </button>
+        <button class="pill rank" id="rankBtn" type="button" aria-label="순위표">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4.4M17 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 14v4M8.5 20.5h7M9.5 18h5"/></svg>
+          <span>순위</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <h2 class="sec">오늘 운행 중인 놀이기구 <small>8개</small></h2>
+
+  <!-- 새 게임은 맨 앞에 feature 입장권으로, 기존 feature는 일반 입장권으로 (최신 순) -->
+  <div class="tickets">
+
+    <a class="ticket feature" href="../../games/hungry-bear/" aria-label="NEW 신규 개장. 폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까?" style="--c: var(--c-bear); --tile: var(--t-bear)">
+      <span class="stamp" aria-hidden="true"><b>NEW</b><small>신규 개장</small></span>
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="2" y="49" width="60" height="11" rx="5.5" fill="#a7c0c4"/>
+          <path d="M8 56 H20 M36 57 H46" stroke="#e9f1f1" stroke-width="1.6" stroke-linecap="round"/>
+          <g stroke="#3a2318" stroke-linejoin="round" stroke-linecap="round">
+          <circle cx="15" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+          <circle cx="41" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+          <path d="M14 46 Q28 40 42 46 L42 50 L14 50 Z" fill="#9c5a32" stroke-width="1.6"/>
+          <ellipse cx="28" cy="30" rx="16" ry="14" fill="#9c5a32" stroke-width="1.8"/>
+          <path d="M28 4 C31 7 33 10 32 13 C34 12 35 10 35 9 C37 12 36 16 32 17 L24 17 C20 16 19 12 21 9 C21 11 22 12 24 13 C23 10 25 7 28 4 Z" fill="#f2622a" stroke-width="1.2"/>
+          <ellipse cx="28" cy="36" rx="8.5" ry="6" fill="#f0d9b0" stroke-width="1.2"/>
+          <circle cx="21.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+          <circle cx="34.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+          <path d="M23.5 37 Q28 35.8 32.5 37 Q32 42 28 42.4 Q24 42 23.5 37 Z" fill="#5e2420" stroke-width="1"/>
+          <path d="M14 43.5 Q28 48.5 42 43.5 L42 47.5 Q28 52.5 14 47.5 Z" fill="#6f9a8c" stroke-width="1.2"/>
+          <circle cx="16" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+          <circle cx="40" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+          </g>
+          <circle cx="16" cy="17" r="3" fill="#e5b088"/><circle cx="40" cy="17" r="3" fill="#e5b088"/>
+          <path d="M28 9 C30 11 31 13 30 16 L26 16 C25 13 26 11 28 9 Z" fill="#ffc533"/>
+          <circle cx="22" cy="28.3" r="1.2" fill="#1e1410"/><circle cx="34" cy="28.3" r="1.2" fill="#1e1410"/>
+          <path d="M16.5 23.6 L26 26.6 L25.8 28.4 L16.8 25.6 Z M39.5 23.6 L30 26.6 L30.2 28.4 L39.2 25.6 Z" fill="#3a2318"/>
+          <path d="M25 32 Q28 30.6 31 32 Q30 34.4 28 34.6 Q26 34.4 25 32 Z" fill="#2b1a14"/>
+          <path d="M24.6 37.1 L25.7 39.6 L26.7 36.8 Z M31.4 37.1 L30.3 39.6 L29.3 36.8 Z" fill="#fffaf0"/>
+          <path d="M13.6 53.2 v2.2 M16 53.8 v2.4 M18.4 53.2 v2.2 M37.6 53.2 v2.2 M40 53.8 v2.4 M42.4 53.2 v2.2" stroke="#fffaf0" stroke-width="1.2" stroke-linecap="round"/>
+          <g transform="translate(51 35) rotate(-58) scale(.42)" stroke="#3a2318" stroke-linejoin="round">
+          <path d="M17 0 L29 -10 L26 0 L29 10 Z" fill="#b4553f" stroke-width="2.6"/>
+          <path d="M-27 0 Q-21 -12 0 -11 Q16 -9 20 0 Q16 9 0 11 Q-21 12 -27 0 Z" fill="#ef8a5f" stroke-width="2.6"/>
+          <path d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z" fill="#fbd9c2" stroke="none"/>
+          <circle cx="-19" cy="-2.5" r="3" fill="#fffaf0" stroke-width="1.4"/><circle cx="-19.6" cy="-2.5" r="1.5" fill="#3a2318" stroke="none"/>
+          </g>
+          <ellipse cx="54" cy="52" rx="6" ry="1.8" fill="none" stroke="#e9f1f1" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">새로 개장한 놀이기구</p>
+          <h2>폭식 불곰을 찾아라</h2>
+          <p>누가 제일 많이 먹었을까?</p>
+          <span class="go" aria-hidden="true">지금 탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0008</span>
+          <span class="bar"></span>
+          <span class="open-day">오늘 개장</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/parrot-beat/" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!" style="--c: var(--c-parrot); --tile: var(--t-parrot)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dfe6d8"/>
+          <path d="M16 46 Q9 52 8 57 Q12 56 18 50 Z" fill="#5d9170"/>
+          <path d="M26 21 C33 21 39 30 39 37 C39 45 33 51 26 51 C19 51 13 45 13 37 C13 30 19 21 26 21 Z" fill="#93c19f" stroke="#5d9170" stroke-width="1.6"/>
+          <ellipse cx="26" cy="42" rx="8" ry="7" fill="#e9f3e9"/>
+          <path d="M26 21 q-1 -5 3 -5 q3 .5 1 3" fill="none" stroke="#5d9170" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="22" cy="32" r="1.4" fill="#2a2d36"/><circle cx="30" cy="32" r="1.4" fill="#2a2d36"/>
+          <circle cx="19" cy="36" r="2" fill="#f0b4a8" opacity=".55"/><circle cx="33" cy="36" r="2" fill="#f0b4a8" opacity=".55"/>
+          <path d="M23.6 34 Q26 32 28.4 34 Q28 38 25.2 38.6 Q26.2 36.2 23.6 34 Z" fill="#e8bf73"/>
+          <rect x="29" y="45" width="18" height="6" rx="2" fill="#c98d68" stroke="#9a6647" stroke-width="1"/>
+          <ellipse cx="38" cy="45" rx="9" ry="2.6" fill="#f6efe2" stroke="#9a6647" stroke-width="1"/>
+          <path d="M48.5 37.5 A5 5 0 0 1 48.5 44.5 M51.5 34.5 A9 9 0 0 1 51.5 47.5" fill="none" stroke="#3f7752" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+          <circle cx="44" cy="18" r="4" fill="#c9694a"/>
+          <rect x="49.9" y="12.9" width="4.2" height="4.2" rx=".8" transform="rotate(45 52 15)" fill="#4b958f"/>
+          <circle cx="58" cy="18" r="4" fill="#c9694a"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 07</p>
+          <h2>박자 앵무새</h2>
+          <p>듣고 똑같이 톡톡!</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0007</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/poop-rain/" aria-label="똥비 피하기 — 똥은 피하고 별사탕은 줍기!" style="--c: var(--c-poop); --tile: var(--t-poop)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><g id="poopRainShape"><ellipse cx="0" cy="-3.4" rx="10" ry="3.4"/><ellipse cx="0" cy="-8.4" rx="7.6" ry="3"/><ellipse cx="0" cy="-12.6" rx="5" ry="2.6"/><path d="M-2.6 -14 Q-2 -17.2 0.8 -18.2 Q2.6 -18.6 1.8 -16.8 Q1.4 -15.4 2.8 -14 Z"/></g></defs>
+          <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dbe3d1"/>
+          <ellipse cx="17" cy="52.4" rx="7" ry="1.9" fill="#5c4a38" opacity=".2"/>
+          <ellipse cx="47" cy="52.4" rx="4.6" ry="1.4" fill="#5c4a38" opacity=".14"/>
+          <g transform="translate(17 30)">
+          <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="2.4" stroke-linejoin="round"/>
+          <use href="#poopRainShape" fill="#a87a55"/>
+          <path d="M-6.8 -6 Q0 -4.8 6.8 -6 M-4.4 -10.6 Q0 -9.6 4.4 -10.6" fill="none" stroke="#8a6244" stroke-width="1" opacity=".5"/>
+          <ellipse cx="-3.4" cy="-9" rx="1.4" ry=".7" transform="rotate(-17 -3.4 -9)" fill="#fff" opacity=".35"/>
+          </g>
+          <g transform="translate(47 21) scale(.68)">
+          <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="3" stroke-linejoin="round"/>
+          <use href="#poopRainShape" fill="#a87a55"/>
+          </g>
+          <rect x="27" y="40" width="11" height="10.5" rx="4.4" fill="#86c3b0" stroke="#c7a283" stroke-width="1.2"/>
+          <circle cx="32.5" cy="34.6" r="6.4" fill="#f3d9c1" stroke="#c7a283" stroke-width="1.2"/>
+          <path d="M26 34.6 A6.5 6.5 0 0 1 39 34.6 Q35 32.8 32 33.2 Q28.6 33.8 26 34.6 Z" fill="#6b5444"/>
+          <circle cx="30.4" cy="36" r=".9" fill="#3a2f28"/><circle cx="34.6" cy="36" r=".9" fill="#3a2f28"/>
+          <path d="M41 41.5 h4.5 M42 45.5 h3" stroke="#9aa3ad" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M24.6 27.6 q1.8 2.6 0 3.6 q-1.8 -1 0 -3.6 Z" fill="#8fbfe0"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 06</p>
+          <h2>똥비 피하기</h2>
+          <p>똥은 피하고 별사탕은 줍기!</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0006</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/bungeo-snowfight/" aria-label="붕어빵 눈싸움 — 붕어빵 던져 눈밭 땅따먹기" style="--c: var(--c-bungeo); --tile: var(--t-bungeo)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><path id="bungeoFish" d="M48 0C48-17 33-27 12-27C-8-27-22-19-30-8Q-38-16-45-20Q-50-21-48-15Q-42 0-48 15Q-50 21-45 20Q-38 16-30 8C-22 19-8 27 12 27C33 27 48 17 48 0Z"/></defs>
+          <rect x="6" y="36" width="26" height="22" rx="5" fill="#6f96c9"/>
+          <rect x="32" y="36" width="26" height="22" rx="5" fill="#ebb2c0"/>
+          <rect x="27" y="36" width="10" height="22" fill="#eef2f6"/>
+          <path d="M10 54 L19 40 M17.5 54 L26 40" stroke="#5f86ba" stroke-width="1.6" stroke-linecap="round"/>
+          <g fill="#d495a6"><circle cx="41" cy="41" r="1.5"/><circle cx="54" cy="41" r="1.5"/><circle cx="41" cy="53.5" r="1.5"/><circle cx="54" cy="53.5" r="1.5"/></g>
+          <path d="M13 32 Q22 8 37 13" fill="none" stroke="#8a93a3" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5"/>
+          <g transform="translate(46 17) rotate(22)">
+          <use href="#bungeoFish" transform="scale(.28)" fill="#9a6442" stroke="#5e3a24" stroke-width="4"/>
+          <ellipse cx="-1" cy="0" rx="4.2" ry="2.3" fill="#5a2b2b" opacity=".55"/>
+          </g>
+          <g transform="translate(46 47.5) rotate(-12)">
+          <use href="#bungeoFish" transform="scale(.2)" fill="#e6bd68" stroke="#9c7425" stroke-width="5.2"/>
+          <ellipse cx="-.5" cy="0" rx="2.7" ry="1.4" fill="#fff4d2"/>
+          </g>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 05</p>
+          <h2>붕어빵 눈싸움</h2>
+          <p>붕어빵 던져 눈밭 땅따먹기</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0005</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/mole-pop/" aria-label="두더지 뿅뿅 — 쏙 올라오는 두더지를 톡!" style="--c: var(--c-mole); --tile: var(--t-mole)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><clipPath id="molePopClip"><rect x="0" y="0" width="64" height="47"/><ellipse cx="32" cy="47" rx="17" ry="5"/></clipPath></defs>
+          <ellipse cx="32" cy="50" rx="27" ry="9" fill="#e3d3bb" stroke="#bfa98b" stroke-width="1.4"/>
+          <ellipse cx="32" cy="47" rx="17" ry="5" fill="#9c8670"/>
+          <g clip-path="url(#molePopClip)">
+          <rect x="19" y="14" width="26" height="40" rx="13" fill="#c4ab93" stroke="#8f765f" stroke-width="1.4"/>
+          <circle cx="27.5" cy="27" r="1.9" fill="#3a2f28"/><circle cx="36.5" cy="27" r="1.9" fill="#3a2f28"/>
+          <ellipse cx="32" cy="32.5" rx="2.8" ry="2" fill="#c98a83"/>
+          <ellipse cx="24.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+          <ellipse cx="39.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+          </g>
+          <path d="M51 7 L52.6 11.9 L57.5 13.5 L52.6 15.1 L51 20 L49.4 15.1 L44.5 13.5 L49.4 11.9 Z" fill="#f2c75c"/>
+          <path d="M10 18 L10.9 20.6 L13.5 21.5 L10.9 22.4 L10 25 L9.1 22.4 L6.5 21.5 L9.1 20.6 Z" fill="#f2c75c" opacity=".7"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 04</p>
+          <h2>두더지 뿅뿅</h2>
+          <p>쏙 올라오는 두더지를 톡!</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0004</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/bunny-ten/" aria-label="개구리 텐 — 합이 10이 되게 묶는 숫자 퍼즐" style="--c: var(--c-bunny); --tile: var(--t-bunny)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="7" y="10" width="50" height="48" rx="9" fill="#1f6fc4" fill-opacity=".12" stroke="#1f6fc4" stroke-width="2.5"/>
+          <g fill="none" stroke="#7f9a8b" stroke-width="3.2">
+          <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+          <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+          <ellipse cx="32" cy="37" rx="20" ry="14"/>
+          </g>
+          <g fill="#d4e7bb">
+          <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+          <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+          <ellipse cx="32" cy="37" rx="20" ry="14"/>
+          </g>
+          <path d="M24.5 33 L27 31 L27 43" fill="none" stroke="#1b2e26" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <ellipse cx="35.5" cy="37" rx="3.8" ry="5.6" fill="none" stroke="#1b2e26" stroke-width="3.4"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 03</p>
+          <h2>개구리 텐</h2>
+          <p>합이 10이 되게 묶는 숫자 퍼즐</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0003</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/snake-garden/" aria-label="뱀 정원 — 열매 먹고 길어지는 뱀" style="--c: var(--c-snake); --tile: var(--t-snake)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M12 50 C 12 38, 30 40, 30 30 S 46 18, 46 14" fill="none" stroke="#3f9d5a" stroke-width="9" stroke-linecap="round"/>
+          <path d="M8 54 L12 50" stroke="#3f9d5a" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="16" cy="43" r="1.8" fill="#8fd19e"/>
+          <circle cx="27" cy="35" r="1.8" fill="#8fd19e"/>
+          <circle cx="36" cy="25" r="1.8" fill="#8fd19e"/>
+          <circle cx="47" cy="13" r="7" fill="#2f8049"/>
+          <circle cx="44.5" cy="10.5" r="2.2" fill="#fff"/>
+          <circle cx="50" cy="12" r="2.2" fill="#fff"/>
+          <circle cx="45" cy="10" r="1.1" fill="#1f2430"/>
+          <circle cx="50.6" cy="11.6" r="1.1" fill="#1f2430"/>
+          <path d="M53 8 l3 -2 m-3 2 l3.4 0.6" fill="none" stroke="#e4572e" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="50" cy="46" r="6" fill="#e0374f"/>
+          <circle cx="48" cy="46" r="0.9" fill="#ffd6dc"/>
+          <circle cx="52" cy="46.5" r="0.9" fill="#ffd6dc"/>
+          <circle cx="50" cy="49" r="0.9" fill="#ffd6dc"/>
+          <circle cx="47.6" cy="43.6" r="1.5" fill="#fff" opacity=".5"/>
+          <ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f9d5a"/>
+          <ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f9d5a"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 02</p>
+          <h2>뱀 정원</h2>
+          <p>열매 먹고 길어지는 뱀</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0002</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="ticket" href="../../games/block-stack/" aria-label="블록 스택 — 블록 쌓아 줄 지우는 퍼즐" style="--c: var(--c-block); --tile: var(--t-block)">
+      <div class="tk">
+        <div class="art">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+          <g>
+          <rect x="8" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+          <rect x="20" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+          <rect x="32" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+          <rect x="44" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+          <rect x="8" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+          <rect x="20" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+          <rect x="8" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+          <rect x="20" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+          <rect x="32" y="34" width="11" height="11" rx="2.5" fill="#8e6fd8"/>
+          <rect x="44" y="34" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+          <rect x="44" y="22" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+          <rect x="26" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+          <rect x="38" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+          </g>
+          <g fill="#fff" opacity=".35">
+          <rect x="10" y="48" width="7" height="2" rx="1"/><rect x="22" y="48" width="7" height="2" rx="1"/>
+          <rect x="34" y="48" width="7" height="2" rx="1"/><rect x="46" y="48" width="7" height="2" rx="1"/>
+          <rect x="10" y="36" width="7" height="2" rx="1"/><rect x="22" y="36" width="7" height="2" rx="1"/>
+          <rect x="10" y="24" width="7" height="2" rx="1"/><rect x="22" y="24" width="7" height="2" rx="1"/>
+          <rect x="34" y="36" width="7" height="2" rx="1"/><rect x="46" y="36" width="7" height="2" rx="1"/>
+          <rect x="46" y="24" width="7" height="2" rx="1"/>
+          <rect x="28" y="6" width="7" height="2" rx="1"/><rect x="40" y="6" width="7" height="2" rx="1"/>
+          </g>
+          <line x1="37.5" y1="17" x2="37.5" y2="21" stroke="#e4572e" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          </svg>
+        </div>
+        <div class="info">
+          <p class="tag">RIDE 01</p>
+          <h2>블록 스택</h2>
+          <p>블록 쌓아 줄 지우는 퍼즐</p>
+          <span class="go" aria-hidden="true">탑승하기</span>
+        </div>
+        <div class="stub" aria-hidden="true">
+          <span class="adm">입장권</span>
+          <span class="no">No.</span>
+          <span class="num">0001</span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <footer><span>혜진's 스튜디오 놀이공원</span><span>· 입장료 무료 ·</span><span>since 2026.11.13.</span></footer>
+</div>
+</body>
+</html>

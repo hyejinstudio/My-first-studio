@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#C67755" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2B1B14" media="(prefers-color-scheme: dark)">
+<title>혜진's 스튜디오 — 시안 F (70년대 레트로 포스터)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gothic+A1:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== 시안 F: 70년대 실크스크린 포스터 — 테라코타 바탕 ===== */
+  :root {
+    --bg: #C67755;         /* 테라코타 바탕 */
+    --ray: #BE6F4E;        /* 선버스트 줄(장식, 바탕과 아주 근소한 차이) */
+    --ink: #2A170F;        /* 바탕 위 글자 (5.0:1) */
+    --paper: #F4E7D0;      /* 크림 종이 패널 */
+    --paper-new: #F0D49A;  /* 신작 카드: 머스터드 종이 */
+    --card-ink: #3A2218;   /* 패널 위 글자 (12:1) */
+    --card-muted: #6B4A38; /* 패널 위 보조 글자 (6.4:1) */
+    --line: #3A2218;       /* 굵은 외곽선 */
+    --shadow: #3A2218;     /* 판화식 단단한 그림자 */
+    --brown: #4A2B1D;
+    --brick: #9E4A30;
+    --mustard: #D9A441;
+    --olive: #7D7A3A;
+    --cream: #F4E7D0;
+    --sun: #E7B24F;
+    --sticker: #9E4A30; --sticker-ink: #F4E7D0;  /* 4.9:1 */
+    --chip: #F4E7D0; --chip-ink: #3A2218;
+    --btn: #3A2218; --btn-ink: #F4E7D0;
+    --disc-sun: #EFCB86; --ring-sun: #D9A441;
+    --disc-olive: #D8D3A6; --ring-olive: #7D7A3A;
+    --disc-clay: #EDC1A6; --ring-clay: #B8603F;
+    --disc-sand: #E6D4B6; --ring-sand: #8A5A3E;
+    --focus: #2A170F;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2B1B14; --ray: #301F17;
+      --ink: #F1E3CA;
+      --paper: #3D271D; --paper-new: #4A3020;
+      --card-ink: #F1E3CA; --card-muted: #CDB59A;
+      --line: #1A0F0A; --shadow: #140B07;
+      --brown: #5B3626; --brick: #A9583A; --mustard: #C99A45; --olive: #7F7C48; --cream: #E6D3B2; --sun: #D8A24A;
+      --sticker: #C99A45; --sticker-ink: #2A170F;
+      --chip: #3D271D; --chip-ink: #F1E3CA;
+      --btn: #E0A07E; --btn-ink: #2A170F;
+      --disc-sun: #D9B57A; --ring-sun: #C99A45;
+      --disc-olive: #C3BE93; --ring-olive: #8E8B55;
+      --disc-clay: #D8AA8E; --ring-clay: #B8664A;
+      --disc-sand: #D3C1A2; --ring-sand: #A07656;
+      --focus: #F1E3CA;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; min-height: 100dvh;
+    background-color: var(--bg);
+    background-image: repeating-conic-gradient(from 0deg at 50% 330px, var(--ray) 0deg 5deg, transparent 5deg 10deg);
+    color: var(--ink);
+    font-family: 'Gothic A1', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  .page {
+    max-width: 1120px; margin: 0 auto;
+    padding: max(14px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 14px; }
+
+  /* ----- 상단 바 ----- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .mark { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; min-height: 44px;
+    background: var(--chip); color: var(--chip-ink); border: 3px solid var(--line); border-radius: 999px;
+    font-family: 'Bagel Fat One', 'Gothic A1', sans-serif; font-size: 15px; letter-spacing: .04em; }
+  .mark svg { width: 26px; height: 26px; flex: none; }
+  .actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; min-width: 44px; padding: 0 16px;
+    border: 3px solid var(--line); border-radius: 999px; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer;
+    box-shadow: 3px 3px 0 var(--shadow); transition: transform .14s ease-out, box-shadow .14s ease-out;
+    -webkit-user-select: none; user-select: none; }
+  .btn svg { width: 19px; height: 19px; flex: none; }
+  .btn-rank { background: var(--btn); color: var(--btn-ink); }
+  .btn-me { background: var(--chip); color: var(--chip-ink); }
+  .btn-me #meNick { max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+
+  /* ----- 히어로 포스터 ----- */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; align-items: end; gap: 12px 28px; margin-top: 18px; }
+  .hero-text { padding-bottom: 6px; }
+  .kicker { display: inline-block; margin: 0 0 12px; padding: 5px 12px; border-radius: 999px;
+    background: var(--brown); color: var(--cream); font-weight: 800; font-size: 13px; letter-spacing: .14em; }
+  h1 { margin: 0; font-family: 'Bagel Fat One', 'Gothic A1', sans-serif; font-weight: 400;
+    font-size: clamp(46px, 9.6vw, 92px); line-height: .98; letter-spacing: -.01em; color: var(--ink);
+    text-shadow: 3px 3px 0 var(--cream); }
+  h1 .l1 { display: block; font-size: .62em; margin-bottom: .08em; }
+  h1 .l2 { display: block; }
+  @media (prefers-color-scheme: dark) { h1 { text-shadow: 4px 4px 0 var(--brick); } }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 16px; }
+  .since { margin: 0; padding: 6px 14px; border: 3px solid var(--line); border-radius: 999px;
+    background: var(--chip); color: var(--chip-ink); font-family: 'Bagel Fat One', sans-serif; font-size: 15px; letter-spacing: .03em; white-space: nowrap; }
+  .sub { margin: 0; padding: 7px 14px; border-radius: 999px; background: var(--chip); color: var(--chip-ink); font-weight: 700; font-size: 15px; }
+
+  .sunset { position: relative; width: 100%; max-width: 470px; justify-self: end; }
+  .sunset svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .sunset .sun rect { animation: rise 1100ms cubic-bezier(.2, .8, .2, 1) both; }
+  .sunset .arc { animation: arcIn 700ms cubic-bezier(.2, .8, .2, 1) both; transform-box: view-box; transform-origin: 50% 100%; }
+  .sunset .arc:nth-of-type(2) { animation-delay: 80ms; }
+  .sunset .arc:nth-of-type(3) { animation-delay: 160ms; }
+  .sunset .arc:nth-of-type(4) { animation-delay: 240ms; }
+  @keyframes rise { from { transform: translateY(70px); } to { transform: none; } }
+  @keyframes arcIn { from { transform: scale(.86); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ----- 곡선 띠 ----- */
+  .wave { display: block; width: 100%; height: 46px; margin: 2px 0 0; }
+  .wave path { fill: none; stroke-width: 9; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+
+  /* ----- 목록 ----- */
+  .list-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 18px 4px 16px; flex-wrap: wrap; }
+  .list-head h2 { margin: 0; font-family: 'Bagel Fat One', sans-serif; font-weight: 400; font-size: 26px; color: var(--ink); }
+  .list-head h2 small { font-size: .62em; letter-spacing: .1em; margin-right: 8px; }
+  .list-head p { margin: 0; font-weight: 800; font-size: 14px; color: var(--ink); }
+
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 16px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 18px; } }
+  .grid li { display: flex; animation: up 460ms cubic-bezier(.2, .8, .2, 1) both; }
+  .grid li:nth-child(2) { animation-delay: 50ms; } .grid li:nth-child(3) { animation-delay: 100ms; }
+  .grid li:nth-child(4) { animation-delay: 150ms; } .grid li:nth-child(5) { animation-delay: 200ms; }
+  .grid li:nth-child(6) { animation-delay: 250ms; } .grid li:nth-child(7) { animation-delay: 300ms; }
+  .grid li:nth-child(8) { animation-delay: 350ms; }
+  @keyframes up { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .game { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 34px 12px 18px; min-height: 44px; border: 3px solid var(--line); border-radius: 26px;
+    background: var(--paper); color: var(--card-ink); text-decoration: none;
+    box-shadow: 6px 6px 0 var(--shadow);
+    transition: transform .16s ease-out, box-shadow .16s ease-out;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .game:focus-visible { border-radius: 26px; }
+  @media (hover: hover) { .game:hover { transform: translate(-2px, -3px); box-shadow: 9px 10px 0 var(--shadow); } }
+  .game:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--shadow); }
+  .no { position: absolute; top: 10px; left: 14px; font-family: 'Bagel Fat One', sans-serif; font-size: 14px; color: var(--card-muted); letter-spacing: .04em; }
+  .disc { position: relative; display: grid; place-items: center; width: 68%; max-width: 150px; aspect-ratio: 1; margin: 4px 0 18px;
+    border-radius: 50%; background: var(--disc); overflow: hidden;
+    box-shadow: 0 0 0 4px var(--paper), 0 0 0 9px var(--ring), 0 0 0 12px var(--paper), 0 0 0 14px var(--line); }
+  .disc svg { width: 80%; height: 80%; }
+  .name { font-family: 'Bagel Fat One', 'Gothic A1', sans-serif; font-size: clamp(17px, 2.3vw, 21px); line-height: 1.2; word-break: keep-all; }
+  .desc { margin-top: 6px; font-size: 13.5px; font-weight: 700; line-height: 1.4; color: var(--card-muted); word-break: keep-all; }
+
+  /* 신작: 머스터드 종이 + 별모양 가격표 스티커 */
+  .game.is-new { background: var(--paper-new); }
+  .game.is-new .disc { box-shadow: 0 0 0 4px var(--paper-new), 0 0 0 9px var(--ring), 0 0 0 12px var(--paper-new), 0 0 0 14px var(--line); }
+  .new { position: absolute; top: -20px; right: -14px; width: 74px; height: 74px; display: grid; place-items: center;
+    transform: rotate(12deg); animation: wobble 3600ms ease-in-out 900ms infinite; z-index: 2; }
+  .new svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .new svg path { fill: var(--sticker); stroke: var(--line); stroke-width: 3.5; stroke-linejoin: round; }
+  .new b { position: relative; font-family: 'Bagel Fat One', sans-serif; font-weight: 400; font-size: 17px; letter-spacing: .04em; color: var(--sticker-ink); }
+  @keyframes wobble { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(4deg) scale(1.04); } }
+
+  /* ----- 바닥 ----- */
+  .foot { margin-top: 34px; text-align: center; }
+  .foot p { margin: 10px 0 0; font-weight: 800; font-size: 13px; color: var(--ink); letter-spacing: .04em; }
+
+  /* ----- iPad 세로·폰: 히어로 쌓기 ----- */
+  @media (max-width: 860px) {
+    body { background-image: repeating-conic-gradient(from 0deg at 50% 300px, var(--ray) 0deg 5deg, transparent 5deg 10deg); }
+    .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .hero-text { order: 2; }
+    .sunset { order: 1; justify-self: center; max-width: 330px; }
+    .meta { justify-content: center; }
+  }
+  @media (max-width: 520px) {
+    body { background-image: repeating-conic-gradient(from 0deg at 50% 210px, var(--ray) 0deg 6deg, transparent 6deg 12deg); }
+    .sunset { max-width: 240px; }
+    .hero { margin-top: 10px; }
+    .kicker { margin-bottom: 8px; }
+    .meta { margin-top: 10px; }
+    .mark { font-size: 13px; }
+    .desc { font-size: 12.5px; }
+    .new { width: 62px; height: 62px; top: -16px; right: -8px; }
+    .new b { font-size: 14px; }
+  }
+  /* iPad 가로·PC: 히어로를 낮게 */
+  @media (min-width: 861px) and (max-height: 860px) {
+    h1 { font-size: clamp(46px, 6.4vw, 76px); }
+    h1 .l1 { display: inline; font-size: .7em; margin-right: .18em; }
+    h1 .l2 { display: inline; }
+    .hero { margin-top: 6px; }
+    .sunset { max-width: 340px; }
+    .list-head { margin: 8px 4px 14px; }
+    .grid { gap: 20px 18px; }
+    .game { padding: 28px 12px 14px; }
+    .disc { max-width: 96px; margin-bottom: 14px; }
+  }
+  @media (min-width: 640px) and (max-width: 860px) { .disc { max-width: 116px; margin-bottom: 16px; } .game { padding-top: 32px; } }
+
+  @media (max-width: 420px) {
+    .mark-t { display: none; }
+    .mark { padding: 6px 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <span class="mark">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="15" fill="var(--brown)"/>
+        <path d="M4 20 A12 12 0 0 1 28 20" fill="none" stroke="var(--mustard)" stroke-width="4"/>
+        <path d="M9 20 A7 7 0 0 1 23 20" fill="none" stroke="var(--cream)" stroke-width="3.5"/>
+        <circle cx="16" cy="20" r="3" fill="var(--sun)"/>
+      </svg>
+      <span class="mark-t">HYEJIN'S STUDIO</span>
+    </span>
+    <nav class="actions" aria-label="내 정보와 순위">
+      <button type="button" id="meBtn" class="btn btn-me" aria-label="내 닉네임 혜진. 닉네임 정보 열기">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span id="meNick">혜진</span>
+      </button>
+      <button type="button" id="rankBtn" class="btn btn-rank" aria-label="순위 보기">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4.4M17 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 14v4M8.5 20.5h7M9.5 18h5"/></svg>
+        <span class="lbl">순위</span>
+      </button>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="ttl">
+    <div class="hero-text">
+      <p class="kicker">VOL.1 · 웹 게임 포스터</p>
+      <h1 id="ttl"><span class="l1">혜진's</span><span class="l2">스튜디오</span></h1>
+      <div class="meta">
+        <p class="since">since 2026.11.13.</p>
+        <p class="sub">하고 싶은 게임을 골라보세요.</p>
+      </div>
+    </div>
+    <div class="sunset" aria-hidden="true">
+      <svg viewBox="0 0 400 214">
+        <path class="arc" d="M6 214 A194 194 0 0 1 394 214 Z" fill="var(--brown)"/>
+        <path class="arc" d="M36 214 A164 164 0 0 1 364 214 Z" fill="var(--brick)"/>
+        <path class="arc" d="M66 214 A134 134 0 0 1 334 214 Z" fill="var(--mustard)"/>
+        <path class="arc" d="M96 214 A104 104 0 0 1 304 214 Z" fill="var(--cream)"/>
+        <defs><clipPath id="sunClip"><path d="M128 214 A72 72 0 0 1 272 214 Z"/></clipPath></defs>
+        <g class="sun" clip-path="url(#sunClip)">
+          <rect x="120" y="138" width="160" height="80" fill="var(--sun)"/>
+          <rect x="120" y="176" width="160" height="5" fill="var(--cream)"/>
+          <rect x="120" y="188" width="160" height="7" fill="var(--cream)"/>
+          <rect x="120" y="202" width="160" height="9" fill="var(--cream)"/>
+        </g>
+        <path d="M128 214 A72 72 0 0 1 272 214" fill="none" stroke="var(--brown)" stroke-width="5"/>
+        <rect x="0" y="210" width="400" height="8" rx="4" fill="var(--brown)"/>
+      </svg>
+    </div>
+  </section>
+
+  <svg class="wave" viewBox="0 0 1200 46" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 9 C150 -6 300 24 450 9 S750 -6 900 9 S1100 24 1200 9" stroke="var(--brown)"/>
+    <path d="M0 21 C150 6 300 36 450 21 S750 6 900 21 S1100 36 1200 21" stroke="var(--brick)"/>
+    <path d="M0 33 C150 18 300 48 450 33 S750 18 900 33 S1100 48 1200 33" stroke="var(--mustard)"/>
+  </svg>
+
+  <main>
+    <div class="list-head">
+      <h2><small>SIDE A</small>오늘의 게임 8</h2>
+      <p>최신순 · 눌러서 바로 시작</p>
+    </div>
+    <ul class="grid">
+    <li>
+      <a class="game is-new" href="../../games/hungry-bear/" style="--disc: var(--disc-sun); --ring: var(--ring-sun)" aria-label="새 게임, 폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까?">
+        <span class="no" aria-hidden="true">No.01</span>
+        <span class="new" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M50.0 1.0 L58.9 11.0 L71.3 5.9 L74.9 18.7 L88.3 19.4 L86.0 32.6 L97.8 39.1 L90.0 50.0 L97.8 60.9 L86.0 67.4 L88.3 80.6 L74.9 81.3 L71.3 94.1 L58.9 89.0 L50.0 99.0 L41.1 89.0 L28.7 94.1 L25.1 81.3 L11.7 80.6 L14.0 67.4 L2.2 60.9 L10.0 50.0 L2.2 39.1 L14.0 32.6 L11.7 19.4 L25.1 18.7 L28.7 5.9 L41.1 11.0 Z"/></svg><b>NEW</b></span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="2" y="49" width="60" height="11" rx="5.5" fill="#a7c0c4"/>
+            <path d="M8 56 H20 M36 57 H46" stroke="#e9f1f1" stroke-width="1.6" stroke-linecap="round"/>
+            <g stroke="#3a2318" stroke-linejoin="round" stroke-linecap="round">
+            <circle cx="15" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+            <circle cx="41" cy="17" r="6" fill="#9c5a32" stroke-width="1.6"/>
+            <path d="M14 46 Q28 40 42 46 L42 50 L14 50 Z" fill="#9c5a32" stroke-width="1.6"/>
+            <ellipse cx="28" cy="30" rx="16" ry="14" fill="#9c5a32" stroke-width="1.8"/>
+            <path d="M28 4 C31 7 33 10 32 13 C34 12 35 10 35 9 C37 12 36 16 32 17 L24 17 C20 16 19 12 21 9 C21 11 22 12 24 13 C23 10 25 7 28 4 Z" fill="#f2622a" stroke-width="1.2"/>
+            <ellipse cx="28" cy="36" rx="8.5" ry="6" fill="#f0d9b0" stroke-width="1.2"/>
+            <circle cx="21.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+            <circle cx="34.5" cy="28" r="2.6" fill="#ffcc33" stroke-width="1"/>
+            <path d="M23.5 37 Q28 35.8 32.5 37 Q32 42 28 42.4 Q24 42 23.5 37 Z" fill="#5e2420" stroke-width="1"/>
+            <path d="M14 43.5 Q28 48.5 42 43.5 L42 47.5 Q28 52.5 14 47.5 Z" fill="#6f9a8c" stroke-width="1.2"/>
+            <circle cx="16" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+            <circle cx="40" cy="50" r="5" fill="#9c5a32" stroke-width="1.4"/>
+            </g>
+            <circle cx="16" cy="17" r="3" fill="#e5b088"/><circle cx="40" cy="17" r="3" fill="#e5b088"/>
+            <path d="M28 9 C30 11 31 13 30 16 L26 16 C25 13 26 11 28 9 Z" fill="#ffc533"/>
+            <circle cx="22" cy="28.3" r="1.2" fill="#1e1410"/><circle cx="34" cy="28.3" r="1.2" fill="#1e1410"/>
+            <path d="M16.5 23.6 L26 26.6 L25.8 28.4 L16.8 25.6 Z M39.5 23.6 L30 26.6 L30.2 28.4 L39.2 25.6 Z" fill="#3a2318"/>
+            <path d="M25 32 Q28 30.6 31 32 Q30 34.4 28 34.6 Q26 34.4 25 32 Z" fill="#2b1a14"/>
+            <path d="M24.6 37.1 L25.7 39.6 L26.7 36.8 Z M31.4 37.1 L30.3 39.6 L29.3 36.8 Z" fill="#fffaf0"/>
+            <path d="M13.6 53.2 v2.2 M16 53.8 v2.4 M18.4 53.2 v2.2 M37.6 53.2 v2.2 M40 53.8 v2.4 M42.4 53.2 v2.2" stroke="#fffaf0" stroke-width="1.2" stroke-linecap="round"/>
+            <g transform="translate(51 35) rotate(-58) scale(.42)" stroke="#3a2318" stroke-linejoin="round">
+            <path d="M17 0 L29 -10 L26 0 L29 10 Z" fill="#b4553f" stroke-width="2.6"/>
+            <path d="M-27 0 Q-21 -12 0 -11 Q16 -9 20 0 Q16 9 0 11 Q-21 12 -27 0 Z" fill="#ef8a5f" stroke-width="2.6"/>
+            <path d="M-20 3 Q0 10 18 2 Q0 6 -20 3 Z" fill="#fbd9c2" stroke="none"/>
+            <circle cx="-19" cy="-2.5" r="3" fill="#fffaf0" stroke-width="1.4"/><circle cx="-19.6" cy="-2.5" r="1.5" fill="#3a2318" stroke="none"/>
+            </g>
+            <ellipse cx="54" cy="52" rx="6" ry="1.8" fill="none" stroke="#e9f1f1" stroke-width="1.2"/>
+            </svg>
+        </span>
+        <span class="name">폭식 불곰을 찾아라</span>
+        <span class="desc">누가 제일 많이 먹었을까?</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/parrot-beat/" style="--disc: var(--disc-olive); --ring: var(--ring-olive)" aria-label="박자 앵무새 — 듣고 똑같이 톡톡!">
+        <span class="no" aria-hidden="true">No.02</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dfe6d8"/>
+            <path d="M16 46 Q9 52 8 57 Q12 56 18 50 Z" fill="#5d9170"/>
+            <path d="M26 21 C33 21 39 30 39 37 C39 45 33 51 26 51 C19 51 13 45 13 37 C13 30 19 21 26 21 Z" fill="#93c19f" stroke="#5d9170" stroke-width="1.6"/>
+            <ellipse cx="26" cy="42" rx="8" ry="7" fill="#e9f3e9"/>
+            <path d="M26 21 q-1 -5 3 -5 q3 .5 1 3" fill="none" stroke="#5d9170" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="22" cy="32" r="1.4" fill="#2a2d36"/><circle cx="30" cy="32" r="1.4" fill="#2a2d36"/>
+            <circle cx="19" cy="36" r="2" fill="#f0b4a8" opacity=".55"/><circle cx="33" cy="36" r="2" fill="#f0b4a8" opacity=".55"/>
+            <path d="M23.6 34 Q26 32 28.4 34 Q28 38 25.2 38.6 Q26.2 36.2 23.6 34 Z" fill="#e8bf73"/>
+            <rect x="29" y="45" width="18" height="6" rx="2" fill="#c98d68" stroke="#9a6647" stroke-width="1"/>
+            <ellipse cx="38" cy="45" rx="9" ry="2.6" fill="#f6efe2" stroke="#9a6647" stroke-width="1"/>
+            <path d="M48.5 37.5 A5 5 0 0 1 48.5 44.5 M51.5 34.5 A9 9 0 0 1 51.5 47.5" fill="none" stroke="#3f7752" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+            <circle cx="44" cy="18" r="4" fill="#c9694a"/>
+            <rect x="49.9" y="12.9" width="4.2" height="4.2" rx=".8" transform="rotate(45 52 15)" fill="#4b958f"/>
+            <circle cx="58" cy="18" r="4" fill="#c9694a"/>
+            </svg>
+        </span>
+        <span class="name">박자 앵무새</span>
+        <span class="desc">듣고 똑같이 톡톡!</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/poop-rain/" style="--disc: var(--disc-clay); --ring: var(--ring-clay)" aria-label="똥비 피하기 — 똥은 피하고 별사탕은 줍기!">
+        <span class="no" aria-hidden="true">No.03</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs><g id="poopRainShape"><ellipse cx="0" cy="-3.4" rx="10" ry="3.4"/><ellipse cx="0" cy="-8.4" rx="7.6" ry="3"/><ellipse cx="0" cy="-12.6" rx="5" ry="2.6"/><path d="M-2.6 -14 Q-2 -17.2 0.8 -18.2 Q2.6 -18.6 1.8 -16.8 Q1.4 -15.4 2.8 -14 Z"/></g></defs>
+            <rect x="4" y="50" width="56" height="9" rx="4.5" fill="#dbe3d1"/>
+            <ellipse cx="17" cy="52.4" rx="7" ry="1.9" fill="#5c4a38" opacity=".2"/>
+            <ellipse cx="47" cy="52.4" rx="4.6" ry="1.4" fill="#5c4a38" opacity=".14"/>
+            <g transform="translate(17 30)">
+            <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="2.4" stroke-linejoin="round"/>
+            <use href="#poopRainShape" fill="#a87a55"/>
+            <path d="M-6.8 -6 Q0 -4.8 6.8 -6 M-4.4 -10.6 Q0 -9.6 4.4 -10.6" fill="none" stroke="#8a6244" stroke-width="1" opacity=".5"/>
+            <ellipse cx="-3.4" cy="-9" rx="1.4" ry=".7" transform="rotate(-17 -3.4 -9)" fill="#fff" opacity=".35"/>
+            </g>
+            <g transform="translate(47 21) scale(.68)">
+            <use href="#poopRainShape" fill="#8a6244" stroke="#8a6244" stroke-width="3" stroke-linejoin="round"/>
+            <use href="#poopRainShape" fill="#a87a55"/>
+            </g>
+            <rect x="27" y="40" width="11" height="10.5" rx="4.4" fill="#86c3b0" stroke="#c7a283" stroke-width="1.2"/>
+            <circle cx="32.5" cy="34.6" r="6.4" fill="#f3d9c1" stroke="#c7a283" stroke-width="1.2"/>
+            <path d="M26 34.6 A6.5 6.5 0 0 1 39 34.6 Q35 32.8 32 33.2 Q28.6 33.8 26 34.6 Z" fill="#6b5444"/>
+            <circle cx="30.4" cy="36" r=".9" fill="#3a2f28"/><circle cx="34.6" cy="36" r=".9" fill="#3a2f28"/>
+            <path d="M41 41.5 h4.5 M42 45.5 h3" stroke="#9aa3ad" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M24.6 27.6 q1.8 2.6 0 3.6 q-1.8 -1 0 -3.6 Z" fill="#8fbfe0"/>
+            </svg>
+        </span>
+        <span class="name">똥비 피하기</span>
+        <span class="desc">똥은 피하고 별사탕은 줍기!</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/bungeo-snowfight/" style="--disc: var(--disc-sand); --ring: var(--ring-sand)" aria-label="붕어빵 눈싸움 — 붕어빵 던져 눈밭 땅따먹기">
+        <span class="no" aria-hidden="true">No.04</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs><path id="bungeoFish" d="M48 0C48-17 33-27 12-27C-8-27-22-19-30-8Q-38-16-45-20Q-50-21-48-15Q-42 0-48 15Q-50 21-45 20Q-38 16-30 8C-22 19-8 27 12 27C33 27 48 17 48 0Z"/></defs>
+            <rect x="6" y="36" width="26" height="22" rx="5" fill="#6f96c9"/>
+            <rect x="32" y="36" width="26" height="22" rx="5" fill="#ebb2c0"/>
+            <rect x="27" y="36" width="10" height="22" fill="#eef2f6"/>
+            <path d="M10 54 L19 40 M17.5 54 L26 40" stroke="#5f86ba" stroke-width="1.6" stroke-linecap="round"/>
+            <g fill="#d495a6"><circle cx="41" cy="41" r="1.5"/><circle cx="54" cy="41" r="1.5"/><circle cx="41" cy="53.5" r="1.5"/><circle cx="54" cy="53.5" r="1.5"/></g>
+            <path d="M13 32 Q22 8 37 13" fill="none" stroke="#8a93a3" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 5.5"/>
+            <g transform="translate(46 17) rotate(22)">
+            <use href="#bungeoFish" transform="scale(.28)" fill="#9a6442" stroke="#5e3a24" stroke-width="4"/>
+            <ellipse cx="-1" cy="0" rx="4.2" ry="2.3" fill="#5a2b2b" opacity=".55"/>
+            </g>
+            <g transform="translate(46 47.5) rotate(-12)">
+            <use href="#bungeoFish" transform="scale(.2)" fill="#e6bd68" stroke="#9c7425" stroke-width="5.2"/>
+            <ellipse cx="-.5" cy="0" rx="2.7" ry="1.4" fill="#fff4d2"/>
+            </g>
+            </svg>
+        </span>
+        <span class="name">붕어빵 눈싸움</span>
+        <span class="desc">붕어빵 던져 눈밭 땅따먹기</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/mole-pop/" style="--disc: var(--disc-olive); --ring: var(--ring-olive)" aria-label="두더지 뿅뿅 — 쏙 올라오는 두더지를 톡!">
+        <span class="no" aria-hidden="true">No.05</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs><clipPath id="molePopClip"><rect x="0" y="0" width="64" height="47"/><ellipse cx="32" cy="47" rx="17" ry="5"/></clipPath></defs>
+            <ellipse cx="32" cy="50" rx="27" ry="9" fill="#e3d3bb" stroke="#bfa98b" stroke-width="1.4"/>
+            <ellipse cx="32" cy="47" rx="17" ry="5" fill="#9c8670"/>
+            <g clip-path="url(#molePopClip)">
+            <rect x="19" y="14" width="26" height="40" rx="13" fill="#c4ab93" stroke="#8f765f" stroke-width="1.4"/>
+            <circle cx="27.5" cy="27" r="1.9" fill="#3a2f28"/><circle cx="36.5" cy="27" r="1.9" fill="#3a2f28"/>
+            <ellipse cx="32" cy="32.5" rx="2.8" ry="2" fill="#c98a83"/>
+            <ellipse cx="24.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+            <ellipse cx="39.5" cy="45" rx="4" ry="2.4" fill="#d8c2ab" stroke="#8f765f" stroke-width="1.2"/>
+            </g>
+            <path d="M51 7 L52.6 11.9 L57.5 13.5 L52.6 15.1 L51 20 L49.4 15.1 L44.5 13.5 L49.4 11.9 Z" fill="#f2c75c"/>
+            <path d="M10 18 L10.9 20.6 L13.5 21.5 L10.9 22.4 L10 25 L9.1 22.4 L6.5 21.5 L9.1 20.6 Z" fill="#f2c75c" opacity=".7"/>
+            </svg>
+        </span>
+        <span class="name">두더지 뿅뿅</span>
+        <span class="desc">쏙 올라오는 두더지를 톡!</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/bunny-ten/" style="--disc: var(--disc-sun); --ring: var(--ring-sun)" aria-label="개구리 텐 — 합이 10이 되게 묶는 숫자 퍼즐">
+        <span class="no" aria-hidden="true">No.06</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="7" y="10" width="50" height="48" rx="9" fill="#1f6fc4" fill-opacity=".12" stroke="#1f6fc4" stroke-width="2.5"/>
+            <g fill="none" stroke="#7f9a8b" stroke-width="3.2">
+            <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+            <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+            <ellipse cx="32" cy="37" rx="20" ry="14"/>
+            </g>
+            <g fill="#d4e7bb">
+            <ellipse cx="20.5" cy="50.25" rx="5" ry="2.25"/><ellipse cx="43.5" cy="50.25" rx="5" ry="2.25"/>
+            <circle cx="20.5" cy="24" r="6.5"/><circle cx="43.5" cy="24" r="6.5"/>
+            <ellipse cx="32" cy="37" rx="20" ry="14"/>
+            </g>
+            <path d="M24.5 33 L27 31 L27 43" fill="none" stroke="#1b2e26" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="35.5" cy="37" rx="3.8" ry="5.6" fill="none" stroke="#1b2e26" stroke-width="3.4"/>
+            </svg>
+        </span>
+        <span class="name">개구리 텐</span>
+        <span class="desc">합이 10이 되게 묶는 숫자 퍼즐</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/snake-garden/" style="--disc: var(--disc-sand); --ring: var(--ring-sand)" aria-label="뱀 정원 — 열매 먹고 길어지는 뱀">
+        <span class="no" aria-hidden="true">No.07</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M12 50 C 12 38, 30 40, 30 30 S 46 18, 46 14" fill="none" stroke="#3f9d5a" stroke-width="9" stroke-linecap="round"/>
+            <path d="M8 54 L12 50" stroke="#3f9d5a" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="16" cy="43" r="1.8" fill="#8fd19e"/>
+            <circle cx="27" cy="35" r="1.8" fill="#8fd19e"/>
+            <circle cx="36" cy="25" r="1.8" fill="#8fd19e"/>
+            <circle cx="47" cy="13" r="7" fill="#2f8049"/>
+            <circle cx="44.5" cy="10.5" r="2.2" fill="#fff"/>
+            <circle cx="50" cy="12" r="2.2" fill="#fff"/>
+            <circle cx="45" cy="10" r="1.1" fill="#1f2430"/>
+            <circle cx="50.6" cy="11.6" r="1.1" fill="#1f2430"/>
+            <path d="M53 8 l3 -2 m-3 2 l3.4 0.6" fill="none" stroke="#e4572e" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="46" r="6" fill="#e0374f"/>
+            <circle cx="48" cy="46" r="0.9" fill="#ffd6dc"/>
+            <circle cx="52" cy="46.5" r="0.9" fill="#ffd6dc"/>
+            <circle cx="50" cy="49" r="0.9" fill="#ffd6dc"/>
+            <circle cx="47.6" cy="43.6" r="1.5" fill="#fff" opacity=".5"/>
+            <ellipse cx="47.8" cy="39.6" rx="2.6" ry="1.3" transform="rotate(-25 47.8 39.6)" fill="#3f9d5a"/>
+            <ellipse cx="52.2" cy="39.6" rx="2.6" ry="1.3" transform="rotate(25 52.2 39.6)" fill="#3f9d5a"/>
+            </svg>
+        </span>
+        <span class="name">뱀 정원</span>
+        <span class="desc">열매 먹고 길어지는 뱀</span>
+      </a>
+    </li>
+    <li>
+      <a class="game" href="../../games/block-stack/" style="--disc: var(--disc-clay); --ring: var(--ring-clay)" aria-label="블록 스택 — 블록 쌓아 줄 지우는 퍼즐">
+        <span class="no" aria-hidden="true">No.08</span>
+        <span class="disc">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <g>
+            <rect x="8" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+            <rect x="20" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+            <rect x="32" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+            <rect x="44" y="46" width="11" height="11" rx="2.5" fill="#3aa6b9"/>
+            <rect x="8" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+            <rect x="20" y="34" width="11" height="11" rx="2.5" fill="#f2b134"/>
+            <rect x="8" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+            <rect x="20" y="22" width="11" height="11" rx="2.5" fill="#f2b134"/>
+            <rect x="32" y="34" width="11" height="11" rx="2.5" fill="#8e6fd8"/>
+            <rect x="44" y="34" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+            <rect x="44" y="22" width="11" height="11" rx="2.5" fill="#e88a3a"/>
+            <rect x="26" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+            <rect x="38" y="4" width="11" height="11" rx="2.5" fill="#e4572e"/>
+            </g>
+            <g fill="#fff" opacity=".35">
+            <rect x="10" y="48" width="7" height="2" rx="1"/><rect x="22" y="48" width="7" height="2" rx="1"/>
+            <rect x="34" y="48" width="7" height="2" rx="1"/><rect x="46" y="48" width="7" height="2" rx="1"/>
+            <rect x="10" y="36" width="7" height="2" rx="1"/><rect x="22" y="36" width="7" height="2" rx="1"/>
+            <rect x="10" y="24" width="7" height="2" rx="1"/><rect x="22" y="24" width="7" height="2" rx="1"/>
+            <rect x="34" y="36" width="7" height="2" rx="1"/><rect x="46" y="36" width="7" height="2" rx="1"/>
+            <rect x="46" y="24" width="7" height="2" rx="1"/>
+            <rect x="28" y="6" width="7" height="2" rx="1"/><rect x="40" y="6" width="7" height="2" rx="1"/>
+            </g>
+            <line x1="37.5" y1="17" x2="37.5" y2="21" stroke="#e4572e" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+            </svg>
+        </span>
+        <span class="name">블록 스택</span>
+        <span class="desc">블록 쌓아 줄 지우는 퍼즐</span>
+      </a>
+    </li>
+    </ul>
+  </main>
+
+  <footer class="foot">
+    <svg class="wave" viewBox="0 0 1200 46" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 13 C150 28 300 -2 450 13 S750 28 900 13 S1100 -2 1200 13" stroke="var(--mustard)"/>
+      <path d="M0 25 C150 40 300 10 450 25 S750 40 900 25 S1100 10 1200 25" stroke="var(--brick)"/>
+      <path d="M0 37 C150 52 300 22 450 37 S750 52 900 37 S1100 22 1200 37" stroke="var(--brown)"/>
+    </svg>
+    <p>혜진's 스튜디오 · since 2026.11.13.</p>
+  </footer>
+</div>
+</body>
+</html>
