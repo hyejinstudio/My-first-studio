@@ -137,6 +137,36 @@ async function seedVisitor(ctx) {
     }
   }
 
+  // 4) 홈 피드백 (백엔드 불통): 목록 아래 「피드백 보내기」 → 시트 열림(isOpen) → 보내기 → 실패 문구, Esc로 닫힘
+  if (!only.length && !LAB) {
+    const fctx = await browser.newContext(profiles[1].opts);
+    await blockBackend(fctx);
+    await seedVisitor(fctx);
+    const fp = await fctx.newPage();
+    const fprob = [];
+    fp.on('pageerror', e => fprob.push('pageerror: ' + e.message));
+    fp.on('console', m => m.type() === 'error' && !isBackend((m.location() || {}).url) && fprob.push('console: ' + m.text()));
+    try {
+      await fp.goto(origin);
+      await fp.waitForSelector('#fbLink:visible', { timeout: 5000 });
+      if (await fp.isVisible('#notice') && !(await fp.isVisible('#fbBtn'))) fprob.push('공지 띠 안 버튼 안 보임');
+      const bh = await fp.$eval('#fbLink', b => b.getBoundingClientRect().height);
+      if (bh < 44) fprob.push('버튼 높이 ' + bh);
+      await fp.tap('#fbLink');
+      await fp.waitForSelector('.lb-fb #lb-fb-text:visible', { timeout: 3000 });
+      if (!(await fp.evaluate(() => window.Leaderboard && Leaderboard.isOpen()))) fprob.push('isOpen() false');
+      await fp.fill('#lb-fb-text', '스모크 테스트 피드백');
+      await fp.tap('.lb-fb .lb-ok');
+      await fp.waitForFunction(() => /보내지 못했어요|연결/.test((document.getElementById('lb-fb-info') || {}).textContent || ''), null, { timeout: 9000 });
+      await fp.keyboard.press('Escape');
+      if (await fp.$('.lb-fb')) fprob.push('Esc로 안 닫힘');
+      if (await fp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) fprob.push('가로 스크롤 발생');
+    } catch (e) { fprob.push(String(e.message || e).split('\n')[0]); }
+    report.push(`${fprob.length ? '✗' : '✓'} 홈 피드백 [ipad]${fprob.length ? ' → ' + fprob.join(' | ') : ''}`);
+    if (fprob.length) failed++;
+    await fctx.close();
+  }
+
   const targets = only.length ? only : slugs;
   for (const slug of targets) {
     for (const prof of profiles) {

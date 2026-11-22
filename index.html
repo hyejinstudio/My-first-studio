@@ -126,6 +126,23 @@
   .notice button { flex: 0 0 auto; width: 44px; height: 44px; border: 0; background: transparent; color: var(--muted);
     font-size: 22px; line-height: 1; border-radius: 10px; cursor: pointer; }
   .notice button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .notice .nbody { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .notice .nbody p { flex: 1 1 260px; min-width: 0; }
+  /* 피드백 보내기 (공지 띠 안 / 목록 아래) — 순위 모듈이 있을 때만 보임 */
+  .notice .fbbtn, .fblink {
+    flex: none; width: auto; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px;
+    border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    font: inherit; font-size: 14px; font-weight: 700; line-height: 1; white-space: nowrap; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: border-color 140ms ease-out;
+  }
+  .notice .fbbtn[hidden], .fblink[hidden] { display: none; }
+  .notice .fbbtn svg, .fblink svg { width: 16px; height: 16px; flex: none; color: var(--accent); }
+  .notice .fbbtn:focus-visible, .fblink:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+  .notice .fbbtn:active, .fblink:active { transform: scale(.97); }
+  @media (hover: hover) { .notice .fbbtn:hover, .fblink:hover { border-color: var(--accent); } }
+  .foot { display: flex; justify-content: center; margin: 28px 0 0; }
+  .fblink { background: none; border-color: transparent; color: var(--muted); font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .notice .fbbtn:active, .fblink:active { transform: none; } }
 </style>
 </head>
 <body>
@@ -145,7 +162,10 @@
   <p class="sub">하고 싶은 게임을 골라보세요.</p>
   <div class="notice" id="notice" role="status" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M5.6 5.6l1.4 1.4M3 12h2M18.4 5.6 17 7M21 12h-2"/><path d="M7 15a5 5 0 0 1 10 0"/><path d="M3 19h18"/></svg>
-    <p>관리자가 잠시 <b>휴가</b>를 떠났어요:) <b>12월 셋째주</b>에 돌아올게요! 그동안 게임 그대로 즐겨주세요. 피드백은 언제나 받고 있으니 편하게 알려주세요!</p>
+    <div class="nbody">
+      <p>관리자가 잠시 <b>휴가</b>를 떠났어요:) <b>12월 셋째주</b>에 돌아올게요! 그동안 게임 그대로 즐겨주세요. 피드백은 언제나 받고 있으니 편하게 알려주세요!</p>
+      <button class="fbbtn" id="fbBtn" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a7 7 0 0 1-10.3 6.2L5 19.5l1.3-4.2A7 7 0 1 1 20 12z"/><path d="M9 11h6M9 14h4"/></svg><span>피드백 보내기</span></button>
+    </div>
     <button type="button" id="noticeClose" aria-label="공지 닫기">×</button>
   </div>
   <script>
@@ -380,8 +400,11 @@
       <p>블록 쌓아 줄 지우는 퍼즐</p>
     </a>
   </div>
+  <div class="foot">
+    <button class="fblink" id="fbLink" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a7 7 0 0 1-10.3 6.2L5 19.5l1.3-4.2A7 7 0 1 1 20 12z"/><path d="M9 11h6M9 14h4"/></svg><span>피드백 보내기</span></button>
+  </div>
 </main>
-<script src="lib/leaderboard.js?v=8" defer></script>
+<script src="lib/leaderboard.js?v=9" defer></script>
 <script>
   // 순위 모듈이 실패하면 버튼을 숨긴 채로 둔다(목록은 그대로)
   document.addEventListener('DOMContentLoaded', function () {
@@ -389,6 +412,15 @@
     if (!b || !window.Leaderboard) return;
     b.hidden = false;
     b.addEventListener('click', function () { window.Leaderboard && Leaderboard.open(); });
+    // 피드백 보내기 (공지 띠 안 + 목록 아래)
+    if (Leaderboard.openFeedback) {
+      ['fbBtn', 'fbLink'].forEach(function (id) {
+        var f = document.getElementById(id);
+        if (!f) return;
+        f.hidden = false;
+        f.addEventListener('click', function () { window.Leaderboard && Leaderboard.openFeedback(); });
+      });
+    }
     // 닉네임 표시 → 내 정보 시트 (닉네임 바꾸기 · PIN 바꾸기 · 다른 닉네임으로 이어하기)
     var m = document.getElementById('meBtn'), mn = document.getElementById('meNick');
     function sync(st) {

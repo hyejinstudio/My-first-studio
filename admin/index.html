@@ -59,6 +59,7 @@
   .btn.primary:active { filter: brightness(.92); }
   .btn:disabled { opacity: .5; cursor: default; }
   .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  h2[tabindex]:focus { outline: none; }
   select { height: 44px; padding: 0 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 15px; }
 
   /* 로그인 */
@@ -115,6 +116,26 @@
   .players td.top { font-weight: 800; color: var(--accent); }
   .empty { padding: 18px 4px; color: var(--muted); text-align: center; }
   .foot { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  /* 피드백 */
+  .fbhead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 8px; }
+  .fbhead h2 { margin: 0; display: flex; align-items: center; gap: 8px; }
+  .fbhead .stamp { margin-left: auto; }
+  .badge { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .fblist { list-style: none; margin: 0; padding: 0; }
+  .fbitem { border-top: 1px solid var(--line); padding: 12px 2px; }
+  .fbitem:first-child { border-top: 0; }
+  .fbmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 13px; color: var(--muted); }
+  .fbmeta .who { font-weight: 800; color: var(--ink); }
+  .fbmeta .who.none { font-weight: 600; color: var(--muted); }
+  .fbmeta .new { font-size: 11px; font-weight: 800; color: var(--accent); border: 1px solid currentColor; border-radius: 999px; padding: 1px 6px; }
+  .fbmsg { margin: 6px 0 8px; font-size: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
+  .fbitem.read .fbmsg { color: var(--muted); }
+  .fbacts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .fbacts .btn { height: 40px; font-size: 14px; padding: 0 12px; }
+  .btn.danger { color: var(--err); border-color: var(--err); }
+  .btn.danger.sure { background: var(--err); color: #fff; border-color: transparent; }
+  .fberr { font-size: 13px; font-weight: 600; color: var(--err); }
   @media (max-width: 640px) {
     .barcell { display: none; }
     th.hide-s, td.hide-s { display: none; }
@@ -151,6 +172,15 @@
 
   <div id="dash" hidden>
     <div class="cards" id="cards"></div>
+    <section class="panel" id="fbPanel" aria-labelledby="fbTitle">
+      <div class="fbhead">
+        <h2 id="fbTitle" tabindex="-1">피드백 <span class="badge" id="fbBadge" hidden></span></h2>
+        <span class="stamp" id="fbStamp"></span>
+      </div>
+      <p class="msg" id="fbMsg" role="status" aria-live="polite" hidden></p>
+      <ul class="fblist" id="fbList"></ul>
+      <p class="foot" id="fbFoot"></p>
+    </section>
     <section class="panel chart">
       <h2 id="dailyTitle">일별 방문</h2>
       <div id="daily"></div>
@@ -195,12 +225,13 @@
   function setMsg(t, kind) { var m = $('msg'); m.textContent = t || ''; m.className = 'msg' + (kind ? ' ' + kind : ''); }
   function mmss(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
 
-  function call(pw, days) {
+  function call(pw, days) { return rpc('admin_stats', { p_pass: pw, p_days: days }); }
+  function rpc(fn, body) {
     var ctl = null; try { ctl = new AbortController(); } catch (e) {}
     var timer = setTimeout(function () { try { ctl && ctl.abort(); } catch (e) {} }, 15000);
-    return fetch(URL_ + '/rest/v1/rpc/admin_stats', {
+    return fetch(URL_ + '/rest/v1/rpc/' + fn, {
       method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_pass: pw, p_days: days }), cache: 'no-store', credentials: 'omit',
+      body: JSON.stringify(body), cache: 'no-store', credentials: 'omit',
       signal: ctl ? ctl.signal : undefined
     }).then(function (res) {
       clearTimeout(timer);
@@ -237,7 +268,7 @@
       busy = false;
       $('go').disabled = false; $('refresh').disabled = false;
       var s = r.status;
-      if (s === 'ok') { pass = pw; $('pw').value = ''; setMsg(''); render(r); return; }
+      if (s === 'ok') { pass = pw; $('pw').value = ''; setMsg(''); render(r); loadFeedback(); return; }
       // 대시보드에서 새로고침하다 실패: 네트워크 문제면 화면 유지
       if (!fromLogin && (s === 'net' || s === 'error')) { $('stamp').textContent = '연결되지 않았어요. 잠시 후 다시 새로고침해 주세요'; return; }
       pass = ''; showLogin();
@@ -338,6 +369,106 @@
     tb.innerHTML = h + '</tbody>';
   }
 
+  /* ---------- 피드백 (leaderboard-v8-feedback.sql) ---------- */
+  var fbItems = [], fbUnread = 0, fbTotal = 0, fbReq = 0, fbBusy = {};
+  function pageName(p) { return p === 'home' ? '홈' : gname(p); }
+  function fbMsg(t, kind) { var m = $('fbMsg'); m.textContent = t || ''; m.className = 'msg' + (kind ? ' ' + kind : ''); m.hidden = !t; }
+  // 비밀번호가 더 이상 맞지 않음(다른 곳에서 바뀜·잠김) → 로그인 화면으로
+  function authLost(r) {
+    pass = ''; showLogin();
+    if (r.status === 'locked') startLock(+r.seconds_left || 900);
+    else if (r.status === 'wrong') { setMsg('비밀번호가 맞지 않아요 · 남은 기회 ' + r.tries_left + '번', 'err'); selectPw(); }
+    else { setMsg('다시 로그인해 주세요', 'warn'); selectPw(); }
+  }
+  function loadFeedback() {
+    if (!pass) return;
+    var req = ++fbReq;
+    $('fbStamp').textContent = '불러오는 중…';
+    rpc('admin_feedback', { p_pass: pass, p_limit: 100 }).then(function (r) {
+      if (req !== fbReq || !pass) return;
+      $('fbStamp').textContent = '';
+      var s = r.status;
+      if (s === 'ok') { fbMsg(''); fbItems = Array.isArray(r.items) ? r.items : []; fbUnread = +r.unread || 0; fbTotal = +r.total || fbItems.length; renderFeedback(); return; }
+      if (s === 'wrong' || s === 'locked' || s === 'no_password') { authLost(r); return; }
+      if (s === 'no_sql') { fbMsg('서버에 피드백 기능(leaderboard-v8-feedback.sql)이 아직 적용되지 않았어요', 'warn'); return; }
+      fbMsg(s === 'net' ? '피드백을 불러오지 못했어요. 연결을 확인하고 새로고침해 주세요' : '피드백을 불러오지 못했어요 (' + (r.code || '알 수 없음') + ')', 'err');
+    });
+  }
+  function renderFeedback() {
+    var b = $('fbBadge');
+    b.textContent = fmt(fbUnread); b.hidden = !fbUnread;
+    b.setAttribute('aria-label', '안 읽은 피드백 ' + fbUnread + '개');
+    var ul = $('fbList');
+    ul.textContent = '';
+    if (!fbItems.length) {
+      var e = document.createElement('li'); e.className = 'empty'; e.textContent = '아직 받은 피드백이 없어요'; ul.appendChild(e);
+    }
+    fbItems.forEach(function (it) { ul.appendChild(fbItem(it)); });
+    $('fbFoot').textContent = fbTotal > fbItems.length ? '최근 ' + fmt(fbItems.length) + '개만 보여요 (전체 ' + fmt(fbTotal) + '개)' :
+      (fbTotal ? '전체 ' + fmt(fbTotal) + '개 · 시각은 서울 기준' : '');
+  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function fbItem(it) {
+    var li = el('li', 'fbitem' + (it.read ? ' read' : ''));
+    li.dataset.id = String(it.id);
+    var meta = el('div', 'fbmeta');
+    if (!it.read) meta.appendChild(el('span', 'new', '새 글'));
+    meta.appendChild(el('span', 'who' + (it.nickname ? '' : ' none'), it.nickname ? String(it.nickname) : '닉네임 없음'));
+    meta.appendChild(el('span', 'num', when(it.at)));
+    meta.appendChild(el('span', null, pageName(String(it.page || ''))));
+    li.appendChild(meta);
+    li.appendChild(el('p', 'fbmsg', String(it.message == null ? '' : it.message)));
+    var acts = el('div', 'fbacts');
+    var rd = el('button', 'btn', it.read ? '안 읽음으로' : '읽음 표시'); rd.type = 'button';
+    var del = el('button', 'btn danger', '삭제'); del.type = 'button';
+    var cancel = el('button', 'btn', '취소'); cancel.type = 'button'; cancel.hidden = true;
+    var err = el('span', 'fberr'); err.setAttribute('role', 'status');
+    acts.appendChild(rd); acts.appendChild(del); acts.appendChild(cancel); acts.appendChild(err);
+    li.appendChild(acts);
+    var sureTimer = 0;
+    function unsure() { clearTimeout(sureTimer); del.classList.remove('sure'); del.textContent = '삭제'; cancel.hidden = true; }
+    rd.addEventListener('click', function () {
+      fbAct(it, 'admin_feedback_mark', { p_pass: pass, p_id: it.id, p_read: !it.read }, err, [rd, del], function () { it.read = !it.read; });
+    });
+    del.addEventListener('click', function () {
+      if (!del.classList.contains('sure')) {
+        del.classList.add('sure'); del.textContent = '정말 삭제'; cancel.hidden = false; err.textContent = '';
+        clearTimeout(sureTimer); sureTimer = setTimeout(unsure, 6000);
+        return;
+      }
+      unsure();
+      fbAct(it, 'admin_feedback_delete', { p_pass: pass, p_id: it.id }, err, [rd, del], function () {
+        fbItems = fbItems.filter(function (x) { return x !== it; }); fbTotal = Math.max(0, fbTotal - 1);
+      });
+    });
+    cancel.addEventListener('click', function () { unsure(); try { del.focus(); } catch (e) {} });
+    return li;
+  }
+  function fbAct(it, fn, body, err, btns, apply) {
+    if (!pass || fbBusy[it.id]) return;
+    fbBusy[it.id] = true;
+    btns.forEach(function (b) { b.disabled = true; });
+    err.textContent = '';
+    rpc(fn, body).then(function (r) {
+      delete fbBusy[it.id];
+      btns.forEach(function (b) { b.disabled = false; });
+      if (!pass) return;
+      if (r.status === 'ok') {
+        if (r.found !== false) apply();
+        else fbItems = fbItems.filter(function (x) { return x !== it; }); // 이미 지워진 글
+        if (r.unread != null) fbUnread = +r.unread || 0;
+        var id = it.id, wasFocus = document.activeElement;
+        renderFeedback();
+        // 같은 글의 버튼으로 포커스 되돌림(삭제면 목록 제목으로)
+        var li = $('fbList').querySelector('[data-id="' + String(id).replace(/[^0-9]/g, '') + '"]');
+        if (wasFocus && wasFocus !== document.body) { try { (li ? li.querySelector('.btn') : $('fbTitle')).focus({ preventScroll: true }); } catch (e) {} }
+        return;
+      }
+      if (r.status === 'wrong' || r.status === 'locked' || r.status === 'no_password') { authLost(r); return; }
+      err.textContent = r.status === 'net' ? '연결되지 않았어요. 다시 해 주세요' : '처리하지 못했어요 (' + (r.code || r.status || '알 수 없음') + ')';
+    });
+  }
+
   window.addEventListener('resize', function () {
     if (!lastDaily || $('dash').hidden) return;
     var w = Math.round($('daily').clientWidth || 0);
@@ -355,6 +486,7 @@
   $('days').addEventListener('change', function () { if (pass) load(pass, false); });
   $('logout').addEventListener('click', function () {
     pass = ''; $('cards').innerHTML = ''; $('games').innerHTML = ''; $('players').innerHTML = ''; $('daily').innerHTML = '';
+    fbItems = []; fbReq++; $('fbList').textContent = ''; $('fbBadge').hidden = true; $('fbStamp').textContent = ''; $('fbFoot').textContent = ''; fbMsg('');
     showLogin(); setMsg('잠갔어요', ''); selectPw();
   });
   // 테스트용: 비밀번호가 메모리에만 있는지 확인
