@@ -145,12 +145,12 @@
   <p class="sub">하고 싶은 게임을 골라보세요.</p>
   <div class="notice" id="notice" role="status" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M5.6 5.6l1.4 1.4M3 12h2M18.4 5.6 17 7M21 12h-2"/><path d="M7 15a5 5 0 0 1 10 0"/><path d="M3 19h18"/></svg>
-    <p>관리자가 잠시 <b>휴가</b> 중이에요. <b>12월 셋째 주</b>에 돌아올게요! 그동안 게임은 그대로 즐겨 주세요.</p>
+    <p>관리자가 잠시 <b>휴가</b>를 떠났어요:) 그동안 게임 그대로 즐겨주세요. 피드백은 언제나 받고 있으니 편하게 연락주세요!</p>
     <button type="button" id="noticeClose" aria-label="공지 닫기">×</button>
   </div>
   <script>
     (function () {
-      var KEY = 'studio-notice-vacation-2026-12', END = new Date('2026-12-21T00:00:00+09:00');
+      var KEY = 'studio-notice-vacation-2026-12b', END = new Date('2026-12-21T00:00:00+09:00');
       var n = document.getElementById('notice'), b = document.getElementById('noticeClose');
       var closed = false; try { closed = localStorage.getItem(KEY) === '1'; } catch (e) {}
       if (!closed && new Date() < END) n.hidden = false;
