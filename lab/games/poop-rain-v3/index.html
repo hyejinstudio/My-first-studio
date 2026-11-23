@@ -298,7 +298,7 @@
       <a class="home ov-home secondary" href="../../">← 게임 목록</a>
       <h2>똥비 피하기</h2>
       <p>똥은 피하고 별사탕은 줍기!</p>
-      <p class="bonusline">아슬하게 피하면 +10 · 우산으로 막으면 +10</p>
+      <p class="bonusline">아슬하게 피하면 +20 · 우산으로 막으면 +10</p>
       <canvas class="kidpic" id="kidPic" aria-hidden="true"></canvas>
       <div class="legend" aria-label="떨어지는 것들">
         <div class="lg"><canvas data-icon="normal" aria-hidden="true"></canvas><div><b>똥</b><span>맞으면 끝!</span></div></div>
@@ -812,9 +812,10 @@ const Sound = (function () {
   var UMB_FIRST = 8, UMB_GAP0 = 8, UMB_GAP1 = 12;
   var SCRIPT_T = [0.6, 1.6, 2.6], SCRIPT_V0 = 290, SCRIPT_V1 = 320, REG_START = 1.0;
   var LEVELS = [15, 30, 45, 60, 75, 90];
-  var NEAR_GAP = 12;
+  // v3.1: 아슬 판정 완화 (design.md v3.1) — 판정 상자 가장자리~똥 가장자리 가로 간격
+  var NEAR_GAP = 30;
   // v3 보너스 (design.md v3-1, v3-2)
-  var NEAR_PTS = 10, BLOCK_PTS = 10, BLOCK_CAP = 10;
+  var NEAR_PTS = 20, BLOCK_PTS = 10, BLOCK_CAP = 10;
   // v3 연출 동시 표시 상한 (art-ui v3 6)
   var FX_CAP = { whoosh: 2, umbHit: 3, bounce: 6 };
   // t, 간격, 속도, 동시 최대, 조준 비율 (design.md v2)
@@ -1636,6 +1637,21 @@ const Sound = (function () {
     P.breath += dt;
   }
 
+  // v3.1: 하위 스텝 한 구간(똥 y ya→yb, x xa→xb, 캐릭터 x pa→pb, 모두 시간에 선형)에서
+  // 똥이 판정 높이 띠(y+r ≥ HB_TOP, y−r ≤ HB_BOT)에 걸친 동안의 최소 가로 간격. 띠에 안 걸치면 null
+  function nearGapSeg(ya, yb, xa, xb, r, pa, pb) {
+    var lo = HB_TOP - r, hi = HB_BOT + r, t0 = 0, t1 = 1, dy = yb - ya;
+    if (dy === 0) { if (ya < lo || ya > hi) return null; }
+    else {
+      var ta = (lo - ya) / dy, tb = (hi - ya) / dy;
+      if (ta > tb) { var tt = ta; ta = tb; tb = tt; }
+      t0 = Math.max(0, ta); t1 = Math.min(1, tb);
+      if (t0 > t1) return null;
+    }
+    var d0 = (xa - pa) + ((xb - pb) - (xa - pa)) * t0, d1 = (xa - pa) + ((xb - pb) - (xa - pa)) * t1;
+    var m = (d0 <= 0 && d1 >= 0) || (d0 >= 0 && d1 <= 0) ? 0 : Math.min(Math.abs(d0), Math.abs(d1));
+    return m - HB_HALF - r;
+  }
   function landPoop(p) {
     if (p.minGap <= NEAR_GAP && !G.invMode && G.inv <= 0 && !p.wasInv) nearMissHit(p);
     G.fx.push({ k: 'land', type: p.type, x: p.x, s: p.s, t: 0, tilt: p.tilt });
@@ -1654,7 +1670,7 @@ const Sound = (function () {
     return f;
   }
   function findFx(k) { for (var i = 0; i < G.fx.length; i++) if (G.fx[i].k === k) return G.fx[i]; return null; }
-  // v3: 아슬 1번 = +10 (design.md v3-1). 점수 콤보 없음 — G.combo는 소리 높이에만
+  // v3.1: 아슬 1번 = +20 (design.md v3.1). 점수 콤보 없음 — G.combo는 소리 높이에만
   function nearMissHit(p) {
     G.nearMiss++;
     G.combo = (G.time - G.lastNearT < 2) ? G.combo + 1 : 1;
@@ -1712,6 +1728,7 @@ const Sound = (function () {
     guard = 0;
     while (G.starsOn && G.time >= G.starNext && guard++ < 3) trySpawnStar();
 
+    var px0 = G.player.x;   // v3.1: 아슬 간격 보간용(이번 프레임 시작 위치)
     movePlayer(dt);
     animKid(dt);
     if (G.hintOn) G.hintT = Math.max(G.hintT + dt, G.time >= 3 ? 3 : 0);
@@ -1723,7 +1740,7 @@ const Sound = (function () {
     for (var s = 0; s < n; s++) {
       for (i = G.poops.length - 1; i >= 0; i--) {
         p = G.poops[i];
-        var ly = landY(p), hs = h;
+        var ly = landY(p), hs = h, ya = p.y, xa = p.x;
         // 착지하는 하위 스텝은 착지 시각까지만 진행(흔들 똥의 x도 그 시각 값으로 판정)
         if (p.vy > 0 && p.y + p.vy * h > ly) hs = Math.max(0, (ly - p.y) / p.vy);
         p.age += hs; p.y += p.vy * hs;
@@ -1738,9 +1755,12 @@ const Sound = (function () {
           if (G.inv > 0) { G.poops.splice(i, 1); bouncePoop(p); continue; }
           if (hb && !G.invMode) { G.poops.splice(i, 1); die(p); return; }
         }
-        if (p.y + p.r >= HB_TOP && p.y - p.r <= HB_BOT) {
-          var gap = Math.abs(p.x - px) - HB_HALF - p.r;
-          if (gap < p.minGap) p.minGap = gap;
+        // v3.1: 이 하위 스텝 구간에서 똥·캐릭터 x를 선형 보간해 판정 높이 띠 안의 최소 가로 간격을 계산
+        // (끝점만 보면 흔들 똥이 프레임 사이에 더 가까이 스친 것을 놓침)
+        var bandGap = nearGapSeg(ya, p.y, xa, p.x, p.r,
+          px0 + (px - px0) * (s / n), px0 + (px - px0) * Math.min(1, (s + (hs / h)) / n));
+        if (bandGap !== null) {
+          if (bandGap < p.minGap) p.minGap = bandGap;
           if (G.inv > 0) p.wasInv = true;
         }
         if (p.y >= ly) { G.poops.splice(i, 1); landPoop(p); }
