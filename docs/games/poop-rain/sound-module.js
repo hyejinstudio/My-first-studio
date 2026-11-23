@@ -146,6 +146,15 @@ const Sound = (function () {
   var DODGE = [N.C6, N.D6, N.E6, N.G6];
   // (v2) 별사탕 연속 획득(chain) 사다리: 기준음 f (C 메이저 펜타토닉 6단). 실제로는 f → f×2 '또-링'
   var STAR = [N.C5, N.D5, N.E5, N.G5, N.A5, N.C6];
+  // (v3) 아슬아슬 회피 보너스 nearMiss 사다리: G 메이저 펜타토닉 위쪽(C 메이저 안). 8단 이상 고정
+  var NEAR = [N.G5, N.A5, N.B5, N.D6, N.E6, N.G6, 1760.0, 1975.53];
+  // (v3) 우산 튕김 umbrellaBlock 동시 발음·자동 감쇠 상태
+  var UB_MAX_VOICES = 2;     // 동시에 울리는 '퉁' 최대 2개
+  var UB_LEN = 0.13;         // 한 번의 길이(초)
+  var UB_RECOVER = 0.6;      // 감쇠가 완전히 풀리는 데 걸리는 시간(초)
+  var UB_STEP = 0.72;        // 한 번 칠 때마다 다음 소리 크기 ×0.72
+  var UB_FLOOR = 0.35;       // 연타 중 최소 크기 비율
+  var ub = { duck: 1, lastT: -9, ends: [], flip: 0 };
 
   var sfx = {
     // 게임 시작: '띠용' 스프링 + 상승 3음 + 반짝
@@ -264,6 +273,40 @@ const Sound = (function () {
       tone('sine', N.E5, 0, t, 0.08, 0.06, 0.003);
       tone('sine', N.A5, 0, t + 0.08, 0.14, 0.06, 0.003);
     },
+    // (v3) 아슬아슬 회피 보너스: '슝' 바람(위로 쓸어 올리는 노이즈) + 미끄러져 오르는 '뾰↑' + 반짝.
+    // opts.combo 1,2,3… 연속이면 사다리 한 칸 위(8단 이상 고정), 바람도 조금 더 높게. dodge보다 밝고 '보너스' 느낌.
+    nearMiss: function (t, opts) {
+      if (throttled('nearMiss', t, 0.08)) return;
+      var c = Math.floor(+(opts && opts.combo));
+      if (!(c >= 1)) c = 1;
+      var k = Math.min(c, NEAR.length) - 1, f = NEAR[k];
+      var lift = 1 + k * 0.08;                                            // 연속일수록 바람도 살짝 위
+      noise(t, 0.12, 0.075, 'bandpass', 700 * lift, 4200 * lift, 2.2, 0.025);   // '슝'
+      sweep('sine', f * 0.62, f, t + 0.05, 0.05, 0.15, 0.085, 0.004);    // '뾰↑' 미끄러져 오름
+      tone('triangle', f * 2, 0, t + 0.10, 0.09, 0.022, 0.003);          // 반짝
+    },
+    // (v3) 우산에 똥이 맞음: 탄력 있는 천 튕김 '퉁/팅'. 연달아 맞으면 자동으로 작아지고(최소 35%),
+    // 동시에 2개까지만 울림. 음높이는 번갈아 ±로 조금씩 달라 기관총처럼 들리지 않게.
+    // opts.big = true 이면 조금 낮고 두툼하게(큰 똥).
+    umbrellaBlock: function (t, opts) {
+      if (throttled('umbrellaBlock', t, 0.06)) return;
+      var i, live = [];
+      for (i = 0; i < ub.ends.length; i++) if (ub.ends[i] > t) live.push(ub.ends[i]);
+      ub.ends = live;
+      if (ub.ends.length >= UB_MAX_VOICES) return;
+      ub.duck = Math.min(1, ub.duck + (t - ub.lastT) / UB_RECOVER);
+      var g = ub.duck;
+      ub.duck = Math.max(UB_FLOOR, ub.duck * UB_STEP);
+      ub.lastT = t;
+      ub.ends.push(t + UB_LEN);
+      ub.flip = 1 - ub.flip;
+      var big = !!(opts && opts.big);
+      var f = (big ? 210 : 290) * (ub.flip ? 1.04 : 0.97) * (0.98 + Math.random() * 0.04);
+      noise(t, 0.025, 0.05 * g, 'bandpass', 2400, 1600, 1.5, 0.002);     // 천에 닿는 '탁'
+      sweep('sine', f * 1.9, f, t, 0.035, UB_LEN, 0.12 * g, 0.002);       // 팽팽한 천 '퉁'
+      sweep('sine', f * 1.2, f * 1.38, t + 0.03, 0.06, 0.09, 0.035 * g, 0.004); // 되튐 '웅↑' (탄력)
+      tone('triangle', f * 4.5, 0, t + 0.004, 0.05, 0.018 * g, 0.002);   // 살대 '팅'
+    },
     // UI 버튼 '톡' (선택)
     tap: function (t) {
       if (throttled('tap', t, 0.06)) return;
@@ -355,8 +398,9 @@ const Sound = (function () {
         s.buffer = b; s.connect(ctx.destination); s.start(0);
       } catch (e) {}
     },
-    // name: start|plop|bigLand|dodge|star|starMiss|item|shieldOn|shieldWarn|shieldOff|hit|gameOver|record|levelUp|tap
-    // opts 공통: x 0~1 (선택, 좌우 위치). dodge → { combo 1.. }, star → { chain 1..6 }, shieldWarn → { n 1|2 }
+    // name: start|plop|bigLand|dodge|nearMiss|star|starMiss|item|shieldOn|shieldWarn|shieldOff|umbrellaBlock|hit|gameOver|record|levelUp|tap
+    // opts 공통: x 0~1 (선택, 좌우 위치). dodge·nearMiss → { combo 1.. }, star → { chain 1..6 }, shieldWarn → { n 1|2 },
+    // umbrellaBlock → { big: true|false }
     play: function (name, opts) {
       try {
         if (!ready() || typeof name !== 'string' || !sfx.hasOwnProperty(name)) return;
