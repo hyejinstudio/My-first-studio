@@ -28,6 +28,7 @@
     --kid-skin: #f3d9c1; --kid-line: #c7a283; --kid-hair: #6b5444; --kid-shirt: #86c3b0; --kid-pants: #8395ad; --kid-eye: #3a2f28;
     --sweat: #8fbfe0;
     --candy: #f8dc85; --candy-line: #a97b26; --candy-pink: #f7c6d2; --candy-pink-line: #b47288; --candy-glint: #d9a640; --candy-text: #94650f;
+    --near-text: #3c6c8f; --item-text: #2e7363;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -41,6 +42,7 @@
       --kid-skin: #e6c8ac; --kid-line: #9a7c63; --kid-hair: #8a7060; --kid-shirt: #6fb19d; --kid-pants: #7386a0; --kid-eye: #2a221d;
       --sweat: #7fb0d4;
       --candy: #e9cb6e; --candy-line: #b58c3c; --candy-pink: #e4abbb; --candy-pink-line: #a9727f; --candy-glint: #fff0c4; --candy-text: #ffd77a;
+      --near-text: #a9d4f2; --item-text: #8ed8c4;
     }
   }
   :root[data-theme="dark"] {
@@ -54,6 +56,7 @@
     --kid-skin: #e6c8ac; --kid-line: #9a7c63; --kid-hair: #8a7060; --kid-shirt: #6fb19d; --kid-pants: #7386a0; --kid-eye: #2a221d;
     --sweat: #7fb0d4;
     --candy: #e9cb6e; --candy-line: #b58c3c; --candy-pink: #e4abbb; --candy-pink-line: #a9727f; --candy-glint: #fff0c4; --candy-text: #ffd77a;
+    --near-text: #a9d4f2; --item-text: #8ed8c4;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: var(--app-h); overflow: hidden; }
@@ -93,6 +96,8 @@
   }
   .spill .num { font-size: 26px; color: var(--ink); transition: color 300ms ease-out; }
   .spill.bump .num { color: var(--candy-text); }
+  .spill.bump.near .num { color: var(--near-text); }
+  .spill.bump.umb .num { color: var(--item-text); }
   .spill .unit { font-size: 14px; font-weight: 700; color: var(--muted); }
   /* 연속 배지: 흐름 밖(absolute) → 상단 바 폭 불변 */
   .combo {
@@ -202,6 +207,39 @@
   .resstats > span { display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap; }
   .resstats .num { font-size: 18px; color: var(--ink); }
   .resstats svg { width: 16px; height: 16px; align-self: center; fill: var(--candy); stroke: var(--candy-line); stroke-width: 1.6; overflow: visible; }
+  /* v3 결과 화면 점수 내역 (art-ui v3 4) */
+  .resbrk { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, max-content);
+    gap: 4px 18px; justify-content: center; }
+  .resbrk li { display: flex; align-items: center; gap: 6px; height: 24px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .resbrk li svg { width: 16px; height: 16px; flex: none; overflow: visible; }
+  .resbrk .q .num { font-size: 15px; color: var(--ink); }
+  .resbrk .pt { font-family: var(--num-font); font-weight: 800; font-size: 15px; color: var(--ink);
+    min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+  .resbrk li.zero .pt { color: var(--muted); }
+  .resbrk li.zero svg { opacity: .55; }
+  /* v3.3 보너스 안내 영상 (art-ui v3.3) — 게임 그리기 함수로 그리는 무음 10초 루프 */
+  .demo { position: relative; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+  .demo canvas { display: block; width: 320px; height: 160px; border-radius: 12px; border: 1px solid var(--grid); box-sizing: content-box; }
+  .demo .dots { position: absolute; top: 9px; right: 11px; display: flex; gap: 5px; }
+  .demo .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); opacity: .22; transition: opacity 200ms ease-out; }
+  .demo .dots i.on { opacity: .7; }
+  .demo .cap { margin: 0; height: 20px; line-height: 20px; font-size: 13px; color: var(--muted); white-space: nowrap; transition: opacity 200ms ease-out; }
+  .demo .cap b { font-weight: 700; }
+  .demo .kn { color: var(--near-text); }
+  .demo .ku { color: var(--item-text); }
+  .demo .cap .num { font-family: var(--num-font); font-weight: 800; font-size: 14px; }
+  .demo .cap2 { display: none; }
+  @media (min-height: 900px) { .demo canvas { width: 360px; height: 180px; } }
+  @media (max-height: 520px) { .demo { gap: 2px; } .demo canvas { width: 240px; height: 120px; }
+    .demo .cap { font-size: 12px; height: 18px; line-height: 18px; } }
+  @media (max-width: 351.98px) { .demo canvas { width: calc(100vw - 32px); height: auto; aspect-ratio: 2 / 1; } .demo .cap { font-size: 12px; } }
+  /* 움직임 줄이기: 정지 컷 2장 + 2열 자막 */
+  .demo.rm .cap, .demo.rm .dots { display: none; }
+  .demo.rm .cap2 { display: grid; grid-template-columns: 1fr 1fr; width: 320px; font-size: 12px; line-height: 16px; color: var(--muted); }
+  .demo.rm .cap2 b { font-weight: 700; }
+  @media (min-height: 900px) { .demo.rm .cap2 { width: 360px; } }
+  @media (max-height: 520px) { .demo.rm .cap2 { width: 240px; font-size: 11px; line-height: 14px; } }
+  @media (max-width: 351.98px) { .demo.rm .cap2 { width: calc(100vw - 32px); } }
   .startbest .num { color: var(--ink); }
   .hint-touch { display: none; }
   @media (pointer: coarse) { .overlay .hint-touch { display: block; } .overlay .hint-key { display: none; } }
@@ -238,7 +276,9 @@
     button.primary { height: 48px; }
     button.primary.big { height: 54px; }
     .restime .num { font-size: 44px; }
+    .resbrk { gap: 2px 14px; } .resbrk li { height: 22px; }
   }
+  @media (max-height: 520px) and (min-width: 700px) { .resbrk { grid-template-columns: repeat(4, max-content); } }
   @media (prefers-reduced-motion: reduce) {
     .overlay, .overlay > * { animation: none; }
     .spill .num { transition: none; }
@@ -279,7 +319,13 @@
       <a class="home ov-home secondary" href="../../">← 게임 목록</a>
       <h2>똥비 피하기</h2>
       <p>똥은 피하고 별사탕은 줍기!</p>
-      <canvas class="kidpic" id="kidPic" aria-hidden="true"></canvas>
+      <canvas class="kidpic" id="kidPic" aria-hidden="true" hidden></canvas>
+      <figure class="demo" id="demo" role="img" aria-label="보너스 점수 안내: 똥이 몸 바로 옆을 스치면 아슬 10점, 멀리 피하면 보너스 없음. 우산으로 막은 똥 하나마다 10점, 우산 하나에 최대 10번.">
+        <canvas id="demoCv" aria-hidden="true"></canvas>
+        <span class="dots" aria-hidden="true"><i class="on"></i><i></i></span>
+        <figcaption class="cap" id="demoCap" aria-hidden="true"></figcaption>
+        <figcaption class="cap2" aria-hidden="true"><span>바로 옆을 스치면 <b class="kn">+10</b><br>멀리 피하면 0</span><span>막은 똥마다 <b class="ku">+10</b><br>우산 하나에 최대 10번</span></figcaption>
+      </figure>
       <div class="legend" aria-label="떨어지는 것들">
         <div class="lg"><canvas data-icon="normal" aria-hidden="true"></canvas><div><b>똥</b><span>맞으면 끝!</span></div></div>
         <div class="lg"><canvas data-icon="big" aria-hidden="true"></canvas><div><b>왕똥</b><span>크고 넓게 떨어져요</span></div></div>
@@ -308,8 +354,13 @@
       <span class="badge" id="newRec" hidden>새 기록!</span>
       <h2>철퍽!</h2>
       <p class="restime" id="resScoreBox"><b class="num" id="resScore">0</b><span class="u">점</span></p>
-      <p class="resstats"><span><b class="num" id="resTime">0.0</b>초 버팀</span><span><svg viewBox="-10 -10 20 20" aria-hidden="true"><path d="M0,-8.6 L2.4,-3.3 L8.2,-2.7 L3.8,1.2 L5.1,7 L0,4 L-5.1,7 L-3.8,1.2 L-8.2,-2.7 L-2.4,-3.3Z" stroke-linejoin="round"/></svg>별사탕 <b class="num" id="resStars">0</b>개</span></p>
-      <p id="resLine">최고 <b class="num" id="resBest">0</b>점<span id="resNear"></span><span class="lb-inline" id="lbSlot"></span></p>
+      <ul class="resbrk" id="resBrk" aria-label="점수 내역">
+        <li id="rbTime"><svg viewBox="-10 -10 20 20" aria-hidden="true"><circle r="7.5" fill="none" stroke="var(--muted)" stroke-width="1.8"/><path d="M0,-4 V0 L3,2" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="q"><b class="num" id="resTime">0.0</b>초</span><span class="pt" id="resTimePts">+0</span></li>
+        <li id="rbStar"><svg viewBox="-10 -10 20 20" aria-hidden="true"><path d="M0,-8.6 L2.4,-3.3 L8.2,-2.7 L3.8,1.2 L5.1,7 L0,4 L-5.1,7 L-3.8,1.2 L-8.2,-2.7 L-2.4,-3.3Z" stroke-linejoin="round" fill="var(--candy)" stroke="var(--candy-line)" stroke-width="1.6"/></svg><span class="q">별사탕 <b class="num" id="resStars">0</b>개</span><span class="pt" id="resStarPts">+0</span></li>
+        <li id="rbNear"><svg viewBox="-10 -10 20 20" aria-hidden="true"><path d="M0,-8.5 Q6,0 4.6,3.6 A4.9,4.9 0 0 1 -4.6,3.6 Q-6,0 0,-8.5Z" fill="var(--sweat)" stroke="var(--near-text)" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="q">아슬 <b class="num" id="resNearN">0</b>번</span><span class="pt" id="resNearPts">+0</span></li>
+        <li id="rbUmb"><svg viewBox="-10 -10 20 20" aria-hidden="true"><path d="M-8.5,1 A8.5,8.5 0 0 1 8.5,1 A2.83,2.83 0 0 0 2.83,1 A2.83,2.83 0 0 0 -2.83,1 A2.83,2.83 0 0 0 -8.5,1Z" fill="var(--item)"/><path d="M0,1 V6.6 A1.7,1.7 0 0 1 -3.4,6.6" fill="none" stroke="var(--item)" stroke-width="1.8" stroke-linecap="round"/></svg><span class="q">우산 막기 <b class="num" id="resBlockN">0</b>번</span><span class="pt" id="resBlockPts">+0</span></li>
+      </ul>
+      <p id="resLine">최고 <b class="num" id="resBest">0</b>점<span class="lb-inline" id="lbSlot"></span></p>
       <button class="primary big" id="againBtn" type="button">다시 하기</button>
       <button class="secondary" id="resHomeBtn" type="button">처음으로</button>
     </div>
@@ -466,6 +517,15 @@ const Sound = (function () {
   var DODGE = [N.C6, N.D6, N.E6, N.G6];
   // (v2) 별사탕 연속 획득(chain) 사다리: 기준음 f (C 메이저 펜타토닉 6단). 실제로는 f → f×2 '또-링'
   var STAR = [N.C5, N.D5, N.E5, N.G5, N.A5, N.C6];
+  // (v3) 아슬아슬 회피 보너스 nearMiss 사다리: G 메이저 펜타토닉 위쪽(C 메이저 안). 8단 이상 고정
+  var NEAR = [N.G5, N.A5, N.B5, N.D6, N.E6, N.G6, 1760.0, 1975.53];
+  // (v3) 우산 튕김 umbrellaBlock 동시 발음·자동 감쇠 상태
+  var UB_MAX_VOICES = 2;     // 동시에 울리는 '퉁' 최대 2개
+  var UB_LEN = 0.13;         // 한 번의 길이(초)
+  var UB_RECOVER = 0.6;      // 감쇠가 완전히 풀리는 데 걸리는 시간(초)
+  var UB_STEP = 0.72;        // 한 번 칠 때마다 다음 소리 크기 ×0.72
+  var UB_FLOOR = 0.35;       // 연타 중 최소 크기 비율
+  var ub = { duck: 1, lastT: -9, ends: [], flip: 0 };
 
   var sfx = {
     // 게임 시작: '띠용' 스프링 + 상승 3음 + 반짝
@@ -584,6 +644,40 @@ const Sound = (function () {
       tone('sine', N.E5, 0, t, 0.08, 0.06, 0.003);
       tone('sine', N.A5, 0, t + 0.08, 0.14, 0.06, 0.003);
     },
+    // (v3) 아슬아슬 회피 보너스: '슝' 바람(위로 쓸어 올리는 노이즈) + 미끄러져 오르는 '뾰↑' + 반짝.
+    // opts.combo 1,2,3… 연속이면 사다리 한 칸 위(8단 이상 고정), 바람도 조금 더 높게. dodge보다 밝고 '보너스' 느낌.
+    nearMiss: function (t, opts) {
+      if (throttled('nearMiss', t, 0.08)) return;
+      var c = Math.floor(+(opts && opts.combo));
+      if (!(c >= 1)) c = 1;
+      var k = Math.min(c, NEAR.length) - 1, f = NEAR[k];
+      var lift = 1 + k * 0.08;                                            // 연속일수록 바람도 살짝 위
+      noise(t, 0.12, 0.075, 'bandpass', 700 * lift, 4200 * lift, 2.2, 0.025);   // '슝'
+      sweep('sine', f * 0.62, f, t + 0.05, 0.05, 0.15, 0.085, 0.004);    // '뾰↑' 미끄러져 오름
+      tone('triangle', f * 2, 0, t + 0.10, 0.09, 0.022, 0.003);          // 반짝
+    },
+    // (v3) 우산에 똥이 맞음: 탄력 있는 천 튕김 '퉁/팅'. 연달아 맞으면 자동으로 작아지고(최소 35%),
+    // 동시에 2개까지만 울림. 음높이는 번갈아 ±로 조금씩 달라 기관총처럼 들리지 않게.
+    // opts.big = true 이면 조금 낮고 두툼하게(큰 똥).
+    umbrellaBlock: function (t, opts) {
+      if (throttled('umbrellaBlock', t, 0.06)) return;
+      var i, live = [];
+      for (i = 0; i < ub.ends.length; i++) if (ub.ends[i] > t) live.push(ub.ends[i]);
+      ub.ends = live;
+      if (ub.ends.length >= UB_MAX_VOICES) return;
+      ub.duck = Math.min(1, ub.duck + (t - ub.lastT) / UB_RECOVER);
+      var g = ub.duck;
+      ub.duck = Math.max(UB_FLOOR, ub.duck * UB_STEP);
+      ub.lastT = t;
+      ub.ends.push(t + UB_LEN);
+      ub.flip = 1 - ub.flip;
+      var big = !!(opts && opts.big);
+      var f = (big ? 210 : 290) * (ub.flip ? 1.04 : 0.97) * (0.98 + Math.random() * 0.04);
+      noise(t, 0.025, 0.05 * g, 'bandpass', 2400, 1600, 1.5, 0.002);     // 천에 닿는 '탁'
+      sweep('sine', f * 1.9, f, t, 0.035, UB_LEN, 0.12 * g, 0.002);       // 팽팽한 천 '퉁'
+      sweep('sine', f * 1.2, f * 1.38, t + 0.03, 0.06, 0.09, 0.035 * g, 0.004); // 되튐 '웅↑' (탄력)
+      tone('triangle', f * 4.5, 0, t + 0.004, 0.05, 0.018 * g, 0.002);   // 살대 '팅'
+    },
     // UI 버튼 '톡' (선택)
     tap: function (t) {
       if (throttled('tap', t, 0.06)) return;
@@ -675,8 +769,9 @@ const Sound = (function () {
         s.buffer = b; s.connect(ctx.destination); s.start(0);
       } catch (e) {}
     },
-    // name: start|plop|bigLand|dodge|star|starMiss|item|shieldOn|shieldWarn|shieldOff|hit|gameOver|record|levelUp|tap
-    // opts 공통: x 0~1 (선택, 좌우 위치). dodge → { combo 1.. }, star → { chain 1..6 }, shieldWarn → { n 1|2 }
+    // name: start|plop|bigLand|dodge|nearMiss|star|starMiss|item|shieldOn|shieldWarn|shieldOff|umbrellaBlock|hit|gameOver|record|levelUp|tap
+    // opts 공통: x 0~1 (선택, 좌우 위치). dodge·nearMiss → { combo 1.. }, star → { chain 1..6 }, shieldWarn → { n 1|2 },
+    // umbrellaBlock → { big: true|false }
     play: function (name, opts) {
       try {
         if (!ready() || typeof name !== 'string' || !sfx.hasOwnProperty(name)) return;
@@ -743,7 +838,12 @@ const Sound = (function () {
   var UMB_FIRST = 8, UMB_GAP0 = 8, UMB_GAP1 = 12;
   var SCRIPT_T = [0.6, 1.6, 2.6], SCRIPT_V0 = 290, SCRIPT_V1 = 320, REG_START = 1.0;
   var LEVELS = [15, 30, 45, 60, 75, 90];
-  var NEAR_GAP = 12;
+  // v3.2: 아슬 판정 20 u (design.md v3.2, v3.1의 30 u에서 좁힘) — 판정 상자 가장자리~똥 가장자리 가로 간격
+  var NEAR_GAP = 20;
+  // v3 보너스 (design.md v3-1, v3-2)
+  var NEAR_PTS = 10, BLOCK_PTS = 10, BLOCK_CAP = 10;
+  // v3 연출 동시 표시 상한 (art-ui v3 6)
+  var FX_CAP = { whoosh: 2, umbHit: 3, bounce: 6 };
   // t, 간격, 속도, 동시 최대, 조준 비율 (design.md v2)
   // v2.1: 간격 열 ×1.1 (0~15초 행, 20초 이후 행)
   var SCHED = [[0, 1.10, 300, 3, 0], [5, .935, 320, 4, .10], [10, .715, 350, 5, .15], [15, .495, 400, 7, .20],
@@ -814,6 +914,7 @@ const Sound = (function () {
   // ===== 상태 =====
   var G = {
     phase: 'title', time: 0, score: 0, best: loadBestScore(), bestTime: loadBestTime(), nearMiss: 0, combo: 0, lastNearT: -9,
+    blockCount: 0, blockRaw: 0, umbBlocks: 0, sway: null,
     poops: [], fx: [], umb: null, umbNext: UMB_FIRST, umbAt: -99, inv: 0, invMode: false, noSave: false,
     nextSpawn: REG_START, scriptNext: SCRIPT_T.slice(), scriptIdx: 0, level: 0, ids: 0,
     rng: Math.random, srng: Math.random, urng: Math.random, seedFixed: null, runs: 0, runId: 0,
@@ -836,8 +937,10 @@ const Sound = (function () {
     startBtn: $('startBtn'), startBest: $('startBest'), resumeBtn: $('resumeBtn'), pauseHomeBtn: $('pauseHomeBtn'),
     pauseTime: $('pauseTime'), againBtn: $('againBtn'), resHomeBtn: $('resHomeBtn'), newRec: $('newRec'),
     resTime: $('resTime'), resLine: $('resLine'), live: $('live'),
+    resTimePts: $('resTimePts'), resStarPts: $('resStarPts'), resNearN: $('resNearN'), resNearPts: $('resNearPts'),
+    resBlockN: $('resBlockN'), resBlockPts: $('resBlockPts'), rbTime: $('rbTime'), rbStar: $('rbStar'), rbNear: $('rbNear'), rbUmb: $('rbUmb'),
     spill: $('spill'), score: $('score'), combo: $('combo'), comboN: $('comboN'), startLong: $('startLong'), startLongT: $('startLongT'),
-    pauseScore: $('pauseScore'), resScore: $('resScore'), resScoreBox: $('resScoreBox'), resStars: $('resStars'), resBest: $('resBest'), resNear: $('resNear'),
+    pauseScore: $('pauseScore'), resScore: $('resScore'), resScoreBox: $('resScoreBox'), resStars: $('resStars'), resBest: $('resBest'),
     muteBtn: $('muteBtn'), icoOn: $('icoOn'), icoOff: $('icoOff'), pauseBtn: $('pauseBtn'), top: $('top'), kidPic: $('kidPic')
   };
   var ctx = el.cv.getContext('2d');
@@ -847,7 +950,7 @@ const Sound = (function () {
   var CNAMES = ['ink', 'muted', 'sky', 'cloud', 'ground', 'ground-edge', 'shadow', 'poop', 'poop-line', 'poop-big', 'poop-big-line',
     'poop-wob', 'poop-wob-line', 'poop-hi', 'item', 'item-halo', 'item-fade', 'kid-skin', 'kid-line', 'kid-hair', 'kid-shirt',
     'kid-pants', 'kid-eye', 'sweat', 'sh-a0', 'sh-a1', 'hi-a', 'panel',
-    'candy', 'candy-line', 'candy-pink', 'candy-pink-line', 'candy-glint', 'candy-text'];
+    'candy', 'candy-line', 'candy-pink', 'candy-pink-line', 'candy-glint', 'candy-text', 'near-text', 'item-text'];
   function readColors() {
     var cs = getComputedStyle(document.documentElement);
     for (var i = 0; i < CNAMES.length; i++) C[CNAMES[i]] = cs.getPropertyValue('--' + CNAMES[i]).trim();
@@ -906,6 +1009,7 @@ const Sound = (function () {
     el.cv.width = Math.round(fw * dpr); el.cv.height = Math.round(fh * dpr);
     buildAssets();
     render();
+    demoRefresh();
   }
 
   // ===== 그림 =====
@@ -1559,24 +1663,76 @@ const Sound = (function () {
     P.breath += dt;
   }
 
+  // v3.1: 하위 스텝 한 구간(똥 y ya→yb, x xa→xb, 캐릭터 x pa→pb, 모두 시간에 선형)에서
+  // 똥이 판정 높이 띠(y+r ≥ HB_TOP, y−r ≤ HB_BOT)에 걸친 동안의 최소 가로 간격. 띠에 안 걸치면 null
+  function nearGapSeg(ya, yb, xa, xb, r, pa, pb) {
+    var lo = HB_TOP - r, hi = HB_BOT + r, t0 = 0, t1 = 1, dy = yb - ya;
+    if (dy === 0) { if (ya < lo || ya > hi) return null; }
+    else {
+      var ta = (lo - ya) / dy, tb = (hi - ya) / dy;
+      if (ta > tb) { var tt = ta; ta = tb; tb = tt; }
+      t0 = Math.max(0, ta); t1 = Math.min(1, tb);
+      if (t0 > t1) return null;
+    }
+    var d0 = (xa - pa) + ((xb - pb) - (xa - pa)) * t0, d1 = (xa - pa) + ((xb - pb) - (xa - pa)) * t1;
+    var m = (d0 <= 0 && d1 >= 0) || (d0 >= 0 && d1 <= 0) ? 0 : Math.min(Math.abs(d0), Math.abs(d1));
+    return m - HB_HALF - r;
+  }
   function landPoop(p) {
     if (p.minGap <= NEAR_GAP && !G.invMode && G.inv <= 0 && !p.wasInv) nearMissHit(p);
     G.fx.push({ k: 'land', type: p.type, x: p.x, s: p.s, t: 0, tilt: p.tilt });
     if (p.type === 'big') Sound.play('bigLand', { x: p.x / FW });
     else if (Math.abs(p.x - G.player.x) <= FW * 0.3) Sound.play('plop', { x: p.x / FW });
   }
+  // 상한이 있는 연출: 넘으면 가장 오래된 것 삭제
+  function pushFx(f) {
+    var cap = FX_CAP[f.k];
+    if (cap) {
+      var n = 0, i;
+      for (i = 0; i < G.fx.length; i++) if (G.fx[i].k === f.k) n++;
+      for (i = 0; i < G.fx.length && n >= cap; i++) if (G.fx[i].k === f.k) { G.fx.splice(i, 1); i--; n--; }
+    }
+    G.fx.push(f);
+    return f;
+  }
+  function findFx(k) { for (var i = 0; i < G.fx.length; i++) if (G.fx[i].k === k) return G.fx[i]; return null; }
+  // v3.2: 아슬 1번 = +10 (design.md v3.2). 점수 콤보 없음 — G.combo는 소리 높이에만
   function nearMissHit(p) {
     G.nearMiss++;
     G.combo = (G.time - G.lastNearT < 2) ? G.combo + 1 : 1;
     G.lastNearT = G.time;
     G.fx.push({ k: 'sweat', t: 0, face: G.player.face });
-    G.fx.push({ k: 'pop', t: 0 });
-    Sound.play('dodge', { combo: G.combo, x: G.player.x / FW });
+    var np = findFx('nearPop');
+    if (np) { np.pts += NEAR_PTS; np.n++; np.t = .08; np.mt = 0; }
+    else {
+      var side = p.x >= G.player.x ? 1 : -1;
+      var tw = nearPopWidth(NEAR_PTS, 1), Px = G.player.x, off = .55 * KU + 4 * LW;
+      if ((side > 0 && Px + off + tw > FW - 6 * LW) || (side < 0 && Px - off - tw < 6 * LW)) side = -side;
+      G.fx.push({ k: 'nearPop', side: side, pts: NEAR_PTS, n: 1, t: 0, mt: 9 });
+    }
+    pushFx({ k: 'whoosh', x: clamp(p.x, 4, FW - 4), s: p.s, t: 0 });
+    Sound.play('nearMiss', { combo: G.combo, x: G.player.x / FW });
+    scoreBump('near');
   }
+  // v3: 우산 막기 1번 = +10, 우산 1개당 최대 10번 (design.md v3-2)
   function bouncePoop(p) {
-    G.fx.push({ k: 'bounce', type: p.type, x: p.x, y: p.y, s: p.s, t: 0, dir: p.x >= G.player.x ? 1 : -1 });
+    var Px = G.player.x, side = p.x >= Px ? 1 : -1;
+    pushFx({ k: 'bounce', type: p.type, x: p.x, y: p.y, s: p.s, t: 0, dir: side });
+    var th = Math.atan2(p.y - CANOPY_Y, p.x - Px), lo = -170 * Math.PI / 180, hi = -10 * Math.PI / 180;
+    if (!(th >= lo && th <= hi)) th = (th > hi && th < Math.PI / 2) ? hi : lo;
+    pushFx({ k: 'umbHit', x: Px + Math.cos(th) * CANOPY_R, y: CANOPY_Y + Math.sin(th) * CANOPY_R, th: th, t: 0 });
     G.canopyBump = 0;
-    Sound.play('plop', { x: p.x / FW });
+    G.sway = { t: 0, side: side };
+    G.blockRaw++;
+    if (!G.invMode && G.umbBlocks < BLOCK_CAP) {
+      G.umbBlocks++; G.blockCount++;
+      var isMax = G.umbBlocks === BLOCK_CAP;
+      var up = findFx('umbPop');
+      if (up) { up.pts += BLOCK_PTS; up.n++; up.t = .08; up.mt = 0; if (isMax) up.max = true; }
+      else G.fx.push({ k: 'umbPop', pts: BLOCK_PTS, n: 1, max: isMax, t: 0, mt: 9, x: Px });
+      scoreBump('umb');
+    }
+    Sound.play('umbrellaBlock', { big: p.type === 'big', x: p.x / FW });
   }
 
   function stepPlaying(dt) {
@@ -1589,13 +1745,16 @@ const Sound = (function () {
     }
     // 처음 3개는 머리 위로
     var guard = 0;
-    while (G.scriptIdx < SCRIPT_T.length && G.time >= G.scriptNext[G.scriptIdx] && guard++ < 4) spawnScripted();
-    guard = 0;
-    while (G.time >= G.nextSpawn && guard++ < 6) spawnRegular();
-    if (!G.umb && G.time >= G.umbNext) spawnUmbrella();
+    if (!G.spawnsOff) {   // 테스트 훅 setSpawns(false)면 똥·우산 자동 생성 멈춤
+      while (G.scriptIdx < SCRIPT_T.length && G.time >= G.scriptNext[G.scriptIdx] && guard++ < 4) spawnScripted();
+      guard = 0;
+      while (G.time >= G.nextSpawn && guard++ < 6) spawnRegular();
+      if (!G.umb && G.time >= G.umbNext) spawnUmbrella();
+    }
     guard = 0;
     while (G.starsOn && G.time >= G.starNext && guard++ < 3) trySpawnStar();
 
+    var px0 = G.player.x;   // v3.1: 아슬 간격 보간용(이번 프레임 시작 위치)
     movePlayer(dt);
     animKid(dt);
     if (G.hintOn) G.hintT = Math.max(G.hintT + dt, G.time >= 3 ? 3 : 0);
@@ -1607,7 +1766,7 @@ const Sound = (function () {
     for (var s = 0; s < n; s++) {
       for (i = G.poops.length - 1; i >= 0; i--) {
         p = G.poops[i];
-        var ly = landY(p), hs = h;
+        var ly = landY(p), hs = h, ya = p.y, xa = p.x;
         // 착지하는 하위 스텝은 착지 시각까지만 진행(흔들 똥의 x도 그 시각 값으로 판정)
         if (p.vy > 0 && p.y + p.vy * h > ly) hs = Math.max(0, (ly - p.y) / p.vy);
         p.age += hs; p.y += p.vy * hs;
@@ -1622,9 +1781,12 @@ const Sound = (function () {
           if (G.inv > 0) { G.poops.splice(i, 1); bouncePoop(p); continue; }
           if (hb && !G.invMode) { G.poops.splice(i, 1); die(p); return; }
         }
-        if (p.y + p.r >= HB_TOP && p.y - p.r <= HB_BOT) {
-          var gap = Math.abs(p.x - px) - HB_HALF - p.r;
-          if (gap < p.minGap) p.minGap = gap;
+        // v3.1: 이 하위 스텝 구간에서 똥·캐릭터 x를 선형 보간해 판정 높이 띠 안의 최소 가로 간격을 계산
+        // (끝점만 보면 흔들 똥이 프레임 사이에 더 가까이 스친 것을 놓침)
+        var bandGap = nearGapSeg(ya, p.y, xa, p.x, p.r,
+          px0 + (px - px0) * (s / n), px0 + (px - px0) * Math.min(1, (s + (hs / h)) / n));
+        if (bandGap !== null) {
+          if (bandGap < p.minGap) p.minGap = bandGap;
           if (G.inv > 0) p.wasInv = true;
         }
         if (p.y >= ly) { G.poops.splice(i, 1); landPoop(p); }
@@ -1643,6 +1805,7 @@ const Sound = (function () {
         G.fx.push({ k: 'umbGet', x: u.x, y: u.y, t: 0 });
         if (G.inv <= 0) G.canopy = 0;
         G.inv = INV_DUR;   // 다시 먹으면 3.0초로 채움 (누적 없음, CEO 결정)
+        G.umbBlocks = 0;   // v3: 우산을 먹을 때마다 이번 우산 막기 수 0부터
         Sound.play('shieldOn');
       } else if (u.y + UMB_R >= GROUND) {
         G.umb = null; G.umbNext = G.time + umbGap();
@@ -1697,13 +1860,16 @@ const Sound = (function () {
     if (G.canopy < target) G.canopy = Math.min(1, G.canopy + dt / 0.16);
     else if (G.canopy > target) G.canopy = Math.max(0, G.canopy - dt / 0.16);
     G.canopyBump += dt;
+    if (G.sway) { G.sway.t += dt; if (G.sway.t >= .36) G.sway = null; }
   }
   var FX_DUR = { land: .42, bounce: .3, sweat: .5, pop: .6, banner: 1.4, umbGet: .18, umbLand: .4,
-    starGet: .32, starPop: .7, starMiss: .3, ringGet: .24 };
+    starGet: .32, starPop: .7, starMiss: .3, ringGet: .24,
+    nearPop: .52, whoosh: .24, umbHit: .2, umbPop: .6 };
   function stepFx(dt) {
     stepCanopy(dt);
     for (var i = G.fx.length - 1; i >= 0; i--) {
       G.fx[i].t += dt;
+      if (G.fx[i].mt != null) G.fx[i].mt += dt;
       if (G.fx[i].t >= FX_DUR[G.fx[i].k]) G.fx.splice(i, 1);
     }
   }
@@ -1719,7 +1885,10 @@ const Sound = (function () {
   }
 
   function timeScore() { return Math.floor(G.time * 10 + 1e-6); }
-  function curScore() { return timeScore() + G.starScore; }
+  function nearScore() { return G.nearMiss * NEAR_PTS; }
+  function blockScore() { return G.blockCount * BLOCK_PTS; }
+  // v3: 점수 = 시간 + 별사탕 + 아슬 + 우산 막기 (design.md v3-3)
+  function curScore() { return timeScore() + G.starScore + nearScore() + blockScore(); }
 
   // ===== 화면 흐름 =====
   function hideOverlays() { el.ovStart.hidden = true; el.ovPause.hidden = true; el.ovResult.hidden = true; }
@@ -1729,6 +1898,7 @@ const Sound = (function () {
     var seed = G.seedFixed != null ? G.seedFixed : (Math.random() * 4294967296) >>> 0;
     G.rng = mulberry32(seed); G.srng = mulberry32((seed + 1) >>> 0); G.urng = mulberry32((seed + 2) >>> 0);
     G.phase = 'playing'; G.time = 0; G.score = 0; G.nearMiss = 0; G.combo = 0; G.lastNearT = -9;
+    G.blockCount = 0; G.blockRaw = 0; G.umbBlocks = 0; G.sway = null; G.spawnsOff = false;
     G.poops = []; G.fx = []; G.umb = null; G.umbNext = UMB_FIRST; G.umbAt = -99; G.inv = 0; G.canopy = 0; G.canopyBump = 9;
     G.stars = []; G.starNext = STAR_FIRST; G.starScore = 0; G.chain = 0; G.starSeq = 0;
     G.starStats = { spawned: 0, caught: 0, missed: 0 };
@@ -1756,17 +1926,29 @@ const Sound = (function () {
     el.newRec.hidden = !isNew;
     el.resScore.textContent = String(sc);
     el.resScoreBox.classList.toggle('rec', isNew);
+    // v3 점수 내역: 네 줄의 합 = 큰 점수 (G.score는 die() 시점 curScore())
+    var T = timeScore(), S = G.starScore, A = nearScore(), B = blockScore();
     el.resTime.textContent = fmt(tm);
     el.resStars.textContent = String(G.starStats.caught);
+    el.resNearN.textContent = String(G.nearMiss);
+    el.resBlockN.textContent = String(G.blockCount);
+    resRow(el.rbTime, el.resTimePts, T, fmt(tm) + '초 버팀, ' + T + '점');
+    resRow(el.rbStar, el.resStarPts, S, '별사탕 ' + G.starStats.caught + '개, ' + S + '점');
+    resRow(el.rbNear, el.resNearPts, A, '아슬 ' + G.nearMiss + '번, ' + A + '점');
+    resRow(el.rbUmb, el.resBlockPts, B, '우산 막기 ' + G.blockCount + '번, ' + B + '점');
     el.resBest.textContent = String(G.best);
-    el.resNear.textContent = G.nearMiss > 0 ? ' · 아슬 ' + G.nearMiss + '번' : '';
     el.againBtn.disabled = true; el.resHomeBtn.disabled = true;
     el.ovResult.hidden = false;
-    el.live.textContent = '맞았어요. 점수 ' + sc + '점. ' + fmt(tm) + '초 버팀, 별사탕 ' + G.starStats.caught + '개. 최고 ' + G.best + '점.' + (isNew ? ' 새 기록!' : '');
+    el.live.textContent = '맞았어요. 점수 ' + sc + '점. 버틴 시간 ' + T + '점, 별사탕 ' + S + '점, 아슬 ' + A + '점, 우산 막기 ' + B + '점. 최고 ' + G.best + '점.' + (isNew ? ' 새 기록!' : '');
     Sound.play('gameOver');
     if (isNew) { var rid = G.runId; setTimeout(function () { if (G.runId === rid && G.phase === 'result') Sound.play('record'); }, 1300); }
     updateHud(true);
     window.Leaderboard && Leaderboard.report({ game: 'poop-rain', score: sc, eligible: canSave, reason: 'test', slot: document.getElementById('lbSlot') });
+  }
+  function resRow(li, pt, v, label) {
+    pt.textContent = '+' + v;
+    li.classList.toggle('zero', v === 0);
+    li.setAttribute('aria-label', label);
   }
   function unlockResult() {
     G.lock = false;
@@ -1796,12 +1978,15 @@ const Sound = (function () {
   function toTitle() {
     G.phase = 'title'; G.poops = []; G.fx = []; G.umb = null; G.inv = 0; G.canopy = 0; G.hit = null; G.time = 0;
     G.stars = []; G.starScore = 0; G.chain = 0; comboHud(true);
+    G.nearMiss = 0; G.blockCount = 0; G.blockRaw = 0; G.umbBlocks = 0; G.sway = null;
     G.player.x = 300; G.player.vx = 0; G.player.tilt = 0;
+    demo.t = 0; demo.hold = false; demo.capKey = '';   // 안내 영상은 항상 장면 1의 0초부터
     resetInput();
     Sound.stopMusic();
     hideOverlays(); el.ready.hidden = true;
     startBestText();
     el.ovStart.hidden = false;
+    demoRefresh();
     el.pauseBtn.setAttribute('aria-label', '일시정지');
     updateHud(true);
     try { el.startBtn.focus({ preventScroll: true }); } catch (e) {}
@@ -1835,12 +2020,16 @@ const Sound = (function () {
     }
   }
 
-  // 별사탕 먹은 순간 점수 색 --ink → --candy-text → --ink (300 + 300ms)
+  // 보너스 순간 점수 색 --ink → (별사탕 --candy-text / 아슬 --near-text / 막기 --item-text) → --ink (300 + 300ms)
+  // 연달아 들어오면 클래스를 떼지 않고 타이머만 연장 (점멸 금지), 종류가 바뀌면 마지막 종류 색
   var bumpT = null;
-  function scoreBump() {
-    el.spill.classList.add('bump');
+  function scoreBump(kind) {
+    var sp = el.spill;
+    sp.classList.toggle('near', kind === 'near');
+    sp.classList.toggle('umb', kind === 'umb');
+    sp.classList.add('bump');
     clearTimeout(bumpT);
-    bumpT = setTimeout(function () { el.spill.classList.remove('bump'); }, 300);
+    bumpT = setTimeout(function () { sp.classList.remove('bump', 'near', 'umb'); }, 300);
   }
   // 연속 배지 (chain ≥ 2). reset = 새 판/처음으로 → 즉시 숨김
   var comboShown = 0, comboAnim = null;
@@ -1931,11 +2120,29 @@ const Sound = (function () {
         c.drawImage(spr.cv, -spr.w / 2, -spr.oy, spr.w, spr.h); c.restore();
       } else if (f.k === 'bounce') {
         spr = SPR[f.type];
-        var e2 = easeOut(f.t / .3);
-        c.save(); c.globalAlpha = (1 - e2) * dim;
-        c.translate(f.x + f.dir * U * e2, f.y - .6 * U * e2);
-        if (!RM) c.rotate(f.dir * 30 * Math.PI / 180 * e2);
-        c.drawImage(spr.cv, -spr.w / 2, -spr.oy + .45 * f.s, spr.w, spr.h); c.restore();
+        // v3: 0~50ms 그 자리에서 눌림(원점 = 똥 바닥) → 이후 기존 튕김, 합계 300ms
+        if (f.t < .05 && !RM) {
+          var eq = easeOut(f.t / .05);
+          c.save(); c.globalAlpha = dim; c.translate(f.x, f.y + .45 * f.s); c.scale(1 + .15 * eq, 1 - .2 * eq);
+          c.drawImage(spr.cv, -spr.w / 2, -spr.oy, spr.w, spr.h); c.restore();
+        } else {
+          var e2 = RM ? easeOut(f.t / .3) : easeOut((f.t - .05) / .25);
+          c.save(); c.globalAlpha = (1 - e2) * dim;
+          c.translate(f.x + f.dir * U * e2, f.y - .6 * U * e2);
+          if (!RM) c.rotate(f.dir * 30 * Math.PI / 180 * e2);
+          c.drawImage(spr.cv, -spr.w / 2, -spr.oy + .45 * f.s, spr.w, spr.h); c.restore();
+        }
+      } else if (f.k === 'whoosh') {
+        // v3 바람선: 스친 똥이 착지한 자리에 세로선 3개, 위에서부터 걷힘 (240ms)
+        var ew = RM ? 0 : easeOut(f.t / .24), aw = .5 * (1 - (RM ? f.t / .24 : ew));
+        var bot = GROUND - .35 * KU;
+        c.save(); c.globalAlpha = clamp(aw, 0, 1); c.strokeStyle = C.muted; c.lineWidth = 1.5 * lw; c.lineCap = 'round';
+        c.beginPath();
+        for (var wq = -1; wq <= 1; wq++) {
+          var wtop = GROUND - (wq === 0 ? 1.6 : 1.35) * KU, wx = f.x + wq * .22 * f.s;
+          c.moveTo(wx, lerp(wtop, bot, ew)); c.lineTo(wx, bot);
+        }
+        c.stroke(); c.restore();
       } else if (f.k === 'umbLand') {
         c.save(); c.globalAlpha = (1 - f.t / .4) * dim; c.translate(f.x, GROUND - UMB_R);
         drawUmbrellaItem(c, U, lw, 0); c.restore();
@@ -1994,7 +2201,21 @@ const Sound = (function () {
     // 6) 팝업·땀·문구
     for (i = 0; i < G.fx.length; i++) {
       f = G.fx[i];
-      if (f.k === 'sweat') {
+      if (f.k === 'umbHit') {
+        // v3 튐 표시: 캐노피 둘레 맞은 점에서 바깥 부채꼴 짧은 선 4개 (200ms)
+        var eh = easeOut(f.t / .2), ep = RM ? 0 : eh;
+        c.save(); c.globalAlpha = .8 * (1 - eh); c.strokeStyle = C.item; c.lineWidth = 2 * lw; c.lineCap = 'round';
+        c.beginPath();
+        for (var hq = 0; hq < 4; hq++) {
+          var ha2 = f.th + [-50, -17, 17, 50][hq] * Math.PI / 180, r0 = (3 + 8 * ep) * lw, r1 = (9 + 10 * ep) * lw;
+          c.moveTo(f.x + Math.cos(ha2) * r0, f.y + Math.sin(ha2) * r0); c.lineTo(f.x + Math.cos(ha2) * r1, f.y + Math.sin(ha2) * r1);
+        }
+        c.stroke(); c.restore();
+      } else if (f.k === 'nearPop') {
+        drawNearPop(c, f, lw, P);
+      } else if (f.k === 'umbPop') {
+        drawUmbPop(c, f, lw, P);
+      } else if (f.k === 'sweat') {
         var e3 = easeOut(f.t / .5);
         c.save(); c.globalAlpha = 1 - e3;
         c.translate(P.x - f.face * .45 * KU, GROUND - 1.40 * KU - (RM ? 0 : .15 * U * e3));
@@ -2085,6 +2306,88 @@ const Sound = (function () {
     }
   }
   var NUMF = '"RainDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif';
+  var SYSF = 'system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif';
+  // ----- v3 보너스 팝업 (art-ui v3 1①, 2④) -----
+  // ×N = 합쳐진 보너스 개수 표시 (점수 배율 아님, CEO 결정)
+  function nearParts(pts, n, lw) {
+    var parts = [{ t: '아슬!', f: '700 ' + (12 * lw) + 'px ' + SYSF, a: 1, g: 0 },
+      { t: '+' + pts, f: '800 ' + (16 * lw) + 'px ' + NUMF, a: 1, g: 3 * lw }];
+    if (n >= 2) parts.push({ t: '×' + n, f: '700 ' + (11 * lw) + 'px ' + NUMF, a: .8, g: 3 * lw });
+    return parts;
+  }
+  function measureParts(c, parts) {
+    var w = 0;
+    for (var i = 0; i < parts.length; i++) { c.font = parts[i].f; parts[i].w = c.measureText(parts[i].t).width; w += parts[i].g + parts[i].w; }
+    return w;
+  }
+  function nearPopWidth(pts, n) {
+    ctx.save(); var w = measureParts(ctx, nearParts(pts, n, LW)); ctx.restore(); return w;
+  }
+  function popStroke(c, lw) {
+    var dk = skyDark();
+    c.lineJoin = 'round'; c.lineWidth = (dk ? 5 : 4) * lw; c.strokeStyle = dk ? C.shadow : C.sky;
+  }
+  function drawParts(c, parts, x0, col, lw) {
+    var x = x0;
+    c.textAlign = 'left'; c.textBaseline = 'middle';
+    var a0 = c.globalAlpha;
+    for (var i = 0; i < parts.length; i++) {
+      var pt = parts[i];
+      x += pt.g;
+      c.font = pt.f; c.globalAlpha = a0 * pt.a;
+      popStroke(c, lw); c.strokeText(pt.t, x, 0);
+      c.fillStyle = col; c.fillText(pt.t, x, 0);
+      x += pt.w;
+    }
+    c.globalAlpha = a0;
+  }
+  function popScale(f, k0, k1, mdur) {
+    if (RM) return 1;
+    if (f.mt < mdur) return 1 + (k1 - 1) * (1 - easeOut(f.mt / mdur));
+    if (f.t < .08) return k0 + (1 - k0) * easeOut(f.t / .08);
+    return 1;
+  }
+  function drawNearPop(c, f, lw, P) {
+    var parts = nearParts(f.pts, f.n, lw);
+    c.save();
+    var tw = measureParts(c, parts);
+    var ax = P.x + f.side * (.55 * KU + 4 * lw);
+    var ay = GROUND - 1.25 * KU - (RM ? 0 : .22 * U * easeOut(f.t / .52));
+    var al = f.t < .22 ? 1 : 1 - easeIn((f.t - .22) / .3);
+    var sc = popScale(f, .85, 1.1, .1);
+    c.globalAlpha = clamp(al, 0, 1);
+    c.translate(ax, ay); c.scale(sc, sc);
+    drawParts(c, parts, f.side > 0 ? 0 : -tw, C['near-text'], lw);
+    c.restore();
+  }
+  function starPopY(f, lw) {
+    return GROUND - 1.9 * KU - 16 - (RM ? 0 : .35 * U * easeOut(f.t / .7)) - (f.row || 0) * 24 * lw;
+  }
+  // fxList = 별사탕 팝업 회피용 목록 (기본 G.fx, 안내 영상은 [])
+  function drawUmbPop(c, f, lw, P, fxList) {
+    var FL = fxList || G.fx;
+    var parts = [{ t: '+' + f.pts, f: '800 ' + (17 * lw) + 'px ' + NUMF, a: 1, g: 0 }];
+    if (f.n >= 2) parts.push({ t: '×' + f.n, f: '700 ' + (11 * lw) + 'px ' + NUMF, a: .8, g: 3 * lw });
+    if (f.max) parts.push({ t: '최대!', f: '700 ' + (12 * lw) + 'px ' + SYSF, a: 1, g: 4 * lw });
+    c.save();
+    var iw = 11 * lw, tw = iw + 3 * lw + measureParts(c, parts);
+    var half = Math.max(30 * lw, tw / 2 + 6 * lw), ax = clamp(P.x, half, FW - half);
+    var ay = CANOPY_Y - CANOPY_R - 14 * lw - (RM ? 0 : .2 * U * easeOut(f.t / .6));
+    for (var i = 0; i < FL.length; i++) if (FL[i].k === 'starPop') ay = Math.min(ay, starPopY(FL[i], lw) - 22 * lw);
+    var al = f.t < .3 ? 1 : 1 - easeIn((f.t - .3) / .3);
+    var sc = popScale(f, .85, 1.12, .12);
+    c.globalAlpha = clamp(al, 0, 1);
+    c.translate(ax, ay); c.scale(sc, sc);
+    var x0 = -tw / 2;
+    // 작은 우산 그림 (canopyPath 축소)
+    c.save(); c.translate(x0 + iw / 2, .28 * iw);
+    canopyPath(c, iw / 2);
+    popStroke(c, lw); c.lineWidth *= .7; c.stroke();
+    c.fillStyle = C['item-text']; c.fill();
+    c.restore();
+    drawParts(c, parts, x0 + iw + 3 * lw, C['item-text'], lw);
+    c.restore();
+  }
   // 반짝·링은 별의 age(게임 시간) 기준 → 일시정지 중 정지
   function drawStar(c, st, lw, dim) {
     var spr = st.pink ? SPR.starP : SPR.starY;
@@ -2099,15 +2402,22 @@ const Sound = (function () {
     drawGlint(c, STAR_R, w);
     c.restore();
   }
-  function drawCanopy(c, st, lw) {
-    var open = RM ? (G.canopy > 0 ? 1 : 0) : (G.inv > 0 ? easeOut(G.canopy) : easeIn(G.canopy));
+  // S = 우산 상태(canopy·inv·sway·canopyBump). 기본 G, 안내 영상은 시간 t로 만든 상태 객체를 넘긴다
+  function drawCanopy(c, st, lw, S) {
+    S = S || G;
+    var open = RM ? (S.canopy > 0 ? 1 : 0) : (S.inv > 0 ? easeOut(S.canopy) : easeIn(S.canopy));
     if (open <= 0) return;
     c.save();
     c.rotate(st.tilt || 0);
-    var fade = G.inv > 0 && G.inv < 1.5 ? 1 - G.inv / 1.5 : 0;
+    var fade = S.inv > 0 && S.inv < 1.5 ? 1 - S.inv / 1.5 : 0;
     var col = fade > 0 ? mixHex(C.item, C['item-fade'], fade) : C.item;
-    c.globalAlpha = 1 - .4 * fade;
-    var bump = G.canopyBump < .14 ? 1 - .08 * Math.sin(Math.PI * G.canopyBump / .14) : 1;
+    c.globalAlpha *= 1 - .4 * fade;
+    var bump = RM ? 1 : S.canopyBump < .14 ? 1 - .08 * Math.sin(Math.PI * S.canopyBump / .14) : 1;
+    // v3 우산 흔들림: 손잡이 잡는 곳 중심 감쇠 사인 360ms (reduced-motion이면 끔)
+    if (S.sway && !RM) {
+      var swt = S.sway.t, rot = S.sway.side * 6 * Math.PI / 180 * Math.pow(1 - swt / .36, 2) * Math.sin(2 * Math.PI * swt / .18);
+      c.translate(0, -1.52 * KU); c.rotate(rot); c.translate(0, 1.52 * KU);
+    }
     // 손잡이
     c.strokeStyle = col; c.lineWidth = 2 * lw; c.lineCap = 'round';
     c.beginPath(); c.moveTo(0, -2.0 * KU); c.lineTo(0, -1.52 * KU); c.stroke();
@@ -2138,6 +2448,245 @@ const Sound = (function () {
     c.restore();
   }
 
+  // ===== v3.3 보너스 안내 영상 (art-ui v3.3) =====
+  // 시작 화면의 작은 무대. 게임 필드(600×800 u)의 창 x 80~520, y 560~780을 확대해 보여 준다.
+  // demoDraw(t)는 시간 t(0~10초) 하나로 장면이 정해지는 순수 함수 — 누적 상태 없음.
+  // 무음(Sound 호출 없음), 별도 rAF 없음(frame()에서 시작 화면이 보일 때만 호출).
+  var DLOOP = 10, DWX = 80, DWY = 560, DWW = 440, DWH = 220;
+  var demo = { t: 0, hold: false, draws: 0, capKey: '', capFade: false, w: 0, h: 0,
+    fig: $('demo'), cv: $('demoCv'), cap: $('demoCap'), dots: document.querySelectorAll('#demo .dots i') };
+  var DCAPS = [
+    [0, 2.3, 'near', '똥이 몸 바로 옆을 스치면 <b class="kn">아슬! <span class="num">+' + NEAR_PTS + '</span></b>'],
+    [2.3, 5.0, 'far', '멀리 피하면 보너스 없음'],
+    [5.0, 7.4, 'umb', '우산으로 막은 똥 하나마다 <b class="ku"><span class="num">+' + BLOCK_PTS + '</span></b>'],
+    [7.4, 99, 'max', '우산 하나에 <b class="ku">최대 ' + BLOCK_CAP + '번</b>까지']
+  ];
+  // 콩이 x 경로 [시각, x] — 구간 사이 smoothstep
+  var DKID = [[0, 300], [.55, 300], [.85, 345], [2.8, 345], [3.4, 200], [5.15, 200], [5.6, 300]];
+  // 똥: 착지(land) 2개 + 우산에 막힘(hit) 3개. t0 = 출발, t1 = 착지/막힘
+  var DPOOP = [
+    { x: 300, t0: .3, t1: 1.3, k: 'land' }, { x: 345, t0: 2.5, t1: 3.5, k: 'land' },
+    { x: 272, t0: 5.6, t1: 6.1, k: 'hit' }, { x: 318, t0: 6.05, t1: 6.55, k: 'hit' }, { x: 336, t0: 6.5, t1: 7.0, k: 'hit' }];
+  var DS = TYPES.normal.s, DY0 = 535, DUMB_T = 5.0, DGET = 5.65, DEND = DGET + INV_DUR, DHITS = [6.1, 6.55, 7.0];
+  function dSmooth(a, b, t) { var x = clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }
+  function dKid(t) {
+    var x = DKID[0][1], mv = 0, face = 1;
+    for (var i = 1; i < DKID.length; i++) {
+      var a = DKID[i - 1], b = DKID[i];
+      if (t > b[0]) { x = b[1]; if (b[1] !== a[1]) face = b[1] > a[1] ? 1 : -1; continue; }
+      if (t >= a[0]) { x = lerp(a[1], b[1], dSmooth(a[0], b[0], t)); if (a[1] !== b[1]) { mv = 1; face = b[1] > a[1] ? 1 : -1; } }
+      break;
+    }
+    return { x: x, face: face, mv: mv };
+  }
+  // 우산 캐노피 윗면 y (중심 x에서 dx 떨어진 곳) — 똥 바닥이 여기에 닿으면 막힘
+  function dCanopyTop(dx) { return CANOPY_Y - Math.sqrt(Math.max(0, CANOPY_R * CANOPY_R - dx * dx)); }
+  function dEndY(p) { return p.k === 'land' ? GROUND - .45 * DS : dCanopyTop(p.x - 300) - .45 * DS; }   // 똥 중심 y
+  // 팝업 상태 (그리기·테스트 훅 공용)
+  function demoNear(t) {
+    var nt = t - DPOOP[0].t1;
+    if (nt < 0 || nt >= 1.3) return null;
+    // 게임 520ms 팝업과 같은 모양, 읽을 시간만 늘림 (등장 80ms → 유지 ~1.0초 → 사라짐 300ms)
+    var ft = nt < .08 ? nt : nt < 1.0 ? .08 + (nt - .08) * (.14 / .92) : .22 + (nt - 1.0);
+    return { k: 'nearPop', side: -1, pts: NEAR_PTS, n: 1, t: ft, mt: 9 };
+  }
+  function demoUmb(t) {
+    var last = -1;
+    for (var i = 0; i < DHITS.length; i++) if (t >= DHITS[i]) last = i;
+    if (last < 0) return null;
+    var ut = t - DHITS[last], n = last + 1, ft, mt = last === 0 ? 9 : ut;
+    if (last < DHITS.length - 1) { var gap = DHITS[last + 1] - DHITS[last], b0 = last === 0 ? 0 : .08; ft = b0 + Math.min(ut, gap) * ((.25 - b0) / gap); }
+    else ft = ut < 1.2 ? .08 + ut * (.22 / 1.2) : .3 + (ut - 1.2);   // 마지막 팝업 1.2초 유지 후 300ms 사라짐
+    if (ft >= .6) return null;
+    return { k: 'umbPop', pts: BLOCK_PTS * n, n: n, max: n >= BLOCK_CAP, t: ft, mt: mt };
+  }
+  // 우산 상태 객체 (drawCanopy의 S 인자)
+  function demoCanopy(t) {
+    var S = { canopy: 0, inv: 0, sway: null, canopyBump: 9 };
+    if (t < DGET || t >= DEND + .16) return S;
+    S.inv = Math.max(0, DEND - t);
+    S.canopy = t < DEND ? clamp((t - DGET) / .16, 0, 1) : 1 - (t - DEND) / .16;
+    for (var i = DHITS.length - 1; i >= 0; i--) if (t >= DHITS[i]) {
+      var st = t - DHITS[i]; S.canopyBump = st;
+      if (st < .36) S.sway = { t: st, side: DPOOP[2 + i].x < 300 ? -1 : 1 };
+      break;
+    }
+    return S;
+  }
+  function demoSize() {
+    var r = demo.cv.getBoundingClientRect();
+    if (!r.width) return false;
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    demo.w = r.width; demo.h = r.height;
+    var bw = Math.round(r.width * d), bh = Math.round(r.height * d);
+    if (demo.cv.width !== bw || demo.cv.height !== bh) { demo.cv.width = bw; demo.cv.height = bh; }
+    demo.d = d;
+    return true;
+  }
+  // win = 움직임 줄이기 정지 컷용 { x: 창 왼쪽 u, w: 창 너비 u, ox: 캔버스 안 x(CSS px), pw: 컷 너비(CSS px) }
+  function demoDraw(t, win, freeze) {
+    if (!demo.w && !demoSize()) return;
+    var c = demo.cv.getContext('2d'), d = demo.d;
+    var wx = win ? win.x : DWX, ww = win ? win.w : DWW, ox = win ? win.ox : 0;
+    var s = (win ? win.pw : demo.w) / ww, lw = 1 / s;
+    demo.draws++;
+    c.save();
+    c.setTransform(d * s, 0, 0, d * s, (ox - wx * s) * d, -DWY * s * d);
+    c.beginPath(); c.rect(wx, DWY, ww, DWH); c.clip();
+    // 배경: 하늘·구름 1개·땅 (게임 배경과 같은 색·모양)
+    c.globalAlpha = 1;
+    c.fillStyle = C.sky; c.fillRect(wx, DWY, ww, DWH);
+    var k = U * .9 * .7, cx = wx + ww * .18, cy = 598;
+    c.fillStyle = C.cloud; c.beginPath();
+    c.ellipse(cx, cy, 1.5 * k, .4 * k, 0, 0, Math.PI * 2);
+    c.ellipse(cx - .45 * k, cy - .25 * k, .65 * k, .45 * k, 0, 0, Math.PI * 2);
+    c.ellipse(cx + .4 * k, cy - .3 * k, .55 * k, .4 * k, 0, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = C.ground; c.fillRect(wx, GROUND, ww, DWY + DWH - GROUND);
+    c.fillStyle = C['ground-edge']; c.fillRect(wx, GROUND, ww, lw);
+    // 루프 이음: 0~0.3초 나타남, 9.7~10초 사라짐
+    var A = win ? 1 : t < .3 ? t / .3 : t > DLOOP - .3 ? (DLOOP - t) / .3 : 1;
+    var K = dKid(t), P = { x: K.x, face: K.face };
+    var i, p, ft, y, e;
+    // 1) 예고 그림자 (게임 공식)
+    c.fillStyle = C.shadow;
+    for (i = 0; i < DPOOP.length; i++) {
+      p = DPOOP[i]; if (t < p.t0 || t >= p.t1) continue;
+      y = lerp(DY0, dEndY(p), (t - p.t0) / (p.t1 - p.t0));
+      var prog = clamp((y - SPAWN_Y) / (GROUND - .45 * DS - SPAWN_Y), 0, 1), rx = .4 * DS * (.6 + .4 * prog);
+      c.globalAlpha = A * (C.a0 + (C.a1 - C.a0) * prog);
+      c.beginPath(); c.ellipse(p.x, GROUND + .12 * U, rx, Math.max(rx * .28, .4 * DS * .6 * .28), 0, 0, Math.PI * 2); c.fill();
+    }
+    if (t >= DUMB_T && t < DGET) {
+      var up = clamp((dUmbY(t) - SPAWN_Y) / (GROUND - UMB_R - SPAWN_Y), 0, 1), urx = .55 * U * (.6 + .4 * up);
+      c.fillStyle = C.item; c.globalAlpha = A * (C.a0 + (C.a1 - C.a0) * up) * .5;
+      c.beginPath(); c.ellipse(300, GROUND + .12 * U, urx, urx * .28, 0, 0, Math.PI * 2); c.fill();
+    }
+    c.globalAlpha = A;
+    // 2) 착지·튕김·바람선 (게임 render 2단계와 같은 식)
+    for (i = 0; i < DPOOP.length; i++) {
+      p = DPOOP[i]; ft = t - p.t1; if (ft < 0) continue;
+      if (p.k === 'land' && ft < .42) {
+        var e1 = RM ? 1 : easeOut(ft / .12), al = ft < .12 ? 1 : 1 - easeIn((ft - .12) / .3);
+        c.save(); c.globalAlpha = A * al; c.translate(p.x, GROUND); c.scale(1 + .25 * e1, 1 - .45 * e1);
+        drawPoopShape(c, 'normal', DS, lw); c.restore();
+      } else if (p.k === 'hit' && ft < .3) {
+        var dir = p.x >= 300 ? 1 : -1, hy = dEndY(p);
+        if (ft < .05 && !RM) {
+          e = easeOut(ft / .05);
+          c.save(); c.translate(p.x, hy + .45 * DS); c.scale(1 + .15 * e, 1 - .2 * e); drawPoopShape(c, 'normal', DS, lw); c.restore();
+        } else {
+          e = RM ? easeOut(ft / .3) : easeOut((ft - .05) / .25);
+          c.save(); c.globalAlpha = A * (1 - e); c.translate(p.x + dir * U * e, hy - .6 * U * e);
+          if (!RM) c.rotate(dir * 30 * Math.PI / 180 * e);
+          c.translate(0, .45 * DS); drawPoopShape(c, 'normal', DS, lw); c.restore();
+        }
+      }
+      if (i === 0 && ft < .24) {   // 스친 똥 A만 바람선
+        var ew = RM ? 0 : easeOut(ft / .24), aw = .5 * (1 - (RM ? ft / .24 : ew)), bot = GROUND - .35 * KU;
+        if (freeze) { ew = 0; aw = .5; }
+        c.save(); c.globalAlpha = A * clamp(aw, 0, 1); c.strokeStyle = C.muted; c.lineWidth = 1.5 * lw; c.lineCap = 'round';
+        c.beginPath();
+        for (var wq = -1; wq <= 1; wq++) {
+          var wtop = GROUND - (wq === 0 ? 1.6 : 1.35) * KU, wx2 = p.x + wq * .22 * DS;
+          c.moveTo(wx2, lerp(wtop, bot, ew)); c.lineTo(wx2, bot);
+        }
+        c.stroke(); c.restore();
+      }
+    }
+    // 3) 콩이 + 펼친 우산 (걷는 동안 다리 6Hz·기울기 6°, 멈추면 정지)
+    var kst = { face: K.face, tilt: RM ? 0 : K.mv * K.face * 6 * Math.PI / 180, walk: K.mv ? t * 2 * Math.PI * 6 : 0, walkAmt: RM ? 0 : K.mv, breath: null, hitT: null };
+    var S = demoCanopy(t);
+    c.save(); c.globalAlpha = A; c.translate(P.x, GROUND);
+    if (S.canopy > 0) drawCanopy(c, kst, lw, S);
+    drawKid(c, kst, lw);
+    c.restore();
+    // 4) 떨어지는 똥
+    for (i = 0; i < DPOOP.length; i++) {
+      p = DPOOP[i]; if (t < p.t0 || t >= p.t1) continue;
+      y = lerp(DY0, dEndY(p), (t - p.t0) / (p.t1 - p.t0));
+      c.save(); c.globalAlpha = A; c.translate(p.x, y + .45 * DS); drawPoopShape(c, 'normal', DS, lw); c.restore();
+    }
+    // 우산 아이템 (떨어짐 → 획득 시 게임 umbGet처럼 콩이 쪽으로 줄어듦)
+    if (t >= DUMB_T && t < DGET + .18) {
+      c.save(); c.globalAlpha = A;
+      if (t < DGET) {
+        c.translate(300, dUmbY(t));
+        drawUmbrellaItem(c, U, lw, RM ? 0 : 6 * Math.PI / 180 * Math.sin(2 * Math.PI * (t - DUMB_T) / UMB_PER));
+      } else {
+        var e5 = easeIn((t - DGET) / .18);
+        c.translate(lerp(300, P.x, e5), lerp(dUmbY(DGET), CANOPY_Y, e5)); c.scale(1 - e5, 1 - e5);
+        drawUmbrellaItem(c, U, lw, 0);
+      }
+      c.restore();
+    }
+    // 5) 튐 선 (게임 umbHit과 같은 식)
+    for (i = 0; i < DHITS.length; i++) {
+      p = DPOOP[2 + i]; ft = t - p.t1; if (ft < 0 || ft >= .2) continue;
+      var th = clamp(Math.atan2(dEndY(p) - CANOPY_Y, p.x - 300), -170 * Math.PI / 180, -10 * Math.PI / 180);
+      var hx = 300 + Math.cos(th) * CANOPY_R, hyy = CANOPY_Y + Math.sin(th) * CANOPY_R;
+      var eh = easeOut(ft / .2), ep = RM ? 0 : eh;
+      if (freeze) { eh = .375; ep = 0; }
+      c.save(); c.globalAlpha = A * .8 * (1 - eh); c.strokeStyle = C.item; c.lineWidth = 2 * lw; c.lineCap = 'round';
+      c.beginPath();
+      for (var hq = 0; hq < 4; hq++) {
+        var ha = th + [-50, -17, 17, 50][hq] * Math.PI / 180, r0 = (3 + 8 * ep) * lw, r1 = (9 + 10 * ep) * lw;
+        c.moveTo(hx + Math.cos(ha) * r0, hyy + Math.sin(ha) * r0); c.lineTo(hx + Math.cos(ha) * r1, hyy + Math.sin(ha) * r1);
+      }
+      c.stroke(); c.restore();
+    }
+    // 6) 땀방울·팝업
+    var swt = t - DPOOP[0].t1;
+    if (swt >= 0 && swt < .5) {
+      var e3 = easeOut(swt / .5);
+      c.save(); c.globalAlpha = A * (1 - e3);
+      c.translate(P.x - P.face * .45 * KU, GROUND - 1.40 * KU - (RM ? 0 : .15 * U * e3));
+      c.fillStyle = C.sweat; var dk = KU;
+      c.beginPath(); c.moveTo(0, -.10 * dk); c.quadraticCurveTo(.07 * dk, 0, 0, .04 * dk); c.quadraticCurveTo(-.07 * dk, 0, 0, -.10 * dk); c.fill();
+      c.restore();
+    }
+    var np = demoNear(t); if (np) drawNearPop(c, np, lw, P);
+    var upp = demoUmb(t); if (upp) drawUmbPop(c, upp, lw, P, []);
+    c.restore();
+  }
+  function dUmbY(t) { return Math.min(lerp(530, 658, (t - DUMB_T) / (DGET - DUMB_T)), 658); }
+  function demoCaption(t) {
+    for (var i = 0; i < DCAPS.length; i++) if (t >= DCAPS[i][0] && t < DCAPS[i][1]) {
+      if (demo.capKey !== DCAPS[i][2]) {
+        demo.capKey = DCAPS[i][2]; demo.cap.innerHTML = DCAPS[i][3];
+        demo.cap.style.transition = 'none'; demo.cap.style.opacity = '0'; demo.capFade = true;   // 다음 프레임에 200ms 페이드인
+      } else if (demo.capFade) { demo.capFade = false; demo.cap.style.transition = ''; demo.cap.style.opacity = '1'; }
+      break;
+    }
+    var sc = t < 5 ? 0 : 1;
+    demo.dots[0].classList.toggle('on', sc === 0); demo.dots[1].classList.toggle('on', sc === 1);
+  }
+  function demoVisible() { return G.phase === 'title' && !el.ovStart.hidden; }
+  // 움직임 줄이기: 좌우 반씩 정지 컷 2장 (아슬 t=1.42 / 우산 t=7.03), 1px 구분선
+  function demoStill() {
+    if (!demoSize()) return;
+    var half = demo.w / 2, c = demo.cv.getContext('2d'), d = demo.d;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, demo.cv.width, demo.cv.height);
+    demoDraw(1.42, { x: 181, w: 220, ox: 0, pw: half }, true);
+    demoDraw(7.03, { x: 190, w: 220, ox: half, pw: half }, true);
+    c.setTransform(d, 0, 0, d, 0, 0); c.globalAlpha = 1;
+    c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim() || C.muted;
+    c.fillRect(half - .5, 0, 1, demo.h);
+  }
+  // 레이아웃·테마가 바뀌면 크기 다시 잡고 다시 그림
+  function demoRefresh() {
+    demo.w = 0;
+    if (!demoVisible()) return;
+    if (RM) demoStill(); else { demoSize(); demoCaption(demo.t); demoDraw(demo.t); }
+  }
+  function demoTick(dt) {
+    if (!demoVisible() || RM) return;
+    if (!demo.hold) demo.t = (demo.t + dt) % DLOOP;
+    demoCaption(demo.t);
+    demoDraw(demo.t);
+  }
+  if (RM) demo.fig.classList.add('rm');
+
   // ===== 루프 =====
   var lastT = performance.now();
   function frame(now) {
@@ -2145,6 +2694,7 @@ const Sound = (function () {
     if (!(dt >= 0)) dt = 0; if (dt > 0.05) dt = 0.05;
     update(dt);
     render();
+    demoTick(dt);   // v3.3 안내 영상: 시작 화면이 보일 때만 그림
     requestAnimationFrame(frame);
   }
   function update(dt) {
@@ -2281,7 +2831,7 @@ const Sound = (function () {
   if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
   try {
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    var onTheme = function () { buildAssets(); };
+    var onTheme = function () { buildAssets(); demoRefresh(); };
     if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme);
   } catch (e) {}
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); updateHud(true); });
@@ -2291,6 +2841,7 @@ const Sound = (function () {
     return {
       phase: G.phase, time: G.time, score: curScore(), timeScore: timeScore(), starScore: G.starScore,
       best: G.best, bestTime: G.bestTime, nearMiss: G.nearMiss,
+      nearScore: nearScore(), blockCount: G.blockCount, blockScore: blockScore(), blockRaw: G.blockRaw, umbBlocks: G.umbBlocks,
       starStats: { spawned: G.starStats.spawned, caught: G.starStats.caught, missed: G.starStats.missed, chain: G.chain },
       stars: G.stars.map(function (st) {
         return { id: st.id, x: st.x, y: st.y, r: STAR_CATCH, vy: st.vy, baseX: st.baseX, age: st.age, phase: st.ph,
@@ -2305,11 +2856,31 @@ const Sound = (function () {
       }),
       items: G.umb ? [{ type: 'umbrella', x: G.umb.x, y: G.umb.y, baseX: G.umb.baseX, age: G.umb.age, phase: G.umb.ph, r: UMB_R, vy: UMB_V }] : [],
       spawn: { interval: G.sp.interval, speed: G.sp.speed, maxOnScreen: G.sp.maxOnScreen, aimRatio: G.sp.aimRatio },
-      popups: G.fx.filter(function (f) { return f.k === 'starPop'; }).map(function (f) { return { x: f.x, pts: f.pts, chain: f.chain, row: f.row || 0, t: f.t }; })
+      demo: demoState(),
+      popups: G.fx.filter(function (f) { return f.k === 'starPop' || f.k === 'nearPop' || f.k === 'umbPop'; }).map(function (f) {
+        if (f.k === 'starPop') return { kind: 'star', x: f.x, pts: f.pts, chain: f.chain, row: f.row || 0, t: f.t };
+        if (f.k === 'nearPop') return { kind: 'near', x: G.player.x, side: f.side, pts: f.pts, n: f.n, max: false, t: f.t };
+        return { kind: 'block', x: G.player.x, pts: f.pts, n: f.n, max: !!f.max, t: f.t };
+      })
     };
+  }
+  function demoState() {
+    var np = demoNear(demo.t), up = demoUmb(demo.t), pop = null;
+    if (np) pop = { kind: 'near', text: '아슬! +' + np.pts + (np.n >= 2 ? ' ×' + np.n : ''), pts: np.pts, n: np.n, side: np.side };
+    else if (up) pop = { kind: 'block', text: '+' + up.pts + (up.n >= 2 ? ' ×' + up.n : ''), pts: up.pts, n: up.n };
+    return { t: demo.t, hold: demo.hold, visible: demoVisible(), reducedMotion: RM, draws: demo.draws,
+      scene: demo.t < 5 ? 1 : 2, caption: demo.cap.textContent, kidX: dKid(demo.t).x, popup: pop };
   }
   window.__poop = {
     start: function () { startGame(); },
+    // v3.3 QA용: 안내 영상을 t초로 옮겨 멈춤(seek) / 다시 재생(play)
+    demo: {
+      seek: function (t) { demo.t = clamp(+t || 0, 0, DLOOP - 1e-6); demo.hold = true; demo.capFade = false; demo.cap.style.transition = ''; demo.cap.style.opacity = '1';
+        if (demoVisible()) { if (RM) demoStill(); else { demo.capKey = ''; demoCaption(demo.t); demo.capFade = false; demo.cap.style.transition = ''; demo.cap.style.opacity = '1'; demoDraw(demo.t); } }
+        return demoState(); },
+      play: function () { demo.hold = false; return demoState(); },
+      state: demoState
+    },
     state: snapshot,
     setTime: function (sec) {
       sec = Math.max(0, +sec || 0);
@@ -2334,12 +2905,14 @@ const Sound = (function () {
       var st = makeStar(clamp(x == null ? 300 : +x, 0, FW), opts || {});
       G.stars.push(st); G.starStats.spawned++; return st.id;
     },
+    // v3 QA용: 똥(대본·일반)·우산 자동 생성 켜기/끄기 (기본 켜짐, 새 판마다 켜짐으로 돌아감)
+    setSpawns: function (on) { G.spawnsOff = on === false; return !G.spawnsOff; },
     setStars: function (on) { G.starsOn = on !== false && !!on; if (!G.starsOn) for (var i = 0; i < G.stars.length; i++) G.stars[i].res = null; return G.starsOn; },
     seed: function (n) { G.seedFixed = n == null ? null : (n >>> 0); },
     setPlayerX: function (x) { G.player.x = clamp(+x, PX_MIN, PX_MAX); G.player.vx = 0; inp.trackX = null; inp.keys = []; },
     setInvincible: function (on) { G.invMode = !!on; if (on) G.noSave = true; },
     simulate: function (sec, bot) {
-      if (G.phase !== 'playing') return { dead: G.phase === 'dying' || G.phase === 'result', time: G.time, score: curScore(), starsCaught: G.starStats.caught };
+      if (G.phase !== 'playing') return { dead: G.phase === 'dying' || G.phase === 'result', time: G.time, score: curScore(), starsCaught: G.starStats.caught, nearMiss: G.nearMiss, blockCount: G.blockCount };
       G.simUsed = true;
       var n = Math.round(sec * 60), dt = 1 / 60;
       for (var i = 0; i < n; i++) {
@@ -2349,10 +2922,10 @@ const Sound = (function () {
           else { inp.mode = 'keys'; inp.trackX = null; inp.keys = cmd.dir < 0 ? ['L'] : cmd.dir > 0 ? ['R'] : []; }
         }
         stepPlaying(dt);
-        if (G.phase !== 'playing') { resetInput(); return { dead: true, time: G.time, score: G.score, starsCaught: G.starStats.caught }; }
+        if (G.phase !== 'playing') { resetInput(); return { dead: true, time: G.time, score: G.score, starsCaught: G.starStats.caught, nearMiss: G.nearMiss, blockCount: G.blockCount }; }
       }
       resetInput();
-      return { dead: false, time: G.time, score: curScore(), starsCaught: G.starStats.caught };
+      return { dead: false, time: G.time, score: curScore(), starsCaught: G.starStats.caught, nearMiss: G.nearMiss, blockCount: G.blockCount };
     },
     fairness: function () {
       var map = buildMap(G.time), out = [], rmap = new Map(), rs = activeRes();
