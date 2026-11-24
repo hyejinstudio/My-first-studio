@@ -298,7 +298,7 @@
       <a class="home ov-home secondary" href="../../">← 게임 목록</a>
       <h2>똥비 피하기</h2>
       <p>똥은 피하고 별사탕은 줍기!</p>
-      <p class="bonusline">아슬하게 피하면 +20 · 우산으로 막으면 +10</p>
+      <p class="bonusline">아슬하게 피하면 +10 · 우산으로 막으면 +10</p>
       <canvas class="kidpic" id="kidPic" aria-hidden="true"></canvas>
       <div class="legend" aria-label="떨어지는 것들">
         <div class="lg"><canvas data-icon="normal" aria-hidden="true"></canvas><div><b>똥</b><span>맞으면 끝!</span></div></div>
@@ -812,10 +812,10 @@ const Sound = (function () {
   var UMB_FIRST = 8, UMB_GAP0 = 8, UMB_GAP1 = 12;
   var SCRIPT_T = [0.6, 1.6, 2.6], SCRIPT_V0 = 290, SCRIPT_V1 = 320, REG_START = 1.0;
   var LEVELS = [15, 30, 45, 60, 75, 90];
-  // v3.1: 아슬 판정 완화 (design.md v3.1) — 판정 상자 가장자리~똥 가장자리 가로 간격
-  var NEAR_GAP = 30;
+  // v3.2: 아슬 판정 20 u (design.md v3.2, v3.1의 30 u에서 좁힘) — 판정 상자 가장자리~똥 가장자리 가로 간격
+  var NEAR_GAP = 20;
   // v3 보너스 (design.md v3-1, v3-2)
-  var NEAR_PTS = 20, BLOCK_PTS = 10, BLOCK_CAP = 10;
+  var NEAR_PTS = 10, BLOCK_PTS = 10, BLOCK_CAP = 10;
   // v3 연출 동시 표시 상한 (art-ui v3 6)
   var FX_CAP = { whoosh: 2, umbHit: 3, bounce: 6 };
   // t, 간격, 속도, 동시 최대, 조준 비율 (design.md v2)
@@ -1670,7 +1670,7 @@ const Sound = (function () {
     return f;
   }
   function findFx(k) { for (var i = 0; i < G.fx.length; i++) if (G.fx[i].k === k) return G.fx[i]; return null; }
-  // v3.1: 아슬 1번 = +20 (design.md v3.1). 점수 콤보 없음 — G.combo는 소리 높이에만
+  // v3.2: 아슬 1번 = +10 (design.md v3.2). 점수 콤보 없음 — G.combo는 소리 높이에만
   function nearMissHit(p) {
     G.nearMiss++;
     G.combo = (G.time - G.lastNearT < 2) ? G.combo + 1 : 1;
