@@ -1293,7 +1293,7 @@ const Sound = (function () {
   function pause() {
     if (G.phase === 'title' || G.phase === 'result') return;
     if (G.phase === 'paused') { // 계속 후 잠금 중 다시 멈춤
-      if (G.resuming) { clearTimers(); G.resuming = false; board.classList.remove('locking'); board.classList.add('covered'); $('pauseMsg').textContent = '시계가 멈췄어요.'; $('ovPause').hidden = false; }
+      if (G.resuming) { clearTimers(); G.resuming = false; board.classList.remove('locking'); board.classList.add('covered'); $('pauseMsg').textContent = G.needStart ? '시계는 아직 시작 전이에요. 계속하면 카드가 덮인 채로 시작해요.' : '시계가 멈췄어요.'; $('ovPause').hidden = false; }
       return;
     }
     var t = now();
