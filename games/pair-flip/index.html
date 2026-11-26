@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>짝꿍 카드</title>
-<meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="짝꿍 카드">
@@ -1232,7 +1231,7 @@ const Sound = (function () {
     if (newRec) fx(function () { Sound.play('record'); }, 1150);
     try {
       window.Leaderboard && Leaderboard.report({ game: 'pair-flip', score: Math.max(0, SLOW_CS - cs),
-        eligible: !G.test && !slow, reason: G.test ? 'test' : slow ? 'slow' : '', slot: $('lbSlot') });
+        eligible: !G.test, reason: G.test ? 'test' : '', slot: $('lbSlot') });
     } catch (e) {}
   }
   function showResult() {
@@ -1493,5 +1492,6 @@ const Sound = (function () {
   requestAnimationFrame(loop);
 })();
 </script>
+<script src="../../lib/leaderboard.js?v=12" defer></script>
 </body>
 </html>

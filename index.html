@@ -13,19 +13,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-bear: #e6ecec;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-poop: #efe8dc; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-bear: #e6ecec; --tile-pair: #f2e4e7;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126; --tile-pair: #261b20;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-poop: #221e1a; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-bear: #172126; --tile-pair: #261b20;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -181,6 +181,23 @@
   <!-- 새 게임은 이 목록 맨 앞에 카드로 추가합니다 (최신 순) -->
   <div class="grid">
 
+    <a class="game" href="games/pair-flip/" aria-label="짝꿍 카드 — 외우고, 같은 그림 두 장 찾기">
+      <div class="art" style="--tile: var(--tile-pair)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <g transform="rotate(-10 22 33)">
+            <rect x="8" y="14" width="28" height="38" rx="5" fill="#5f7891"/>
+            <rect x="11.5" y="17.5" width="21" height="31" rx="3" fill="none" stroke="#f4efe4" stroke-opacity=".5" stroke-width="1.3"/>
+            <path d="M22 26 Q23.5 31.5 28 33 Q23.5 34.5 22 40 Q20.5 34.5 16 33 Q20.5 31.5 22 26 Z" fill="#f4efe4" fill-opacity=".55"/>
+          </g>
+          <g transform="rotate(8 42 31)">
+            <rect x="28" y="12" width="28" height="38" rx="5" fill="#fffdf8" stroke="#cfc8b9" stroke-width="1.4"/>
+            <path d="M42 22 A9 9 0 1 1 42 40 A9 9 0 1 1 42 22 Z M42 26.4 A4.6 4.6 0 1 0 42 35.6 A4.6 4.6 0 1 0 42 26.4 Z" fill="#d9644f" fill-rule="evenodd" stroke="#a8432f" stroke-width="1.4"/>
+          </g>
+        </svg>
+      </div>
+      <h2>짝꿍 카드</h2>
+      <p>외우고, 같은 그림 두 장 찾기</p>
+    </a>
     <a class="game" href="games/hungry-bear/" aria-label="폭식 불곰을 찾아라 — 누가 제일 많이 먹었을까?">
       <div class="art" style="--tile: var(--tile-bear)">
         <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -404,7 +421,7 @@
     <button class="fblink" id="fbLink" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a7 7 0 0 1-10.3 6.2L5 19.5l1.3-4.2A7 7 0 1 1 20 12z"/><path d="M9 11h6M9 14h4"/></svg><span>피드백 보내기</span></button>
   </div>
 </main>
-<script src="lib/leaderboard.js?v=11" defer></script>
+<script src="lib/leaderboard.js?v=12" defer></script>
 <script>
   // 순위 모듈이 실패하면 버튼을 숨긴 채로 둔다(목록은 그대로)
   document.addEventListener('DOMContentLoaded', function () {
