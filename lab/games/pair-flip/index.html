@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>짝꿍 카드</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="짝꿍 카드">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  /* 숫자 전용 글꼴: Pretendard ExtraBold(SIL OFL 1.1)의 숫자·기호 서브셋. 수정본이라 내부 이름은 PairDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "PairDigits"; src: url("fonts/pair-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+0025, U+002B-002F, U+0030-0039; }
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --num-font: "PairDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --grid: #e7e2d8; --well: #fbfaf7;
+    --accent: #e4572e; --gold: #f2b134; --good: #5f9b6c; --good-ink: #3f7a4f; --danger: #d64545; --loss-ink: #b2452f;
+    --face: #fffdf8; --face-edge: #e7e2d8; --back: #5f7891; --back-line: rgba(244,239,228,.45); --back-dot: rgba(255,255,255,.14);
+    --slot: #d9d3c6; --card-shadow: 0 1px 2px rgba(40,50,70,.12), 0 2px 6px rgba(40,50,70,.06); --lift-shadow: 0 4px 10px rgba(40,50,70,.18);
+    --t-flip: 150ms; --t-flipall: 300ms; --t-gone: 350ms;
+    --c: 100px; --gap: 10px; --r: 10px; --sw: 600px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+      --accent: #ff7a50; --gold: #ffc94d; --good: #85c493; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+      --face: #e4dfd3; --face-edge: #b9b2a3; --back: #3b4e61; --back-line: rgba(244,239,228,.35); --back-dot: rgba(255,255,255,.10);
+      --slot: #3a4050; --card-shadow: 0 1px 2px rgba(0,0,0,.4); --lift-shadow: 0 4px 10px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+    --accent: #ff7a50; --gold: #ffc94d; --good: #85c493; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+    --face: #e4dfd3; --face-edge: #b9b2a3; --back: #3b4e61; --back-line: rgba(244,239,228,.35); --back-dot: rgba(255,255,255,.10);
+    --slot: #3a4050; --card-shadow: 0 1px 2px rgba(0,0,0,.4); --lift-shadow: 0 4px 10px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  body.low {
+    padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  }
+  .num { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; }
+  svg [hidden] { display: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* .app과 오버레이 조상에는 transform/filter/perspective 금지 (ov-full의 position:fixed 보호) */
+  .app { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+  /* 상단 바 (hungry-bear 공통) */
+  .top { flex: none; height: 52px; width: var(--sw); display: flex; align-items: center; gap: 8px; }
+  .home {
+    flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px; white-space: nowrap;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home .short { display: none; }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .title { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .spacer { flex: 1; min-width: 0; }
+  .btns { display: flex; gap: 6px; flex: none; }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out;
+  }
+  button:active { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 20px; height: 20px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.primary svg, button.secondary svg { width: 20px; height: 20px; flex: none; }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; flex: none;
+  }
+  button.secondary[aria-pressed="true"] { border: 2px solid var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+  .kbd { display: none; font-size: 12px; color: var(--muted); border: 1px solid var(--grid); border-radius: 6px; padding: 1px 6px; background: var(--panel); }
+  @media (hover: hover) and (pointer: fine) { .kbd { display: inline-block; } }
+
+  /* 시계 알약 */
+  .clock {
+    flex: none; height: 44px; min-width: 104px; padding: 0 14px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; gap: 6px; justify-content: flex-start; transition: border-color 600ms ease-out;
+  }
+  .clock svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .clock .ct { font-size: 22px; line-height: 1; color: var(--ink); }
+  .clock.idle .ct { color: var(--muted); }
+  .clock .pz { font-size: 10px; color: var(--muted); font-weight: 800; }
+  .clock .pz[hidden] { display: none; }
+  .clock.done { border-color: var(--good); transition-duration: 0ms; }
+
+  /* 안내 띠 */
+  .cue {
+    flex: none; width: var(--sw); height: 36px; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden;
+  }
+  .cue > div { display: flex; align-items: center; gap: 10px; width: 100%; animation: cueIn 160ms ease-out; }
+  .cue > div[hidden] { display: none; }
+  @keyframes cueIn { from { opacity: 0; } }
+  .cprev { justify-content: center; }
+  .cprev svg { width: 18px; height: 18px; flex: none; color: var(--ink); }
+  .pbar { width: var(--pw, 200px); height: 8px; border-radius: 4px; background: var(--grid); overflow: hidden; flex: none; }
+  .pbar i { display: block; width: 100%; height: 100%; background: var(--accent); transform-origin: 0 50%; }
+  .psec { font-size: 15px; color: var(--muted); min-width: 1ch; }
+  .cst { display: inline-flex; align-items: baseline; gap: 6px; }
+  .cst small { font-size: 13px; color: var(--muted); font-weight: 700; }
+  .cst b { font-size: 18px; display: inline-block; }
+  .cst b.loss { color: var(--loss-ink); }
+  .cst.cbest b { font-size: 15px; }
+  .cst[hidden] { display: none; }
+  .cdot { color: var(--muted); }
+  .cflex { flex: 1; }
+  .pop { animation: pop 160ms ease-out; }
+  @keyframes pop { 50% { transform: scale(1.15); } }
+
+  /* 판 */
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; width: var(--sw); display: grid; place-items: center; }
+  .board {
+    display: grid; grid-template-columns: repeat(6, var(--c)); grid-auto-rows: var(--c); gap: var(--gap);
+    touch-action: none; outline: none; transition: opacity 300ms linear;
+  }
+  .board.locking { opacity: .85; transition: none; }
+  .cell { position: relative; width: var(--c); height: var(--c); }
+  .card {
+    position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; border-radius: var(--r);
+    background: transparent; cursor: default; display: block; touch-action: none;
+    transition: transform 80ms ease-out;
+  }
+  .card:active { transform: scale(.96); background: transparent; }
+  .card:focus-visible { outline: none; }
+  .flip {
+    position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+    transform: perspective(700px) rotateY(180deg); transition: transform var(--t-flip) cubic-bezier(.3,.7,.4,1);
+  }
+  .card.up .flip { transform: perspective(700px) rotateY(0deg); }
+  .board.all .flip { transition-duration: var(--t-flipall); transition-timing-function: cubic-bezier(.4,0,.2,1); }
+  .board.wc .flip { will-change: transform; }
+  .noanim .flip, .noanim .face { transition: none !important; }
+  .face {
+    position: absolute; inset: 0; border-radius: var(--r); display: grid; place-items: center;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  }
+  .face.front { background: var(--face); border: 1px solid var(--face-edge); box-shadow: var(--card-shadow); transition: box-shadow 150ms ease-out; }
+  .face.back {
+    transform: rotateY(180deg);
+    background: radial-gradient(circle, var(--back-dot) 1.2px, transparent 1.7px) 0 0 / 9px 9px, var(--back);
+    box-shadow: inset 0 0 0 calc(var(--c) * .035) var(--back), inset 0 0 0 calc(var(--c) * .035 + 1.5px) var(--back-line), var(--card-shadow);
+  }
+  .face .ic { width: 60%; height: 60%; display: block; }
+  .face .mk { width: 46%; height: 46%; display: block; }
+  .board.covered .face { visibility: hidden; }
+  .card.sel .face.front { box-shadow: var(--lift-shadow); }
+  .card.ok { outline: 3px solid var(--good); outline-offset: 2px; pointer-events: none; animation: okGo var(--t-gone) forwards; }
+  @keyframes okGo { 0% { transform: scale(1); animation-timing-function: ease-out; } 28% { transform: scale(1.06); opacity: 1; animation-timing-function: ease-in; } 100% { transform: scale(.72); opacity: 0; } }
+  .card.bad { outline: 3px dashed var(--danger); outline-offset: 2px; animation: shake 240ms ease-in-out; }
+  @keyframes shake { 25% { transform: translateX(-5px); } 55% { transform: translateX(5px); } 80% { transform: translateX(-3px); } }
+  .cell.gone .card { visibility: hidden; }
+  .cell.gone::before { content: ""; position: absolute; inset: 0; border: 1.5px dashed var(--slot); border-radius: var(--r); animation: slotIn 160ms ease-out; }
+  @keyframes slotIn { from { opacity: 0; } }
+  .board.final .cell.gone::before { animation: slotPulse 600ms ease-out; }
+  @keyframes slotPulse { 0% { opacity: .4; } 40% { opacity: 1; } 100% { opacity: .4; } }
+  body.kbd-nav .cell.kf::after { content: ""; position: absolute; inset: 0; border-radius: var(--r); box-shadow: 0 0 0 3px var(--accent); pointer-events: none; z-index: 2; }
+  .board.appear .card { animation: appear 200ms ease-out both; }
+  .board.appear .cell:nth-child(n+7) .card { animation-delay: 40ms; }
+  .board.appear .cell:nth-child(n+13) .card { animation-delay: 80ms; }
+  .board.appear .cell:nth-child(n+19) .card { animation-delay: 120ms; }
+  @keyframes appear { from { opacity: 0; transform: scale(.94); } }
+  @media (hover: hover) and (pointer: fine) {
+    .board.live .card:not(.up):hover { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset: 0; cursor: pointer; }
+  }
+  .rotpill {
+    position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+    display: none; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--grid); color: var(--muted); font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
+  .rotpill svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  body.pphone .rotpill { display: inline-flex; }
+  .rotline { display: none !important; }
+  body.pphone .rotline { display: inline-flex !important; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  body.pphone .rotline svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 상단 바 폭 구간 */
+  body.tb-640 .title { display: none; }
+  body.tb-420 .home .full { display: none; }
+  body.tb-420 .home .short { display: inline; }
+  body.tb-420 .top { gap: 6px; }
+  body.tb-420 .clock { min-width: 92px; padding: 0 10px; }
+
+  /* 낮은 화면 (H ≤ 520): 왼쪽 rail */
+  body.low .app { display: grid; grid-template-columns: 96px 1fr; grid-template-rows: 44px auto auto 1fr auto; column-gap: 8px; row-gap: 8px; align-items: start; }
+  body.low .top { display: contents; }
+  body.low .title, body.low .top .spacer { display: none; }
+  body.low .home { grid-column: 1; grid-row: 1; margin-left: 0; padding: 0 4px; }
+  body.low .home .full { display: none; }
+  body.low .home .short { display: inline; }
+  body.low .clock { grid-column: 1; grid-row: 2; width: 96px; height: 56px; min-width: 0; padding: 4px 6px; border-radius: 16px; flex-direction: column; justify-content: center; align-items: center; gap: 2px; }
+  body.low .clock .pz { position: absolute; }
+  body.low .cue { grid-column: 1; grid-row: 3; width: 96px; height: auto; overflow: visible; }
+  body.low .cue > div { flex-direction: column; align-items: flex-start; gap: 6px; }
+  body.low .cprev .ct, body.low .cprev svg { display: none; }
+  body.low .cprev { align-items: center; }
+  body.low .pbar { width: 80px; height: 6px; }
+  body.low .cdot, body.low .cflex, body.low .cst.cbest { display: none !important; }
+  body.low .cst b { font-size: 16px; }
+  body.low .btns { grid-column: 1; grid-row: 5; align-self: end; justify-content: space-between; width: 96px; gap: 8px; }
+  body.low .stage { grid-column: 2; grid-row: 1 / -1; width: 100%; height: 100%; }
+
+  /* 오버레이 (hungry-bear 공통) */
+  .overlay {
+    position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: safe center; text-align: center;
+    background: color-mix(in srgb, var(--well) 94%, transparent); line-height: 1.4; z-index: 3;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; flex: none; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  #ovPause, body.ov-full #ovPause { background: var(--well); }
+  .overlay .ov-home { display: none; }
+  body.ov-full .overlay .ov-home { display: inline-flex; position: absolute; margin: 0; animation: none;
+    top: max(4px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay [hidden] { display: none !important; }
+  .ovcard { width: min(100%, 520px); display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  #ovStart h2 { font-size: 26px; }
+  #ovStart .sub { font-size: 15px; word-break: keep-all; }
+  .demo { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .demo figure { margin: 0; padding: 12px; background: var(--panel); border: 1px solid var(--grid); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .demo figcaption { font-size: 13px; font-weight: 700; color: var(--ink); word-break: keep-all; white-space: nowrap; }
+  .dm { position: relative; display: flex; align-items: center; gap: 4px; padding-right: 8px; }
+  .dm .arr { width: 14px; height: 14px; color: var(--muted); flex: none; margin: 0 2px; }
+  .mc { --m: 44px; width: var(--m); height: var(--m); border-radius: 5px; display: grid; place-items: center; flex: none; position: relative; }
+  .mc.f { background: var(--face); border: 1px solid var(--face-edge); box-shadow: var(--card-shadow); }
+  .mc.f svg { width: 60%; height: 60%; }
+  .mc.b { background: radial-gradient(circle, var(--back-dot) 1.2px, transparent 1.7px) 0 0 / 9px 9px, var(--back); box-shadow: var(--card-shadow); }
+  .mc.b svg { width: 46%; height: 46%; }
+  .mc.s { border: 1.5px dashed var(--slot); }
+  .bdg { position: absolute; right: -4px; top: -8px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
+  .bdg svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .bdg.ok { background: var(--good); } .bdg.no { background: var(--danger); }
+  .bestline { font-size: 13px; color: var(--muted); display: inline-flex; align-items: baseline; gap: 6px; }
+  .bestline b { font-size: 20px; color: var(--ink); }
+  .testpill { font-size: 11px; color: var(--muted); border: 1px solid var(--grid); border-radius: 999px; padding: 1px 8px; font-weight: 700; }
+  #startBtn { height: 52px; min-width: 200px; }
+  .hint { font-size: 12px !important; }
+  .musicbtn { height: 36px !important; font-size: 13px !important; padding: 0 12px !important; }
+  .musicbtn svg { width: 16px !important; height: 16px !important; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 결과 */
+  #ovResult .ovcard { gap: 10px; }
+  .scorerow { display: flex; align-items: baseline; gap: 6px 12px; justify-content: center; flex-wrap: wrap; }
+  .scorerow .rs { font-size: 56px; line-height: 1; }
+  .scorerow .ru { font-size: 20px; font-weight: 700; }
+  .scorerow .slow { font-size: 32px; font-weight: 800; }
+  #lbSlot { min-width: 0; display: inline-flex; align-items: center; align-self: center; }
+  .badge { background: var(--panel); border: 2px solid var(--gold); color: var(--ink); font-size: 14px; font-weight: 800; border-radius: 999px; padding: 3px 12px; animation: recIn 220ms cubic-bezier(.3,1.4,.5,1) 200ms both !important; }
+  @keyframes recIn { from { transform: scale(.8); opacity: 0; } }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: min(100%, 420px); }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px; height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .stat .sl { font-size: 12px; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+  .stat .sl svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .stat .sv { display: inline-flex; align-items: baseline; gap: 2px; }
+  .stat .sv b { font-size: 24px; line-height: 1; }
+  .stat .sv span { font-size: 13px; font-weight: 700; }
+  .stat .sv b.loss { color: var(--loss-ink); } .stat .sv b.zero { color: var(--good-ink); }
+  .rline { font-size: 13px !important; color: var(--muted); word-break: keep-all; }
+  .waitline { font-size: 13px !important; color: var(--ink) !important; word-break: keep-all; max-width: 460px; }
+  .waitline svg { width: 14px; height: 14px; vertical-align: -2px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-right: 4px; }
+  .waitline .m2 { color: var(--muted); }
+  .bestcmp { font-size: 14px !important; color: var(--ink) !important; }
+  .bestcmp .g { color: var(--good-ink); }
+  .bestcmp .d { color: var(--muted); font-size: 13px; }
+  .bestcmp .g.d { color: var(--good-ink); }
+  #ovResult .resbtns { gap: 8px 10px; transition: opacity 120ms linear; }
+  #ovResult .resbtns.locked { opacity: .6; }
+  #againBtn { height: 52px; }
+
+  @media (max-height: 520px) {
+    .overlay h2, #ovStart h2 { font-size: 20px; }
+    .overlay { gap: 6px; padding: 8px; }
+    .ovcard { gap: 6px; }
+    #ovResult .ovcard { gap: 4px; }
+    body.ov-full .overlay { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+    .demo figure { padding: 8px; gap: 4px; }
+    .mc { --m: 36px; }
+    .scorerow .rs { font-size: 44px; }
+    .stat { height: 56px; }
+    .stat .sv b { font-size: 20px; }
+    #startBtn, #againBtn { height: 48px; }
+  }
+  @media (max-width: 419px) {
+    .mc { --m: 36px; }
+    .demo { gap: 8px; }
+    .demo figure { padding: 8px; }
+    .demo figcaption { font-size: 12px; white-space: normal; }
+  }
+
+  /* 모션 줄이기: 시간 값은 그대로, 회전 → 크로스페이드 */
+  @media (prefers-reduced-motion: reduce) {
+    .flip, .card.up .flip { transform: none !important; transition: none; }
+    .face.back { transform: none; }
+    .face { transition: opacity var(--t-flip) linear; }
+    .board.all .face { transition-duration: var(--t-flipall); }
+    .card:not(.up) .face.front { opacity: 0; }
+    .card.up .face.back { opacity: 0; }
+    .board.appear .card { animation: fadeOnly 200ms ease-out both; animation-delay: 0ms !important; }
+    @keyframes fadeOnly { from { opacity: 0; } }
+    .card.ok { animation: fadeOut var(--t-gone) linear forwards; }
+    @keyframes fadeOut { to { opacity: 0; } }
+    .card.bad { animation: none; }
+    .card.bad::after { content: ""; position: absolute; right: -6px; top: -6px; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--danger) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 7l10 10M17 7L7 17' stroke='white' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat; }
+    .card:active, button:active { transform: none; }
+    .pop { animation: none; }
+    .badge { animation: fadeOnly 220ms ease-out 200ms both !important; }
+    .overlay, .overlay > *, .cue > div { animation: none; }
+    .board.final .cell.gone::before { animation: none; }
+  }
+</style>
+</head>
+<body class="ov-full">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<!-- 가족 1 동그라미 (코랄) -->
+<symbol id="k0" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16" fill="#d9644f" stroke="#a8432f" stroke-width="2.5"/></symbol>
+<symbol id="k1" viewBox="0 0 48 48"><path d="M24 8 A16 16 0 1 1 24 40 A16 16 0 1 1 24 8 Z M24 15.5 A8.5 8.5 0 1 0 24 32.5 A8.5 8.5 0 1 0 24 15.5 Z" fill="#d9644f" fill-rule="evenodd" stroke="#a8432f" stroke-width="2.5"/></symbol>
+<!-- 가족 2 세모 (머스터드) -->
+<symbol id="k2" viewBox="0 0 48 48"><path d="M24 6 L42 37 H6 Z" fill="#e0a630" stroke="#a87414" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+<symbol id="k3" viewBox="0 0 48 48"><path d="M6 11 H42 L24 42 Z" fill="#e0a630" stroke="#a87414" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+<!-- 가족 3 네모 (청록) -->
+<symbol id="k4" viewBox="0 0 48 48"><rect x="9" y="9" width="30" height="30" rx="3" fill="#3f9a8f" stroke="#276b62" stroke-width="2.5"/></symbol>
+<symbol id="k5" viewBox="0 0 48 48"><path d="M24 4.5 L43.5 24 L24 43.5 L4.5 24 Z" fill="#3f9a8f" stroke="#276b62" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+<!-- 가족 4 달 (보라) -->
+<symbol id="k6" viewBox="0 0 48 48"><path d="M13 5 A19 19 0 0 1 13 43 A24 24 0 0 0 13 5 Z" fill="#8a6fc4" stroke="#5e4a93" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+<symbol id="k7" viewBox="0 0 48 48"><path d="M14 5 A19 19 0 0 1 14 43 Z" fill="#8a6fc4" stroke="#5e4a93" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+<!-- 가족 5 잎 (초록) -->
+<symbol id="k8" viewBox="0 0 48 48"><g transform="translate(24 42)" stroke="#4f7a32" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M0 0 V4" fill="none" stroke-width="3"/>
+  <path d="M0 0 Q-21 -18 0 -36 Q21 -18 0 0 Z" fill="#78a852"/>
+  <path d="M0 -5 V-28" fill="none" stroke-width="2.2"/>
+</g></symbol>
+<symbol id="k9" viewBox="0 0 48 48"><g transform="translate(24 40)" stroke="#4f7a32" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M0 0 V4" fill="none" stroke-width="3"/>
+  <g transform="rotate(-32)"><path d="M0 0 Q-13 -14.5 0 -29 Q13 -14.5 0 0 Z" fill="#78a852"/><path d="M0 -5 V-22" fill="none" stroke-width="2.2"/></g>
+  <g transform="rotate(32)"><path d="M0 0 Q-13 -14.5 0 -29 Q13 -14.5 0 0 Z" fill="#78a852"/><path d="M0 -5 V-22" fill="none" stroke-width="2.2"/></g>
+</g></symbol>
+<!-- 가족 6 물결 (파랑): 진한 밑선 10 + 색 윗선 5.5 -->
+<symbol id="k10" viewBox="0 0 48 48"><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 24 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0" stroke="#2f639c" stroke-width="10"/>
+  <path d="M7 24 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0" stroke="#4f8fd0" stroke-width="5.5"/>
+</g></symbol>
+<symbol id="k11" viewBox="0 0 48 48"><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 16 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0 M7 33 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0" stroke="#2f639c" stroke-width="10"/>
+  <path d="M7 16 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0 M7 33 q4.25 -8 8.5 0 t8.5 0 t8.5 0 t8.5 0" stroke="#4f8fd0" stroke-width="5.5"/>
+</g></symbol>
+<!-- 뒷면 문양 (viewBox 0 0 40 40): 4갈래 별꽃 + 옅은 원 -->
+<symbol id="back-mark" viewBox="0 0 40 40"><g fill="none" stroke="#f4efe4" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+  <circle cx="20" cy="20" r="15" stroke-opacity=".55"/>
+  <path d="M20 8 Q23 17 32 20 Q23 23 20 32 Q17 23 8 20 Q17 17 20 8 Z" fill="#f4efe4" fill-opacity=".22"/>
+</g></symbol>
+<!-- UI 아이콘 -->
+<symbol id="icClock" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M10 3h4M12 3v2.5M18.5 6.5l1.3-1.3"/></symbol>
+<symbol id="icEye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+<symbol id="icArrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="icCheck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="icX" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+<symbol id="icCards" viewBox="0 0 24 24"><rect x="3" y="6" width="10" height="14" rx="2"/><rect x="11" y="4" width="10" height="14" rx="2"/></symbol>
+<symbol id="icTarget" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></symbol>
+<symbol id="icHourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 10 6 10 9s-10 4-10 9M17 3c0 5-10 6-10 9s10 4 10 9"/></symbol>
+<symbol id="icRotate" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="2"/><path d="M8 4.5h6.5a3 3 0 0 1 3 3V8M15.5 6l2 2 2-2"/></symbol>
+<symbol id="icNote" viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></symbol>
+</defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <a class="home" href="../../"><span class="full">← 게임 목록</span><span class="short">← 목록</span></a>
+    <h1 class="title">짝꿍 카드</h1>
+    <div class="spacer"></div>
+    <div class="clock idle" id="clock" role="timer" aria-label="0초">
+      <svg aria-hidden="true"><use href="#icClock"/></svg><b class="ct num" id="clockNum" aria-hidden="true">0.0</b><span class="pz" id="clockPz" aria-hidden="true" hidden>Ⅱ</span>
+    </div>
+    <div class="btns">
+      <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
+        <svg id="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg id="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" type="button" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+  <div class="cue" id="cue">
+    <div class="cprev" id="cPrev" hidden><svg aria-hidden="true"><use href="#icEye"/></svg><span class="ct">외우세요</span><span class="pbar" aria-hidden="true"><i id="pFill"></i></span><b class="psec num" id="pSec">6</b></div>
+    <div class="cplay" id="cPlay" hidden>
+      <span class="cst"><small>남은 짝</small><b class="num" id="nPairs">12</b></span><span class="cdot" aria-hidden="true">·</span>
+      <span class="cst"><small>틀림</small><b class="num" id="nMiss">0</b></span><span class="cflex"></span>
+      <span class="cst cbest" id="cBest" hidden><small>최고</small><b class="num" id="nBest"></b></span>
+    </div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="board" id="board" role="grid" aria-label="카드 판" tabindex="0"></div>
+    <div class="rotpill" aria-hidden="true"><svg><use href="#icRotate"/></svg>가로로 돌리면 카드가 커져요</div>
+  </div>
+</div>
+
+<div class="overlay" id="ovStart">
+  <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+  <div class="ovcard">
+    <h2>짝꿍 카드 <span class="testpill" id="startTest" hidden>테스트 판</span></h2>
+    <p class="sub">처음에 외우고, 같은 그림 두 장을 찾아 다 없애요.</p>
+    <div class="demo" aria-hidden="true">
+      <figure>
+        <div class="dm"><span class="mc f"><svg><use href="#k1"/></svg></span><span class="mc f"><svg><use href="#k1"/></svg></span><svg class="arr"><use href="#icArrow"/></svg><span class="mc s"></span><span class="mc s"></span><span class="bdg ok"><svg><use href="#icCheck"/></svg></span></div>
+        <figcaption>똑같으면 사라져요</figcaption>
+      </figure>
+      <figure>
+        <div class="dm"><span class="mc f"><svg><use href="#k0"/></svg></span><span class="mc f"><svg><use href="#k1"/></svg></span><svg class="arr"><use href="#icArrow"/></svg><span class="mc b"><svg><use href="#back-mark"/></svg></span><span class="mc b"><svg><use href="#back-mark"/></svg></span><span class="bdg no"><svg><use href="#icX"/></svg></span></div>
+        <figcaption>닮기만 하면 다시 덮여요</figcaption>
+      </figure>
+    </div>
+    <div class="bestline" id="startBest"></div>
+    <span class="rotline"><svg aria-hidden="true"><use href="#icRotate"/></svg>가로로 돌리면 카드가 커져요</span>
+    <div class="row"><button class="primary" id="startBtn" type="button">시작</button><span class="kbd">Enter</span></div>
+    <div class="row"><button class="secondary musicbtn" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#icNote"/></svg><span>배경음악 끔</span></button></div>
+    <p class="hint">소리가 안 나면 무음 모드를 확인하세요. 소리 없이도 할 수 있어요.</p>
+  </div>
+</div>
+
+<div class="overlay" id="ovPause" hidden>
+  <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+  <div class="ovcard">
+    <h2>잠깐 쉬어요</h2>
+    <p>시계가 멈췄어요. 열려 있던 카드는 덮었어요.</p>
+    <div class="row"><button class="primary" id="resumeBtn" type="button">계속하기</button><span class="kbd">Enter</span></div>
+    <div class="row">
+      <button class="secondary" id="restartBtn" type="button">처음부터</button>
+      <button class="secondary musicbtn" type="button" aria-pressed="false"><svg aria-hidden="true"><use href="#icNote"/></svg><span>배경음악 끔</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovResult" hidden>
+  <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+  <div class="ovcard">
+    <h2 id="resTitle">다 찾았어요! <span class="testpill" id="resTest" hidden>테스트 판</span></h2>
+    <div class="scorerow" id="scoreRow"><span id="resTime"></span><span id="lbSlot"></span></div>
+    <span class="badge" id="newRec" hidden>새 기록!</span>
+    <div class="stats">
+      <div class="stat" id="stTries"><span class="sl"><svg aria-hidden="true"><use href="#icCards"/></svg>시도</span><span class="sv"><b class="num" id="vTries">0</b><span>번</span></span></div>
+      <div class="stat" id="stMiss"><span class="sl"><svg aria-hidden="true"><use href="#icX"/></svg>틀림</span><span class="sv"><b class="num" id="vMiss">0</b><span>번</span></span></div>
+      <div class="stat" id="stAcc"><span class="sl"><svg aria-hidden="true"><use href="#icTarget"/></svg>정확도</span><span class="sv"><b class="num" id="vAcc">0%</b></span></div>
+    </div>
+    <p class="rline" id="resSum"></p>
+    <p class="waitline" id="resWait" hidden></p>
+    <p class="rline" id="resSlow" hidden>10분이 넘으면 최고 기록에 남지 않아요.</p>
+    <p class="bestcmp" id="resBest"></p>
+    <div class="row resbtns" id="resBtns">
+      <button class="primary" id="againBtn" type="button">다시 하기</button><span class="kbd">Enter</span>
+      <a class="secondary" href="../../">게임 목록</a>
+    </div>
+  </div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+/* ===== 짝꿍 카드 (pair-flip) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
+ * AudioContext 미지원·생성 실패 시 모든 호출은 조용히 무시된다(게임은 소리 없이 정상 진행).
+ * 사용법: 사용자 제스처(click/touchend/pointerup/keydown) 핸들러 맨 앞에서 Sound.unlock() →
+ *         Sound.play('flip'), Sound.play('match', { combo: 3 }), Sound.play('clear') 등.
+ * 톤: 나무 테이블 위 종이 카드. 마림바·작은 종('딩')·카드 마찰음. 버저·사각파 없음(효과음 버스 8kHz 로우패스).
+ * 조성: C 장조(5음 음계 위주). 모든 멜로디는 오리지널.
+ *
+ * [연타 규칙] 'flip'은 가장 자주 나는 소리라 가장 작고 짧다(~35ms). 동시 발음 최대 3개(넘치면 가장 오래된 것을
+ *   10ms 안에 줄임), 25ms 스로틀, 직전 flip과의 간격이 짧을수록 자동으로 더 작아진다.
+ *
+ * 신호 경로: sfxBus → LP 8kHz ┐
+ *            musicBus → musicDuck(순간 덕킹) ┴→ master(음소거) → limiter → destination
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'pair-flip-muted';
+  var MUSIC_KEY = 'pair-flip-music';
+  var MASTER_VOL = 0.6;
+  var MUSIC_VOL = 0.10;      // 배경음악 버스(집중 게임이라 아주 작게)
+  var MUSIC_DEFAULT = false; // BGM 기본 꺼짐(집중·기록 게임). 🎵 버튼으로 켜면 저장
+  var DUCK = 0.4;            // 클리어·기록 팡파레 때 음악을 잠깐 낮추는 비율
+  var FLIP_CAP = 3;          // 카드 '탁' 동시 발음 최대 수
+
+  var ctx = null, master = null, limiter = null, sfxBus = null, sfxTone = null;
+  var musicBus = null, musicDuck = null, noiseBuf = null;
+  var muted = false, musicPref = MUSIC_DEFAULT, offline = false;
+  var last = {}, flipPool = [];
+  var music = { want: false, on: false, timer: null, step: 0, nextAt: 0, nodes: [], stopTimer: null };
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+  try {
+    var mv = localStorage.getItem(MUSIC_KEY);
+    musicPref = mv === null ? MUSIC_DEFAULT : mv === '1';
+  } catch (e) { musicPref = MUSIC_DEFAULT; }
+
+  function build(c) {
+    ctx = c;
+    limiter = ctx.createDynamicsCompressor();          // 마스터 리미터
+    limiter.threshold.value = -6; limiter.knee.value = 2; limiter.ratio.value = 20;
+    limiter.attack.value = 0.002; limiter.release.value = 0.15;
+    limiter.connect(ctx.destination);
+
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER_VOL;
+    master.connect(limiter);
+
+    sfxTone = ctx.createBiquadFilter();
+    sfxTone.type = 'lowpass'; sfxTone.frequency.value = 8000; sfxTone.Q.value = 0.5;
+    sfxTone.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(sfxTone);
+
+    musicDuck = ctx.createGain(); musicDuck.gain.value = 1; musicDuck.connect(master);
+    musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(musicDuck);
+
+    var len = Math.floor(ctx.sampleRate * 0.6);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = noiseBuf.getChannelData(0), seed = 20261126;
+    for (var j = 0; j < len; j++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; d[j] = seed / 0x3fffffff - 1; }
+  }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var c;
+      try { c = new AC({ latencyHint: 'interactive' }); } catch (e1) { c = new AC(); }
+      build(c);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function running() { return !!ctx && (offline || ctx.state === 'running'); }
+  function ready() { return running() && !muted; }
+
+  function throttled(key, t, gap) {
+    if (last[key] !== undefined && t - last[key] < gap && t >= last[key]) return true;
+    last[key] = t;
+    return false;
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // ---------- 음원 기본 블록 (엔벨로프는 0.0001에서 지수 어택/감쇠 — 클릭음 방지) ----------
+  function tone(type, f0, f1, t, dur, vol, attack, dest, track) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+      var a = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.03);
+      if (track) track.push({ n: o, end: t + dur + 0.03 });
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function noise(t, dur, vol, ftype, f0, f1, q, attack, dest, track) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = ftype; f.Q.value = q || 0.8;
+      f.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      var a = attack || 0.004;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(dest || sfxBus);
+      s.start(t, Math.random() * 0.4); s.stop(t + dur + 0.03);
+      if (track) track.push({ n: s, end: t + dur + 0.03 });
+      return s;
+    } catch (e) { return null; }
+  }
+
+  // 마림바: sine 기음 + 4배 배음(10%, 30ms 이내 소멸)
+  function mallet(f, t, dur, vol, dest, track) {
+    tone('sine', f, 0, t, dur, vol, 0.003, dest, track);
+    tone('sine', f * 4, 0, t, Math.min(0.03, dur * 0.3), vol * 0.10, 0.001, dest, track);
+  }
+  // 작은 종 '딩': sine 기음 + 2배(빠르게 사라짐) + 3배(아주 작게). 순수 배음이라 맑고 둥글다
+  function bell(f, t, dur, vol, dest) {
+    tone('sine', f, 0, t, dur, vol, 0.002, dest);
+    tone('sine', f * 2, 0, t, dur * 0.35, vol * 0.28, 0.002, dest);
+    tone('sine', f * 3, 0, t, dur * 0.15, vol * 0.08, 0.001, dest);
+  }
+
+  // 카드 '탁' 전용 보이스: 동시 발음이 FLIP_CAP을 넘으면 가장 오래된 소리를 10ms 안에 줄여 없앤다
+  function flipVoice(t, dur) {
+    var keep = [];
+    for (var i = 0; i < flipPool.length; i++) if (flipPool[i].end > t) keep.push(flipPool[i]);
+    flipPool = keep;
+    if (flipPool.length >= FLIP_CAP) {
+      var old = flipPool.shift();
+      try { old.g.gain.setTargetAtTime(0, t, 0.004); } catch (e) {}
+    }
+    var g = ctx.createGain(); g.gain.value = 1; g.connect(sfxBus);
+    flipPool.push({ g: g, end: t + dur });
+    return g;
+  }
+
+  // 직전 같은 소리와의 간격(초)
+  function gapOf(key, t) {
+    var prev = last[key + ':d'];
+    var gap = (prev === undefined || t < prev) ? 1 : t - prev;
+    last[key + ':d'] = t;
+    return gap;
+  }
+
+  function duck(t, hold) {
+    try {
+      musicDuck.gain.cancelScheduledValues(t);
+      musicDuck.gain.setTargetAtTime(DUCK, t, 0.04);
+      musicDuck.gain.setTargetAtTime(1, t + hold, 0.4);
+    } catch (e) {}
+  }
+
+  var N = { C2: 65.41, D2: 73.42, E2: 82.41, F2: 87.31, G2: 98.0, A2: 110.0,
+            C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.0, A3: 220.0, B3: 246.94,
+            C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0, B4: 493.88,
+            C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.0, B5: 987.77,
+            C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1567.98, A6: 1760.0, C7: 2093.0 };
+  // 짝 맞음 콤보 음계(C 장조 5음 음계, 콤보 1부터 한 칸씩 상승, 8 이상은 마지막 음 고정)
+  var COMBO = [N.E5, N.G5, N.A5, N.C6, N.D6, N.E6, N.G6, N.A6];
+
+  // ---------- 효과음 ----------
+  var sfx = {
+    // 일반 UI 버튼: 부드러운 '톡'
+    button: function (t) {
+      if (throttled('button', t, 0.05)) return;
+      tone('sine', 660, 520, t, 0.055, 0.10, 0.002);
+      noise(t, 0.02, 0.045, 'bandpass', 2500, 0, 1.2, 0.001);
+    },
+    // 미리보기 카운트 틱(남은 초마다). opts.last=true(마지막 1초)면 한 음 높게(G5→C6) 조금 크게
+    tick: function (t, o) {
+      if (throttled('tick', t, 0.2)) return;
+      var fin = !!o.last;
+      noise(t, 0.015, 0.035, 'bandpass', 2200, 0, 1.6, 0.001);
+      mallet(fin ? N.C6 : N.G5, t, 0.16, fin ? 0.09 : 0.065);
+    },
+    // 전체 뒤집힘 '촤르륵': 카드 마찰 클릭 10~16개(길이×30)(점점 빨라졌다 느려짐) + 부드러운 바람(노이즈 스윕) + 끝에 작은 마림바(이제 시작)
+    // opts.dur: 뒤집힘 애니메이션 길이(초, 0.2~1.2, 기본 0.3 = 기획 확정값)에 맞춰 늘고 줄어든다
+    flipAll: function (t, o) {
+      if (throttled('flipAll', t, 0.3)) return;
+      var dur = clamp(+o.dur || 0.3, 0.2, 1.2), n = Math.round(clamp(dur * 30, 10, 16)), i;
+      for (i = 0; i < n; i++) {
+        var x = i / (n - 1);
+        var ti = t + dur * (0.5 - 0.5 * Math.cos(Math.PI * x)) * 0.92;   // 가운데가 촘촘
+        var r = 0.9 + Math.random() * 0.2;
+        var v = 0.05 + 0.03 * Math.sin(Math.PI * x);
+        noise(ti, 0.018, v, 'bandpass', (2600 + 900 * x) * r, 0, 1.4, 0.001);
+      }
+      noise(t, dur, 0.035, 'bandpass', 900, 3200, 0.7, dur * 0.45);
+      mallet(N.C5, t + dur, 0.22, 0.07);
+      mallet(N.G5, t + dur + 0.06, 0.25, 0.06);
+    },
+    // 카드 한 장 뒤집기 '탁': 종이 마찰(밴드패스 노이즈 3.2kHz, 22ms) + 아주 짧은 나무 '톡'(sine 1300→800Hz, 25ms)
+    // 음높이 ±4% 무작위. 연타 간격이 짧을수록 작게(최소 0.6배). opts.back=true(틀려서 되돌아갈 때)는 더 작고 낮게
+    flip: function (t, o) {
+      if (throttled('flip', t, 0.025)) return;
+      var gap = gapOf('flip', t);
+      var dens = clamp(0.6 + gap * 2, 0.6, 1) * (o.back ? 0.6 : 1);
+      var r = (0.96 + Math.random() * 0.08) * (o.back ? 0.85 : 1);
+      var v = flipVoice(t, 0.06);
+      noise(t, 0.022, 0.07 * dens, 'bandpass', 3200 * r, 2200 * r, 1.3, 0.001, v);
+      tone('sine', 1300 * r, 800 * r, t + 0.002, 0.025, 0.045 * dens, 0.001, v);
+    },
+    // 짝 맞음 '딩': 작은 종 + 0.05초 뒤 5도 위 작은 종. opts.combo(연속 맞힘 수, 1부터)로 C 장조 5음 음계를 한 칸씩 상승
+    // 콤보 5 이상이면 한 옥타브 위 반짝임 추가. 콤보 1(또는 미지정)이 기본음 E5
+    match: function (t, o) {
+      if (throttled('judge', t, 0.08)) return;
+      var c = Math.max(1, Math.round(+o.combo || 1));
+      var f = COMBO[Math.min(c, COMBO.length) - 1];
+      bell(f, t, 0.45, 0.13);
+      bell(f * 1.5, t + 0.05, 0.35, 0.06);
+      if (c >= 5) tone('sine', f * 2, 0, t + 0.1, 0.2, 0.025, 0.003);
+    },
+    // 틀림 '뚱': 부드러운 낮은 음 하나(sine 247→220Hz + triangle 받침 작게), 날카로운 성분 없음. 자주 나도 짜증나지 않게 짧고 작게
+    miss: function (t) {
+      if (throttled('judge', t, 0.08)) return;
+      tone('sine', N.B3, N.A3, t, 0.26, 0.10, 0.01);
+      tone('triangle', N.B3 * 0.5, N.A3 * 0.5, t, 0.22, 0.045, 0.012);
+      noise(t, 0.03, 0.015, 'lowpass', 600, 0, 0.7, 0.003);
+    },
+    // 마지막 짝/클리어 팡파레: 마림바 C5-E5-G5-C6 상승(80ms) + 종 E6 + C 장조 화음 지속 1초
+    clear: function (t) {
+      if (throttled('clear', t, 0.5)) return;
+      duck(t, 1.6);
+      var ns = [N.C5, N.E5, N.G5, N.C6];
+      for (var i = 0; i < ns.length; i++) mallet(ns[i], t + i * 0.08, 0.3, 0.15);
+      bell(N.E6, t + 0.32, 0.6, 0.08);
+      tone('sine', N.C5, 0, t + 0.32, 1.1, 0.07, 0.03);
+      tone('sine', N.E5, 0, t + 0.32, 1.1, 0.055, 0.03);
+      tone('sine', N.G5, 0, t + 0.32, 1.1, 0.05, 0.03);
+      tone('triangle', N.C3, 0, t + 0.32, 1.0, 0.12, 0.02);
+    },
+    // 새 기록: 빠른 반짝 상승 G5-A5-C6-D6-E6-G6(55ms) + 종 C6 + F→C(버금딸림→으뜸) 2화음. 클리어 팡파레와 다른 '축하'
+    record: function (t) {
+      if (throttled('record', t, 0.8)) return;
+      duck(t, 2.0);
+      var run = [N.G5, N.A5, N.C6, N.D6, N.E6, N.G6], i;
+      for (i = 0; i < run.length; i++) mallet(run[i], t + i * 0.055, 0.2, 0.10);
+      bell(N.C6, t + 0.36, 0.7, 0.10);
+      var c1 = [N.F4, N.A4, N.C5], c2 = [N.E4, N.G4, N.C5];
+      for (i = 0; i < 3; i++) tone('sine', c1[i], 0, t + 0.36, 0.45, 0.05, 0.02);
+      tone('triangle', N.F2 * 2, 0, t + 0.36, 0.4, 0.10, 0.02);
+      for (i = 0; i < 3; i++) tone('sine', c2[i], 0, t + 0.78, 1.1, 0.055, 0.02);
+      tone('triangle', N.C3, 0, t + 0.78, 1.0, 0.11, 0.02);
+      bell(N.G6, t + 0.78, 0.5, 0.04);
+    }
+  };
+
+  // ---------- 배경음악(선택, 기본 꺼짐): 오리지널 C 장조 '찻집' 루프 ----------
+  // 72 BPM, 8분음표 스텝, 8마디(64스텝, 약 26.7초). 화음 2마디씩: Cmaj7 | Am7 | Fmaj7 | G6
+  // 패드(sine, 느린 어택) + 베이스(triangle 1박) + 성긴 마림바 멜로디(2마디에 3~4음, 3번째 루프마다 쉼).
+  // 카드 효과음(3kHz 대)·딩(660Hz~1.8kHz)과 겹치지 않게 멜로디는 아주 작고 성기다.
+  var STEPS = 64, BPM = 72;
+  var CH = [
+    { bass: N.C3, notes: [N.E4, N.G4, N.B4] },
+    { bass: N.A2, notes: [N.E4, N.G4, N.C5] },
+    { bass: N.F2, notes: [N.E4, N.A4, N.C5] },
+    { bass: N.G2, notes: [N.D4, N.G4, N.B4] }
+  ];
+  // [스텝, 음, 길이(스텝)] — A안(짝수 루프), B안(홀수 루프)
+  var MEL_A = [
+    [2, N.G5, 2], [5, N.E5, 3], [10, N.D5, 4],
+    [18, N.C5, 2], [21, N.E5, 3], [26, N.A5, 4],
+    [34, N.A5, 2], [37, N.G5, 3], [42, N.E5, 4],
+    [50, N.D5, 2], [53, N.G5, 3], [58, N.D5, 4]
+  ];
+  var MEL_B = [
+    [2, N.E5, 2], [5, N.G5, 3], [10, N.C6, 4],
+    [18, N.A5, 2], [21, N.G5, 3], [26, N.E5, 4],
+    [34, N.C5, 2], [37, N.D5, 3], [42, N.E5, 4],
+    [50, N.G5, 2], [53, N.D5, 3], [58, N.C5, 6]
+  ];
+
+  function musicStep(s, loop, t, st) {
+    var bar = Math.floor(s / 8), pos = s % 8, ch = CH[Math.floor(bar / 2) % 4];
+    var mb = musicBus, tr = music.nodes, i;
+    if (pos === 0) {
+      for (i = 0; i < ch.notes.length; i++) tone('sine', ch.notes[i], 0, t, st * 8.5, 0.05, 0.4, mb, tr);
+      tone('triangle', ch.bass, 0, t, st * 5, 0.22, 0.02, mb, tr);
+    }
+    if (pos === 4 && bar % 2 === 1) tone('triangle', ch.bass * 1.5, 0, t, st * 3, 0.14, 0.02, mb, tr);
+    if (loop % 3 !== 2) {
+      var mel = loop % 2 ? MEL_B : MEL_A;
+      for (i = 0; i < mel.length; i++) {
+        if (mel[i][0] === s) mallet(mel[i][1], t, Math.max(0.35, mel[i][2] * st * 0.9), 0.16, mb, tr);
+      }
+    }
+  }
+
+  function pump(until) {
+    if (!music.on || !ctx) return;
+    var st = 60 / BPM / 2;
+    while (music.nextAt <= until) {
+      musicStep(music.step % STEPS, Math.floor(music.step / STEPS), music.nextAt, st);
+      music.step++;
+      music.nextAt += st;
+    }
+    var now = ctx.currentTime, keep = [];
+    for (var k = 0; k < music.nodes.length; k++) if (music.nodes[k].end > now) keep.push(music.nodes[k]);
+    music.nodes = keep;
+  }
+
+  function scheduleMusic() {
+    music.timer = null;
+    if (!music.on || !ctx) return;
+    try {
+      // 탭 복귀 등으로 많이 밀렸으면 지금부터 다시 맞춤(밀린 음을 한꺼번에 몰아 치지 않음)
+      if (ctx.currentTime - music.nextAt > 0.3) music.nextAt = ctx.currentTime + 0.05;
+      pump(ctx.currentTime + 0.3);
+    } catch (e) {}
+    music.timer = setTimeout(scheduleMusic, 100);
+  }
+
+  function killNodes(list, at) {
+    for (var k = 0; k < list.length; k++) { try { list[k].n.stop(at); } catch (e) {} }
+    list.length = 0;
+  }
+
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx || offline) return;
+      try {
+        if (document.hidden) { var p1 = ctx.suspend(); if (p1 && p1.catch) p1.catch(function () {}); }
+        else { var p2 = ctx.resume(); if (p2 && p2.catch) p2.catch(function () {}); }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  function setMusicGain(v, tc) {
+    try {
+      var t = ctx.currentTime;
+      musicBus.gain.cancelScheduledValues(t);
+      musicBus.gain.setTargetAtTime(v, t, tc || 0.3);
+    } catch (e) {}
+  }
+
+  // 실제 재생 시작/정지 (want && musicPref 일 때만 재생)
+  function musicOn() {
+    if (!ctx) return;
+    if (music.stopTimer) {
+      clearTimeout(music.stopTimer); music.stopTimer = null;
+      if (music.on) { setMusicGain(MUSIC_VOL, 0.3); if (!music.timer && !offline) scheduleMusic(); return; }
+    }
+    if (music.on) return;
+    try {
+      music.on = true; music.step = 0;
+      music.nextAt = ctx.currentTime + 0.1;
+      setMusicGain(MUSIC_VOL, 0.05);
+    } catch (e) { music.on = false; return; }
+    if (offline) return;
+    scheduleMusic();
+  }
+  function musicOff() {
+    if (!music.on || !ctx) return;
+    if (music.timer) { clearTimeout(music.timer); music.timer = null; }
+    setMusicGain(0, 0.3);
+    if (music.stopTimer) clearTimeout(music.stopTimer);
+    music.stopTimer = setTimeout(function () {
+      music.stopTimer = null; music.on = false;
+      try { killNodes(music.nodes, ctx.currentTime + 0.02); } catch (e) {}
+    }, 1000);
+  }
+
+  return {
+    // 반드시 사용자 제스처 핸들러 안에서 호출. 여러 번 호출해도 안전.
+    unlock: function () {
+      if (!ensureCtx() || offline) return;
+      try {
+        if (ctx.state !== 'running') { var p = ctx.resume(); if (p && p.catch) p.catch(function () {}); }
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+      // BGM을 원하는 상태인데 unlock 전에 startMusic이 불렸으면 지금 시작
+      if (music.want && musicPref && !music.on) musicOn();
+    },
+    // name: button|tick|flipAll|flip|match|miss|clear|record
+    // opts: tick {last}, flipAll {dur}, flip {back}, match {combo}
+    play: function (name, opts) {
+      try {
+        if (!ready() || !sfx.hasOwnProperty(name)) return;
+        sfx[name](ctx.currentTime + 0.01, opts || {});
+      } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try {
+        if (master) {
+          var t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, t, 0.02);
+        }
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    // 배경음악만 켜기/끄기(설정 저장, 기본 꺼짐). 효과음은 그대로. 음소거(setMuted)는 전체.
+    setMusicOn: function (on) {
+      musicPref = !!on;
+      try { localStorage.setItem(MUSIC_KEY, musicPref ? '1' : '0'); } catch (e) {}
+      if (musicPref && music.want) musicOn(); else musicOff();
+    },
+    isMusicOn: function () { return musicPref; },
+    // 배경음악 시작 요청(이미 재생 중이면 무시). BGM 설정이 꺼져 있으면 재생하지 않고, 나중에 켜면 그때 시작.
+    startMusic: function () {
+      music.want = true;
+      if (musicPref) musicOn();
+    },
+    // 배경음악 정지(약 1초 페이드아웃)
+    stopMusic: function () {
+      music.want = false;
+      musicOff();
+    },
+    // 테스트 전용: OfflineAudioContext에 그래프를 붙여 렌더 검사
+    _test: {
+      attach: function (c) { offline = true; last = {}; flipPool = []; music.nodes = []; build(c); },
+      playAt: function (name, t, opts) { if (sfx.hasOwnProperty(name)) sfx[name](t, opts || {}); },
+      startMusicAt: function (t) { music.on = true; music.step = 0; music.nextAt = t; music.nodes = []; },
+      pump: function (until) { pump(until); },
+      sfxNames: function () { return Object.keys(sfx); }
+    }
+  };
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var COLS = 6, ROWS = 4, N = 24, PAIRS = 12;
+  var PREVIEW_MS = 6000, FLIPALL_MS = 300, FLIP_MS = 150, GONE_MS = 350, WAIT_MS = 800, RESUME_LOCK_MS = 300, RESULT_LOCK_MS = 700, RESULT_DELAY = 400;
+  var SLOW_CS = 60000;
+  var BEST_KEY = 'pair-flip-best';
+  var NAMES = ['동그라미', '고리', '위 세모', '아래 세모', '네모', '마름모', '초승달', '반달', '잎 하나', '잎 둘', '물결 하나', '물결 둘'];
+  var RM = false;
+  try { var mq = window.matchMedia('(prefers-reduced-motion: reduce)'); RM = mq.matches; mq.addEventListener && mq.addEventListener('change', function (e) { RM = e.matches; }); } catch (e) {}
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function now() { return performance.now(); }
+  function clone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+
+  // ---------- 배치 생성 (순수 계산) ----------
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function adjPairs(L) {
+    var n = 0;
+    for (var i = 0; i < N; i++) {
+      var c = i % COLS;
+      if (c < COLS - 1 && L[i] === L[i + 1]) n++;
+      if (i + COLS < N && L[i] === L[i + COLS]) n++;
+    }
+    return n;
+  }
+  function generate(seed) {
+    var rng = mulberry32(seed >>> 0), deck = [], reshuffles = 0;
+    for (var k = 0; k < PAIRS; k++) deck.push(k, k);
+    for (;;) {
+      for (var i = N - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+      if (adjPairs(deck) <= 1) break;
+      if (reshuffles >= 200) { try { console.warn('pair-flip: 붙은 짝 검사 200회 초과, 마지막 배치 사용 (seed ' + seed + ')'); } catch (e) {} break; }
+      reshuffles++;
+    }
+    return { layout: deck.slice(), reshuffles: reshuffles };
+  }
+  function randSeed() { return (Date.now() ^ Math.floor(Math.random() * 4294967296)) >>> 0; }
+
+  var URL_SEED = (function () { var m = /[?&]seed=(\d+)/.exec(location.search); return m ? (Number(m[1]) >>> 0) : null; })();
+
+  // ---------- 상태 ----------
+  var G = {
+    phase: 'title', gen: 0, seed: 0, test: false, kinds: [], layout: [], open: [], queued: null,
+    pairsLeft: PAIRS, misses: 0, tries: 0, combo: 0,
+    startAt: null, pausedMs: 0, pauseAt: null, endAt: null, needStart: false,
+    previewEnd: 0, previewLeft: PREVIEW_MS, prevPhase: null, resuming: false,
+    timers: [], result: null, resultLockUntil: 0, best: null, kf: 0, lastAria: -1
+  };
+  (function () { var b = parseInt(lsGet(BEST_KEY), 10); G.best = isFinite(b) && b > 0 ? b : null; })();
+
+  function later(fn, ms) { var id = setTimeout(function () { G.timers = G.timers.filter(function (x) { return x !== id; }); fn(); }, ms); G.timers.push(id); return id; }
+  function clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
+  function fx(fn, ms) { var g = G.gen; setTimeout(function () { if (g === G.gen) fn(); }, ms); }
+
+  function elapsed(t) {
+    if (G.startAt == null) return 0;
+    var ref = G.endAt != null ? G.endAt : G.pauseAt != null ? G.pauseAt : (t == null ? now() : t);
+    return Math.max(0, ref - G.startAt - G.pausedMs);
+  }
+  function fmtCs(cs) { var s = Math.floor(cs / 100), r = cs % 100; return s + '.' + (r < 10 ? '0' : '') + r; }
+  function fmtTenth(ms) { var d = Math.floor(ms / 100); return Math.floor(d / 10) + '.' + (d % 10); }
+
+  // ---------- 판 DOM ----------
+  var board = $('board'), cells = [], cards = [];
+  (function buildBoard() {
+    var h = '';
+    for (var i = 0; i < N; i++) {
+      h += '<div class="cell" role="gridcell" data-i="' + i + '"><button class="card" type="button" tabindex="-1">' +
+        '<span class="flip"><span class="face back"><svg class="mk" aria-hidden="true"><use href="#back-mark"/></svg></span>' +
+        '<span class="face front"><svg class="ic" aria-hidden="true"></svg></span></span></button></div>';
+    }
+    board.innerHTML = h;
+    cells = Array.prototype.slice.call(board.querySelectorAll('.cell'));
+    cards = cells.map(function (c) { return c.firstChild; });
+    cards.forEach(function (c) { c._tok = 0; c._ic = c.querySelector('.ic'); });
+  })();
+  function rc(i) { return (Math.floor(i / COLS) + 1) + '행 ' + (i % COLS + 1) + '열'; }
+  function labelBack(i) { cards[i].setAttribute('aria-label', '카드 ' + rc(i) + ', 뒷면'); }
+  function setFront(i) {
+    var c = cards[i]; c._tok++;
+    c._ic.innerHTML = '<use href="#k' + G.kinds[i] + '"/>';
+    c.classList.add('up');
+    c.setAttribute('aria-label', '카드 ' + rc(i) + ', ' + NAMES[G.kinds[i]]);
+  }
+  function setBack(i, instant, dur) {
+    var c = cards[i], tok = ++c._tok;
+    if (instant) { c.classList.add('noanim'); }
+    c.classList.remove('up', 'sel', 'bad');
+    labelBack(i);
+    if (instant) { c._ic.innerHTML = ''; void c.offsetWidth; c.classList.remove('noanim'); }
+    else setTimeout(function () { if (c._tok === tok && !c.classList.contains('up')) c._ic.innerHTML = ''; }, (dur || FLIP_MS) + 10);
+  }
+  function setGone(i) {
+    var c = cards[i]; c._tok++;
+    cells[i].classList.add('gone');
+    c.classList.remove('up', 'ok', 'sel', 'bad', 'matched');
+    c._ic.innerHTML = '';
+    c.disabled = true;
+    c.removeAttribute('aria-label');
+    cells[i].setAttribute('aria-label', rc(i) + ', 빈자리');
+    cells[i].setAttribute('aria-disabled', 'true');
+  }
+  function resetBoardDom(faceUp) {
+    board.classList.add('noanim');
+    for (var i = 0; i < N; i++) {
+      var c = cards[i]; c._tok++;
+      cells[i].classList.remove('gone', 'kf');
+      cells[i].removeAttribute('aria-label'); cells[i].removeAttribute('aria-disabled');
+      c.classList.remove('up', 'ok', 'sel', 'bad', 'matched');
+      c.style.pointerEvents = '';
+      c.disabled = false;
+      if (faceUp) setFront(i); else { c._ic.innerHTML = ''; labelBack(i); }
+    }
+    void board.offsetWidth;
+    board.classList.remove('noanim', 'final', 'all', 'covered');
+    updateKf();
+  }
+
+  // ---------- 레이아웃 ----------
+  function px(v) { return parseFloat(v) || 0; }
+  function layout() {
+    var vw = window.innerWidth, vh = window.innerHeight, root = document.documentElement.style, body = document.body;
+    root.setProperty('--app-h', vh + 'px');
+    body.classList.toggle('low', vh - 24 <= 520);
+    var bs = getComputedStyle(body);
+    var W = vw - px(bs.paddingLeft) - px(bs.paddingRight), H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    var low = H <= 520;
+    if (low !== body.classList.contains('low')) {
+      body.classList.toggle('low', low);
+      bs = getComputedStyle(body);
+      W = vw - px(bs.paddingLeft) - px(bs.paddingRight); H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    }
+    var AW, AH, SW = Math.floor(Math.min(W, 1100));
+    if (low) { AW = W - 104; AH = H; } else { AW = SW; AH = H - 52 - 8 - 36 - 8; }
+    var g = (W < 420 || low) ? 8 : 10;
+    var c = Math.floor(Math.min((AW - 5 * g) / 6, (AH - 3 * g) / 4, 156));
+    c = Math.max(24, c);
+    root.setProperty('--sw', SW + 'px');
+    root.setProperty('--c', c + 'px');
+    root.setProperty('--gap', g + 'px');
+    root.setProperty('--r', Math.round(c * 0.1) + 'px');
+    root.setProperty('--pw', Math.round(Math.min(320, SW * 0.45)) + 'px');
+    body.classList.toggle('tb-640', SW < 640);
+    body.classList.toggle('tb-420', SW < 420);
+    body.classList.toggle('pphone', vw < 560 && vh > vw);
+  }
+
+  // ---------- HUD ----------
+  function setCue(mode) {
+    $('cPrev').toggleAttribute('hidden', mode !== 'preview');
+    $('cPlay').toggleAttribute('hidden', mode !== 'play');
+  }
+  function popEl(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  function hudCounts(pop) {
+    var np = $('nPairs'), nm = $('nMiss');
+    if (np.textContent !== String(G.pairsLeft)) { np.textContent = G.pairsLeft; if (pop === 'pairs') popEl(np); }
+    if (nm.textContent !== String(G.misses)) { nm.textContent = G.misses; if (pop === 'miss') popEl(nm); }
+    nm.classList.toggle('loss', G.misses > 0);
+    var hasBest = G.best != null;
+    $('cBest').toggleAttribute('hidden', !hasBest);
+    if (hasBest) $('nBest').textContent = fmtCs(G.best);
+  }
+  function drawClock() {
+    var ms = elapsed();
+    var running = G.startAt != null;
+    $('clock').classList.toggle('idle', !running);
+    var txt = running ? fmtTenth(ms) : '0.0';
+    var el = $('clockNum'); if (el.textContent !== txt) el.textContent = txt;
+    var tens = Math.floor(ms / 10000);
+    if (tens !== G.lastAria) { G.lastAria = tens; $('clock').setAttribute('aria-label', (tens * 10) + '초'); }
+    $('clockPz').toggleAttribute('hidden', !(G.phase === 'paused' && running && G.endAt == null));
+  }
+  function drawPreview() {
+    var left = G.phase === 'preview' ? Math.max(0, G.previewEnd - now()) : (G.phase === 'paused' && G.prevPhase === 'preview') ? G.previewLeft : 0;
+    $('pFill').style.transform = 'scaleX(' + (left / PREVIEW_MS).toFixed(4) + ')';
+    var s = String(Math.ceil(left / 1000));
+    if ($('pSec').textContent !== s) $('pSec').textContent = s;
+  }
+  function live(t) { var l = $('live'); l.textContent = ''; setTimeout(function () { l.textContent = t; }, 30); }
+
+  // ---------- 게임 흐름 ----------
+  function startGame(seed, test) {
+    clearTimers();
+    G.gen++;
+    G.seed = seed >>> 0; G.test = !!test;
+    var gen = generate(G.seed);
+    G.kinds = gen.layout.slice(); G.layout = gen.layout.slice();
+    G.open = []; G.queued = null; G.pairsLeft = PAIRS; G.misses = 0; G.tries = 0; G.combo = 0;
+    G.startAt = null; G.pausedMs = 0; G.pauseAt = null; G.endAt = null; G.needStart = false; G.result = null;
+    G.prevPhase = null; G.resuming = false; G.lastAria = -1;
+    ['ovStart', 'ovPause', 'ovResult'].forEach(function (id) { $(id).hidden = true; });
+    $('clock').classList.remove('done');
+    board.classList.remove('live', 'locking');
+    resetBoardDom(true);
+    board.classList.add('appear', 'wc');
+    fx(function () { board.classList.remove('appear'); }, 400);
+    hudCounts();
+    setCue('preview');
+    G.phase = 'preview';
+    schedulePreview(PREVIEW_MS);
+    live('6초 동안 외우세요');
+  }
+  function schedulePreview(left) {
+    G.previewLeft = left;
+    G.previewEnd = now() + left;
+    [3, 2, 1].forEach(function (s) {
+      var at = left - s * 1000;
+      if (at >= 0) later(function () { Sound.play('tick', s === 1 ? { last: true } : undefined); }, at);
+    });
+    later(beginFlipdown, left);
+  }
+  function beginFlipdown() {
+    G.phase = 'flipdown';
+    G.previewLeft = 0;
+    board.classList.add('all');
+    for (var i = 0; i < N; i++) setBack(i, false, FLIPALL_MS);
+    Sound.play('flipAll');
+    later(startPlay, FLIPALL_MS);
+    fx(function () { if (G.phase !== 'flipdown') board.classList.remove('all'); }, FLIPALL_MS + 30);
+  }
+  function startPlay() {
+    board.classList.remove('all');
+    for (var i = 0; i < N; i++) if (!cards[i].classList.contains('up')) { cards[i]._tok++; cards[i]._ic.innerHTML = ''; }
+    G.phase = 'play';
+    G.startAt = now(); G.pausedMs = 0; G.pauseAt = null; G.needStart = false;
+    board.classList.add('live');
+    setCue('play');
+    live('시작');
+  }
+  // 모든 카드 입력(포인터·키보드·테스트 훅)이 지나는 하나의 경로
+  function onTap(i) {
+    if (!(i >= 0 && i < N)) return false;
+    if (G.resuming) return false;
+    if (G.phase !== 'play' && G.phase !== 'wait') return false;
+    if (G.layout[i] < 0) return false;
+    if (G.phase === 'wait') {
+      if (G.open.indexOf(i) >= 0) return false;
+      if (G.queued == null) { G.queued = i; return true; }
+      return false;
+    }
+    if (G.open.indexOf(i) >= 0) return false;
+    var t = now();
+    G.open.push(i);
+    setFront(i);
+    Sound.play('flip');
+    if (G.open.length === 1) { cards[i].classList.add('sel'); return true; }
+    var a = G.open[0], b = i;
+    G.tries++;
+    if (G.kinds[a] === G.kinds[b]) {
+      G.open = [];
+      G.layout[a] = -1; G.layout[b] = -1;
+      G.pairsLeft--; G.combo++;
+      cards[a].classList.remove('sel');
+      cards[a].classList.add('matched'); cards[b].classList.add('matched');
+      cards[a].style.pointerEvents = 'none'; cards[b].style.pointerEvents = 'none';
+      fx(function () { cards[a].classList.add('ok'); cards[b].classList.add('ok'); }, FLIP_MS);
+      fx(function () { [a, b].forEach(function (k) { cards[k].style.pointerEvents = ''; setGone(k); }); }, FLIP_MS + GONE_MS);
+      hudCounts('pairs');
+      if (G.pairsLeft === 0) { finish(t); }
+      else { Sound.play('match', { combo: G.combo }); live(NAMES[G.kinds[a]] + ' 짝을 찾았어요. 남은 짝 ' + G.pairsLeft); }
+    } else {
+      G.misses++; G.combo = 0;
+      G.phase = 'wait';
+      Sound.play('miss');
+      hudCounts('miss');
+      cards[a].classList.remove('sel');
+      fx(function () { if (G.open.indexOf(a) >= 0 && G.open.indexOf(b) >= 0) { cards[a].classList.add('bad'); cards[b].classList.add('bad'); } }, FLIP_MS);
+      later(endWait, FLIP_MS + WAIT_MS);
+      live(NAMES[G.kinds[a]] + '와 ' + NAMES[G.kinds[b]] + ', 다른 그림이에요');
+    }
+    return true;
+  }
+  function endWait() {
+    if (G.phase !== 'wait') return;
+    var o = G.open; G.open = [];
+    o.forEach(function (k) { setBack(k, false); });
+    Sound.play('flip', { back: true });
+    G.phase = 'play';
+    if (G.queued != null) { var q = G.queued; G.queued = null; onTap(q); }
+  }
+  function finish(t) {
+    G.endAt = t;
+    G.phase = 'result';
+    G.queued = null;
+    var ms = G.endAt - G.startAt - G.pausedMs, cs = Math.floor(ms / 10);
+    var tries = G.tries, misses = G.misses, acc = Math.round(PAIRS / tries * 100);
+    var prevBest = G.best, slow = cs >= SLOW_CS, newRec = false;
+    if (!G.test && !slow && (prevBest == null || cs < prevBest)) { newRec = true; G.best = cs; lsSet(BEST_KEY, String(cs)); }
+    G.result = { cs: cs, ms: ms, misses: misses, tries: tries, accuracy: acc, startAt: G.startAt, endAt: G.endAt, pausedMs: G.pausedMs,
+      seed: G.seed, test: G.test, slow: slow, newRecord: newRec, prevBest: prevBest };
+    Sound.play('clear'); Sound.stopMusic();
+    drawClock();
+    $('clock').classList.add('done');
+    fx(function () { $('clock').classList.remove('done'); }, 30);
+    board.classList.remove('live');
+    fx(function () { board.classList.add('final'); }, FLIP_MS + GONE_MS);
+    later(showResult, FLIP_MS + GONE_MS + RESULT_DELAY);
+    if (newRec) fx(function () { Sound.play('record'); }, 1150);
+    try {
+      window.Leaderboard && Leaderboard.report({ game: 'pair-flip', score: Math.max(0, SLOW_CS - cs),
+        eligible: !G.test && !slow, reason: G.test ? 'test' : slow ? 'slow' : '', slot: $('lbSlot') });
+    } catch (e) {}
+  }
+  function showResult() {
+    var r = G.result; if (!r) return;
+    board.classList.remove('wc');
+    $('resTest').hidden = !r.test;
+    $('resTime').innerHTML = r.slow ? '<span class="slow">10분 넘음</span>'
+      : '<span class="scorerow-in"><b class="rs num">' + fmtCs(r.cs) + '</b><span class="ru">초</span></span>';
+    $('resTime').setAttribute('aria-label', r.slow ? '10분 넘음' : '걸린 시간 ' + fmtCs(r.cs) + '초');
+    $('newRec').hidden = !r.newRecord;
+    $('vTries').textContent = r.tries;
+    $('vMiss').textContent = r.misses;
+    $('vMiss').className = 'num ' + (r.misses ? 'loss' : 'zero');
+    $('vAcc').textContent = r.accuracy + '%';
+    $('stTries').setAttribute('aria-label', '시도 ' + r.tries + '번');
+    $('stMiss').setAttribute('aria-label', '틀림 ' + r.misses + '번');
+    $('stAcc').setAttribute('aria-label', '정확도 ' + r.accuracy + '%');
+    $('resSum').innerHTML = '12쌍을 <b class="num">' + r.tries + '</b>번 만에 찾았어요 · 틀림 <b class="num">' + r.misses + '</b>번 · 정확도 <b class="num">' + r.accuracy + '%</b>';
+    if (r.misses > 0) {
+      $('resWait').innerHTML = '<svg aria-hidden="true"><use href="#icHourglass"/></svg>틀릴 때마다 <b class="num">0.8</b>초를 기다렸어요 (모두 <b class="num">' + (r.misses * 8 / 10).toFixed(1) + '</b>초). <span class="m2">이 시간은 이미 위 시간에 들어 있어요.</span>';
+      $('resWait').hidden = false;
+    } else $('resWait').hidden = true;
+    $('resSlow').hidden = !r.slow;
+    var bh;
+    if (r.newRecord && r.prevBest != null) {
+      bh = '이전 기록 <b class="num">' + fmtCs(r.prevBest) + '</b>초 <span class="g">→</span> <b class="num">' + fmtCs(r.cs) + '</b>초 <span class="g d">(−<span class="num">' + fmtCs(r.prevBest - r.cs) + '</span>초)</span>';
+    } else if (r.newRecord) {
+      bh = '첫 기록이에요';
+    } else if (r.prevBest != null) {
+      bh = '최고 기록 <b class="num">' + fmtCs(r.prevBest) + '</b>초' + (r.slow ? '' : ' <span class="d">(' + (r.cs >= r.prevBest ? '+' : '−') + '<span class="num">' + fmtCs(Math.abs(r.cs - r.prevBest)) + '</span>초)</span>');
+    } else bh = '최고 기록 없음';
+    if (r.test) bh += ' <span class="d">· 테스트 판은 저장하지 않아요</span>';
+    $('resBest').innerHTML = bh;
+    G.resultLockUntil = now() + RESULT_LOCK_MS;
+    $('resBtns').classList.add('locked');
+    later(function () { $('resBtns').classList.remove('locked'); }, RESULT_LOCK_MS);
+    $('ovResult').hidden = false;
+    $('ovResult').scrollTop = 0;
+    try { $('againBtn').focus({ preventScroll: true }); } catch (e) {}
+    live('다 찾았어요. ' + (r.slow ? '10분 넘음' : fmtCs(r.cs) + '초') + '. 12쌍을 ' + r.tries + '번 만에 찾았어요. 틀림 ' + r.misses + '번, 정확도 ' + r.accuracy + '%');
+  }
+  function showTitle() {
+    clearTimers(); G.gen++;
+    G.phase = 'title';
+    resetBoardDom(false);
+    setCue('none');
+    var sb = $('startBest');
+    if (G.best != null) sb.innerHTML = '최고 <b class="num">' + fmtCs(G.best) + '</b>초'; else sb.textContent = '기록 없음';
+    $('startTest').hidden = URL_SEED == null;
+    $('ovStart').hidden = false;
+    try { $('startBtn').focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  // ---------- 일시정지 ----------
+  function pause() {
+    if (G.phase === 'title' || G.phase === 'result') return;
+    if (G.phase === 'paused') { // 계속 후 잠금 중 다시 멈춤
+      if (G.resuming) { clearTimers(); G.resuming = false; board.classList.remove('locking'); board.classList.add('covered'); $('ovPause').hidden = false; }
+      return;
+    }
+    var t = now();
+    board.classList.add('covered');            // 덮개를 먼저
+    clearTimers();
+    var p = G.phase;
+    if (p === 'preview') { G.previewLeft = Math.max(0, G.previewEnd - t); }
+    if (p === 'flipdown') { G.needStart = true; board.classList.remove('all'); for (var i = 0; i < N; i++) setBack(i, true); }
+    if (p === 'play' || p === 'wait') {
+      if (G.pauseAt == null) G.pauseAt = t;
+      G.open.forEach(function (k) { setBack(k, true); });
+      G.open = []; G.queued = null;
+    }
+    G.prevPhase = (p === 'wait') ? 'play' : p;
+    G.phase = 'paused';
+    board.classList.remove('live');
+    $('ovPause').hidden = false;
+    drawClock();
+    try { $('resumeBtn').focus({ preventScroll: true }); } catch (e) {}
+  }
+  function resume() {
+    if (G.phase !== 'paused' || G.resuming) return;
+    G.resuming = true;
+    $('ovPause').hidden = true;
+    board.classList.remove('covered');
+    board.classList.add('locking');
+    void board.offsetWidth;
+    board.classList.remove('locking');      // opacity .85 → 1 (300ms)
+    later(unlockAfterResume, RESUME_LOCK_MS);
+  }
+  function unlockAfterResume() {
+    G.resuming = false;
+    var t = now(), p = G.prevPhase;
+    if (p === 'preview') { G.phase = 'preview'; schedulePreview(G.previewLeft); return; }
+    if (p === 'flipdown' || G.needStart) { startPlay(); return; }
+    if (G.pauseAt != null) { G.pausedMs += t - G.pauseAt; G.pauseAt = null; }
+    G.phase = 'play';
+    board.classList.add('live');
+  }
+
+  // ---------- 루프 ----------
+  function loop() {
+    requestAnimationFrame(loop);
+    drawClock();
+    if (G.phase === 'preview' || (G.phase === 'paused' && G.prevPhase === 'preview')) drawPreview();
+  }
+
+  // ---------- 입력 ----------
+  function syncMute() {
+    var m = Sound.isMuted();
+    $('icoOn').toggleAttribute('hidden', m);
+    $('icoOff').toggleAttribute('hidden', !m);
+    $('muteBtn').setAttribute('aria-pressed', m ? 'true' : 'false');
+    $('muteBtn').setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
+  }
+  function syncMusic() {
+    var on = Sound.isMusicOn();
+    document.querySelectorAll('.musicbtn').forEach(function (b) {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.querySelector('span').textContent = on ? '배경음악 켬' : '배경음악 끔';
+    });
+  }
+  function toggleMute() { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); syncMute(); }
+  function toggleMusic() { Sound.unlock(); Sound.play('button'); Sound.setMusicOn(!Sound.isMusicOn()); syncMusic(); }
+  function begin() {
+    Sound.unlock(); Sound.play('button'); Sound.startMusic();
+    if (URL_SEED != null) startGame(URL_SEED, true); else startGame(randSeed(), false);
+  }
+  $('muteBtn').addEventListener('click', toggleMute);
+  document.querySelectorAll('.musicbtn').forEach(function (b) { b.addEventListener('click', toggleMusic); });
+  $('pauseBtn').addEventListener('click', function () {
+    Sound.unlock();
+    if (G.phase === 'paused' && !G.resuming) { Sound.play('button'); resume(); }
+    else if (G.phase !== 'title' && G.phase !== 'result') { Sound.play('button'); pause(); }
+  });
+  $('startBtn').addEventListener('click', begin);
+  $('againBtn').addEventListener('click', function () { if (now() < G.resultLockUntil) return; begin(); });
+  $('resumeBtn').addEventListener('click', function () { Sound.unlock(); Sound.play('button'); resume(); });
+  $('restartBtn').addEventListener('click', function () { begin(); });
+
+  var activePtr = null;
+  board.addEventListener('pointerdown', function (e) {
+    Sound.unlock();
+    document.body.classList.remove('kbd-nav');
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.isPrimary) activePtr = null;
+    if (activePtr != null && activePtr !== e.pointerId) return;
+    activePtr = e.pointerId;
+    var cell = e.target.closest && e.target.closest('.cell');
+    if (!cell) return;
+    var i = +cell.getAttribute('data-i');
+    G.kf = i; updateKf();
+    onTap(i);
+  });
+  function ptrEnd(e) { if (e.pointerId === activePtr) activePtr = null; }
+  window.addEventListener('pointerup', ptrEnd);
+  window.addEventListener('pointercancel', ptrEnd);
+  board.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  ['contextmenu', 'dblclick', 'gesturestart', 'selectstart'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (!(e.target.closest && e.target.closest('a'))) e.preventDefault(); }, { passive: false });
+  });
+  var lastTouch = 0;
+  document.addEventListener('touchend', function (e) {
+    var t = Date.now();
+    if (t - lastTouch < 350 && !(e.target.closest && e.target.closest('a'))) {
+      e.preventDefault();
+      var b = e.target.closest && e.target.closest('button');
+      if (b && !b.classList.contains('card')) b.click();
+    }
+    lastTouch = t;
+  }, { passive: false });
+  window.addEventListener('pointerdown', function () { Sound.unlock(); }, { passive: true });
+
+  function updateKf() { cells.forEach(function (c, i) { c.classList.toggle('kf', i === G.kf); }); }
+  document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen && Leaderboard.isOpen()) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    Sound.unlock();
+    var k = e.key;
+    var onBtn = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') && !e.target.classList.contains('card');
+    if ((k === 'm' || k === 'M') && !e.repeat) { toggleMute(); return; }
+    if (!$('ovPause').hidden) {
+      if ((k === 'Escape' || k === 'p' || k === 'P' || (k === 'Enter' && !onBtn)) && !e.repeat) { e.preventDefault(); Sound.play('button'); resume(); }
+      return;
+    }
+    if (!$('ovStart').hidden) { if ((k === 'Enter' || k === ' ') && !onBtn && !e.repeat) { e.preventDefault(); begin(); } return; }
+    if (!$('ovResult').hidden) {
+      if ((k === 'Enter' || k === ' ') && !e.repeat) { e.preventDefault(); if (now() >= G.resultLockUntil) begin(); }
+      return;
+    }
+    if (G.phase === 'result') return;
+    if ((k === 'p' || k === 'P' || k === 'Escape') && !e.repeat) { e.preventDefault(); if (G.phase === 'paused') { Sound.play('button'); resume(); } else { Sound.play('button'); pause(); } return; }
+    if (/^Arrow/.test(k)) {
+      e.preventDefault();
+      var first = !document.body.classList.contains('kbd-nav');
+      document.body.classList.add('kbd-nav');
+      if (!first) {
+        var r = Math.floor(G.kf / COLS), c = G.kf % COLS;
+        if (k === 'ArrowLeft') c = Math.max(0, c - 1); else if (k === 'ArrowRight') c = Math.min(COLS - 1, c + 1);
+        else if (k === 'ArrowUp') r = Math.max(0, r - 1); else if (k === 'ArrowDown') r = Math.min(ROWS - 1, r + 1);
+        G.kf = r * COLS + c;
+      } else G.kf = 0;
+      updateKf();
+      try { board.focus({ preventScroll: true }); } catch (er) {}
+      return;
+    }
+    if ((k === ' ' || k === 'Enter') && !onBtn) {
+      e.preventDefault();
+      if (e.repeat) return;
+      if (!document.body.classList.contains('kbd-nav')) { document.body.classList.add('kbd-nav'); updateKf(); }
+      onTap(G.kf);
+    }
+  });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pause(); });
+  window.addEventListener('pagehide', function () { pause(); });
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', layout);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+
+  // ---------- 테스트 훅 (QA 전용) ----------
+  window.__pair = {
+    generate: function (seed) { return generate(seed); },
+    seed: function () { return G.seed; },
+    layout: function () { return G.layout.slice(); },
+    state: function () {
+      var t = now();
+      return clone({ phase: G.phase, open: G.open, queued: G.queued, pairsLeft: G.pairsLeft, misses: G.misses, tries: G.tries,
+        elapsedMs: elapsed(t),
+        previewLeftMs: G.phase === 'preview' ? Math.max(0, G.previewEnd - t) : (G.phase === 'paused' && G.prevPhase === 'preview') ? G.previewLeft : (G.phase === 'title' ? PREVIEW_MS : 0),
+        test: G.test, resuming: G.resuming });
+    },
+    newGame: function (seed) { Sound.startMusic(); startGame(seed == null ? randSeed() : seed, true); return this.state(); },
+    skipPreview: function () {
+      if (G.phase === 'preview' || G.phase === 'flipdown') {
+        clearTimers();
+        board.classList.remove('all');
+        for (var i = 0; i < N; i++) setBack(i, true);
+        startPlay();
+      }
+      return this.state();
+    },
+    tap: function (i) { return onTap(i); },
+    result: function () { return G.result ? clone({ cs: G.result.cs, ms: G.result.ms, misses: G.result.misses, tries: G.result.tries, accuracy: G.result.accuracy,
+      startAt: G.result.startAt, endAt: G.result.endAt, pausedMs: G.result.pausedMs }) : null; }
+  };
+
+  // ---------- 시작 ----------
+  syncMute(); syncMusic();
+  layout();
+  showTitle();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
