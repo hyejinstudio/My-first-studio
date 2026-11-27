@@ -14,19 +14,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-parrot: #e8efe6; --tile-company: #ebe7f0;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-cactus: #f6e8c6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -128,6 +128,25 @@
 
   <!-- 개발진: 출시 전 게임 카드를 맨 앞에 추가. 출시되면 카드를 루트 index.html로 옮긴다 -->
   <div class="grid">
+    <a class="game" href="games/desert-breath/" aria-label="선인장 키우기 — 비 올 때만 펴서 쑥쑥">
+      <div class="art" style="--tile: var(--tile-cactus)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M2 53 Q18 46 33 51 T62 49 V62 H2 Z" fill="#e2c48e"/>
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 41 Q11 41 11 35 L9.5 27" stroke="#3f7f2c" stroke-width="7.4"/>
+            <path d="M20 41 Q11 41 11 35 L9.5 27" stroke="#7cc35a" stroke-width="4.6"/>
+            <path d="M28 35 Q36 35 36 29 L37.5 22" stroke="#3f7f2c" stroke-width="7.4"/>
+            <path d="M28 35 Q36 35 36 29 L37.5 22" stroke="#7cc35a" stroke-width="4.6"/>
+          </g>
+          <path d="M17 52 V24 A7 7 0 0 1 31 24 V52 Z" fill="#7cc35a" stroke="#3f7f2c" stroke-width="1.6" stroke-linejoin="round"/>
+          <g fill="#f4fbe6"><circle cx="21" cy="27" r="1.2"/><circle cx="27" cy="27" r="1.2"/><circle cx="21" cy="34" r="1.2"/><circle cx="27" cy="34" r="1.2"/><circle cx="21" cy="41" r="1.2"/><circle cx="27" cy="41" r="1.2"/><circle cx="24" cy="47.5" r="1.2"/><circle cx="24" cy="21" r="1.2"/></g>
+          <g stroke="#2f6fb0" stroke-linecap="round"><path d="M42 22 V29" stroke-width="1.6"/><path d="M47 22 V31" stroke-width="2.2"/><path d="M52 22 V30" stroke-width="2.8"/><path d="M57 22 V32" stroke-width="3.4"/></g>
+          <path d="M41 20 A5 5 0 0 1 43 11 A7 7 0 0 1 56 9 A5.5 5.5 0 0 1 59 20 Z" fill="#eef2f6" stroke="#6f86a0" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>선인장 키우기</h2>
+      <p>비 올 때만 펴서 쑥쑥</p>
+    </a>
     <a class="game" href="games/tiny-company/" aria-label="악덕 사장 — 직원도 회사도 웃게!">
       <div class="art" style="--tile: var(--tile-company)">
         <svg viewBox="0 0 64 64" aria-hidden="true">

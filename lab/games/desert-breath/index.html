@@ -1,0 +1,2550 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>선인장 키우기</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="선인장 키우기">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  /* 숫자 전용 글꼴: Pretendard ExtraBold(SIL OFL 1.1)의 숫자·기호 서브셋. 수정본이라 내부 이름은 CactusDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "CactusDigits"; src: url("fonts/cactus-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+002B-002F, U+0030-0039; }
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --num-font: "CactusDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --grid: #e7e2d8; --well: #fbfaf7;
+    --accent: #e4572e; --gold: #f2b134; --good-ink: #3f7a4f; --danger: #d64545; --loss-ink: #b2452f;
+    --full-ring: #2f7fc4; --rain: #2f6fb0; --sun-edge: #c9761a; --dusk: #8a6fc4; --zone-ink: #6e5530; --dry: #b59a62;
+    --sand-wave: #b07a36; --open: #7cc35a; --open-edge: #3f7f2c; --cloud: #eef2f6; --cloud-edge: #6f86a0; --sun: #f5b82e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+      --accent: #ff7a50; --gold: #ffc94d; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+      --full-ring: #7cc0f2; --rain: #8cc0ec; --sun-edge: #ff9d3a; --dusk: #b8a6e6; --zone-ink: #d9c39a; --dry: #9c8455;
+      --sand-wave: #d9a35c; --open: #8fd46a; --open-edge: #cdeeb4; --cloud: #c9d3df; --cloud-edge: #8ea6c2; --sun: #ffc94d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+    --accent: #ff7a50; --gold: #ffc94d; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+    --full-ring: #7cc0f2; --rain: #8cc0ec; --sun-edge: #ff9d3a; --dusk: #b8a6e6; --zone-ink: #d9c39a; --dry: #9c8455;
+    --sand-wave: #d9a35c; --open: #8fd46a; --open-edge: #cdeeb4; --cloud: #c9d3df; --cloud-edge: #8ea6c2; --sun: #ffc94d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  body.low { padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); }
+  .num { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; }
+  svg [hidden] { display: none; }
+  /* .app·.stage와 조상에는 transform/filter 금지 (ov-full의 position:fixed가 깨짐) */
+  .app { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+
+  /* 상단 바 (hungry-bear와 같은 구조) */
+  .top { flex: none; height: var(--tb, 52px); width: var(--sw, 600px); display: flex; align-items: center; gap: 8px; }
+  .home {
+    flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px; white-space: nowrap;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home .short { display: none; }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .title { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .spacer { flex: 1; min-width: 0; }
+  .btns { display: flex; gap: 6px; flex: none; }
+  .hpill {
+    flex: none; height: 44px; min-width: 112px; padding: 0 14px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: border-color 400ms linear;
+  }
+  .hpill.grow { border-color: var(--full-ring); transition-duration: 0ms; }
+  .hpill svg { width: 18px; height: 18px; flex: none; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .hpill b { font-size: 22px; line-height: 1; }
+  .unit { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .mode {
+    flex: none; height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--grid); background: var(--panel);
+    display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
+  .mode.practice { border: 1px dashed var(--muted); }
+  .mode svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .dayclock { flex: none; width: 112px; height: 44px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid); display: grid; place-items: center; overflow: hidden; }
+  .dayclock svg { width: 112px; height: 44px; display: block; }
+  .dc-hz { stroke: var(--muted); stroke-width: 2.5; stroke-linecap: round; fill: none; }
+  .dc-past { stroke: var(--muted); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+  .dc-past.late { stroke: var(--dusk); }
+  .dc-left { stroke: var(--grid); stroke-width: 2; fill: none; stroke-dasharray: 3 4; }
+  .dc-sun { fill: var(--gold); stroke: var(--sun-edge); stroke-width: 1.5; }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out, opacity 200ms linear;
+  }
+  button:active { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 20px; height: 20px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; flex: none;
+  }
+  button.secondary svg { width: 18px; height: 18px; flex: none; }
+  .kbd { display: none; font-size: 12px; color: var(--muted); border: 1px solid var(--grid); border-radius: 6px; padding: 1px 6px; background: var(--panel); }
+  @media (hover: hover) and (pointer: fine) { .kbd { display: inline-block; } }
+
+  /* 무대 */
+  .stage {
+    position: relative; flex: none; width: var(--sw, 600px); height: var(--sh, 400px); border-radius: 16px; overflow: hidden; background: var(--bg);
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .prick {
+    position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; background: var(--panel); border: 2px solid var(--danger);
+    border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; white-space: nowrap; opacity: 0;
+    transform-origin: 0 50%;
+  }
+  .prick[hidden] { display: none; }
+  .prick .p1 { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 800; color: var(--loss-ink); }
+  .prick .p1 svg, .prick .p2 svg { flex: none; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .prick .p1 svg { width: 14px; height: 14px; stroke: var(--loss-ink); stroke-width: 2.2; }
+  .prick .p2 { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--ink); overflow: hidden; animation: p2in 120ms ease-out; }
+  .prick .p2[hidden] { display: none; }
+  .prick .p2 .num { font-size: 13px; }
+  .prick .p2 svg { width: 20px; height: 20px; stroke: var(--ink); stroke-width: 1.8; }
+  @keyframes p2in { from { max-height: 0; opacity: 0; } to { max-height: 24px; opacity: 1; } }
+  .prick.small { padding: 4px 7px; border-radius: 8px; }
+  .prick.small .p1 { font-size: 13px; } .prick.small .p2 { font-size: 11px; } .prick.small .p2 .num { font-size: 12px; }
+  .finger { position: absolute; left: 0; top: 0; width: 48px; height: 48px; pointer-events: none; z-index: 1; color: var(--zone-ink); opacity: 0;
+    transition: transform 150ms ease-out, opacity 150ms linear; }
+  .finger[hidden] { display: none; }
+  .finger svg { width: 48px; height: 48px; display: block; overflow: visible; }
+  .finger .ring { fill: none; stroke: currentColor; stroke-width: 2; opacity: 0; }
+  .finger.down .ring { animation: fpulse 600ms ease-out infinite; }
+  .finger.down .ring.r2 { animation-delay: 300ms; }
+  @keyframes fpulse { from { opacity: .7; transform: scale(.4); } to { opacity: 0; transform: scale(1.2); } }
+  .finger .ring { transform-box: fill-box; transform-origin: center; }
+  .ready { position: absolute; left: 0; top: 0; width: 56px; height: 56px; pointer-events: none; z-index: 1; display: grid; place-items: center; }
+  .ready[hidden] { display: none; }
+  .ready svg { position: absolute; inset: 0; width: 56px; height: 56px; transform: rotate(-90deg); }
+  .ready circle { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .ready b { font-size: 28px; position: relative; color: var(--ink); }
+
+  /* 오버레이 (hungry-bear와 같은 CSS) */
+  .overlay {
+    position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: safe center; text-align: center;
+    background: color-mix(in srgb, var(--well) 94%, transparent); line-height: 1.4; z-index: 3;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; flex: none; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  #ovPause { background: var(--well); }
+  .overlay .ov-home { display: none; }
+  body.ov-full .overlay .ov-home { display: inline-flex; position: absolute; margin: 0; animation: none;
+    top: max(4px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay [hidden] { display: none !important; }
+  #lbSlot { min-width: 0; display: inline-flex; align-items: center; }
+  .badge { background: var(--panel); border: 2px solid var(--gold); color: var(--ink); font-size: 14px; font-weight: 800; border-radius: 999px; padding: 3px 12px; animation: pop 220ms cubic-bezier(.3,1.4,.5,1) 200ms both; }
+  @keyframes pop { from { transform: scale(.8); opacity: 0; } }
+
+  /* 시작 화면 */
+  .card { width: min(100%, 560px); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  #ovStart h2 { font-size: 26px; }
+  .demo { position: relative; width: var(--dw, 480px); height: var(--dh, 298px); border-radius: 12px; border: 1px solid var(--grid); overflow: hidden; background: var(--bg); flex: none; }
+  .demo canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .demo .finger { width: 36px; height: 36px; }
+  .demo .finger svg { width: 36px; height: 36px; }
+  .demo .play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; z-index: 2; }
+  .demo .play svg { width: 20px; height: 20px; fill: currentColor; }
+  .caps { display: flex; gap: 6px; justify-content: center; width: var(--dw, 480px); }
+  .caps figure { margin: 0; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 5px; justify-content: center; padding: 5px 6px; border-radius: 10px; border: 2px solid transparent; background: var(--panel); }
+  .caps figure.on { border-color: var(--accent); }
+  .caps svg { width: 24px; height: 24px; flex: none; }
+  .caps figcaption { font-size: 12px; font-weight: 700; line-height: 1.25; word-break: keep-all; text-align: left; }
+  .startrow { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  #dailyBtn { height: 56px; min-width: 240px; flex-direction: column; gap: 0; line-height: 1.15; }
+  #dailyBtn .l1 { font-size: 18px; font-weight: 700; }
+  #dailyBtn .l2 { font-size: 13px; opacity: .85; }
+  .bestline { font-size: 13px; color: var(--muted); display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .bestline b { font-size: 18px; color: var(--ink); }
+  .bestline .sep { margin: 0 4px; }
+  .tip { font-size: 12px !important; }
+
+  /* 일시정지 */
+  .pinfo { display: flex; align-items: center; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .pinfo .pk { display: inline-flex; align-items: baseline; gap: 3px; }
+  .pinfo .pk b { font-size: 20px; }
+  .pinfo .pl { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); }
+  .pinfo .pl svg { width: 22px; height: 14px; }
+
+  /* 결과 */
+  .rcard { width: min(100%, 600px); display: flex; flex-direction: column; gap: 10px; align-items: stretch; text-align: left; }
+  .rcol { display: contents; }
+  .rb-a { order: 10; }
+  .foot { order: 11; }
+  .rhead { align-self: flex-start; }
+  .rtop { display: flex; gap: 14px; align-items: center; }
+  #miniCv { width: 96px; height: 128px; border-radius: 12px; border: 1px solid var(--grid); flex: none; display: block; }
+  .rmain { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .rbig { display: flex; align-items: baseline; gap: 6px 10px; flex-wrap: wrap; }
+  .rbig b { font-size: 56px; line-height: 1; }
+  .rbig .unit { font-size: 20px; }
+  .rsub { font-size: 13px; color: var(--muted); }
+  .rsub .num { color: var(--good-ink); font-size: 14px; }
+  .rend { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; }
+  .rend svg { width: 18px; height: 18px; flex: none; }
+  .rend.sunset { color: var(--good-ink); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .stat .sl { font-size: 12px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .stat .sl svg { width: 14px; height: 14px; flex: none; }
+  .stat .sv { display: flex; align-items: baseline; gap: 4px; }
+  .stat .sv b { font-size: 22px; line-height: 1.1; }
+  .stat .sv span { font-size: 13px; font-weight: 700; }
+  .stat .sx { font-size: 12px; color: var(--muted); }
+  .stat .sx .num { font-size: 13px; color: var(--ink); }
+  .stat .loss { color: var(--loss-ink); }
+  .stat .good { color: var(--good-ink); }
+  .worst { background: var(--panel); border: 1px solid var(--grid); border-left: 3px solid var(--danger); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; cursor: default; }
+  .worst.rain { border-left-color: var(--rain); }
+  .worst svg { width: 16px; height: 16px; flex: none; }
+  .worst .wl { font-size: 12px; color: var(--muted); font-weight: 700; flex: none; }
+  .worst .num { font-size: 14px; }
+  #retro { width: 100%; height: 44px; display: block; }
+  .recline { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .recline b { font-size: 16px; color: var(--ink); }
+  .recline .badge { margin-left: 6px; align-self: center; }
+  .rbtns { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #againBtn { height: 52px; min-width: 120px; }
+  .foot { font-size: 11px !important; color: var(--muted); }
+  body.low #miniCv { display: none; }
+  body.low .rcard { flex-direction: row; align-items: flex-start; width: min(100%, 860px); gap: 14px; }
+  body.low .rcol { flex: 1 1 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  body.low .rbig b { font-size: 44px; }
+  body.low #retro { height: 32px; }
+  body.low .overlay { gap: 6px; padding: 8px; }
+  body.low .overlay h2, body.low #ovStart h2 { font-size: 20px; }
+  body.low .stat { padding: 6px 10px; }
+  body.low .stat .sv b { font-size: 19px; }
+  body.low #againBtn { height: 48px; }
+  body.low #dailyBtn { height: 52px; }
+  body.low .card { gap: 6px; }
+  body.low #ovStart .card { flex-direction: row; flex-wrap: wrap; justify-content: center; width: min(100%, 860px); }
+  body.low #ovStart .demo-col, body.low #ovStart .side-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 상단 바 너비 구간 */
+  body.tb-720 .title { display: none; }
+  body.tb-480 .mode { display: none; }
+  body.tb-480 .home .full { display: none; }
+  body.tb-480 .home .short { display: inline; }
+  body.tb-480 .dayclock { width: 76px; }
+  body.tb-480 .dayclock svg { width: 76px; height: 30px; }
+  body.tb-480 .hpill { min-width: 96px; padding: 0 10px; }
+  body.tb-480 .top { gap: 6px; }
+  body.tb-380 .hpill svg { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .overlay > *, .badge, .prick .p2 { animation: none; }
+    button:active { transform: none; }
+    .finger.down .ring { animation: none; opacity: .5; }
+    .finger { transition: opacity 150ms linear; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="icCal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="icLoop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4 3.5v4.2h4.2"/></g></symbol>
+    <symbol id="icSand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 9q2.5-3 5 0t5 0 5 0 5 0"/><path d="M2 15q2.5-3 5 0t5 0 5 0 5 0"/></g></symbol>
+    <symbol id="icSun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g></symbol>
+    <symbol id="icRain" viewBox="0 0 24 24"><path d="M5 12a3.5 3.5 0 0 1 1.5-6.6A5 5 0 0 1 16 4.5a4 4 0 0 1 3 7.5z" fill="var(--cloud)" stroke="var(--cloud-edge)" stroke-width="1.6" stroke-linejoin="round"/><g stroke="var(--rain)" stroke-linecap="round"><path d="M8 15v4" stroke-width="1.6"/><path d="M12 15v5" stroke-width="2.2"/><path d="M16 15v5" stroke-width="2.8"/></g></symbol>
+    <symbol id="icDrop" viewBox="0 0 24 24"><path d="M12 3c3 4.5 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.5 6-11z" fill="var(--rain)"/></symbol>
+    <symbol id="icGrain" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="#8a5a2b" stroke="var(--ink)" stroke-width="1.2"/><circle cx="10" cy="10" r="2" fill="#e2b77a"/></symbol>
+    <symbol id="icFingerIn" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20q2.5-2 5 0t5 0 5 0 5 0"/><path d="M10 15V5.5a1.6 1.6 0 0 1 3.2 0V11l3 .6a2 2 0 0 1 1.6 2.2L17.3 16"/><path d="M10 12.5 8.2 11a1.4 1.4 0 0 0-2 2l2.6 3"/></g></symbol>
+    <symbol id="icRepress" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v13M6.5 11.5 12 17l5.5-5.5"/><path d="M5 21h14"/></g></symbol>
+    <symbol id="icDusk" viewBox="0 0 24 24"><g fill="none" stroke-linecap="round"><path d="M6 17a6 6 0 0 1 12 0" fill="var(--gold)" stroke="var(--dusk)" stroke-width="1.8"/><path d="M2.5 17.5h19" stroke="var(--dusk)" stroke-width="2"/><path d="M12 6.5v2M5.5 9.5l1.3 1.3M18.5 9.5l-1.3 1.3" stroke="var(--dusk)" stroke-width="1.8"/></g></symbol>
+    <symbol id="icWilt" viewBox="0 0 24 24"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 20.5h19" stroke="var(--muted)" stroke-width="2"/><path d="M7 20 17.5 11.5a2.6 2.6 0 0 0-3.4-3.8L5 18" fill="var(--dry)" stroke="var(--dry)" stroke-width="3"/></g></symbol>
+    <symbol id="icFinger" viewBox="0 0 48 48"><g fill="var(--panel)" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 40V12a3.4 3.4 0 0 1 6.8 0v12.5l7 1.4a4 4 0 0 1 3.2 4.6l-1.6 9.5"/><path d="M19 32.5l-3.6-3.2a2.8 2.8 0 0 0-4 4l5.4 6.7"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <a class="home" href="../../" aria-label="게임 목록"><span class="full">← 게임 목록</span><span class="short">←</span></a>
+    <h1 class="title">선인장 키우기</h1>
+    <div class="hpill" id="hpill" role="img" aria-label="키 10센티미터">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v18M8 5h5M8 9h3M8 13h5M8 17h3"/></svg>
+      <b class="num" id="hNum">10.0</b><span class="unit">cm</span>
+    </div>
+    <span class="mode" id="modeChip"><svg aria-hidden="true"><use href="#icCal"/></svg><span id="modeTxt" class="num">11.27</span></span>
+    <div class="spacer"></div>
+    <div class="dayclock" id="dayclock" role="timer" aria-label="남은 하루 150초">
+      <svg viewBox="0 0 112 44" aria-hidden="true">
+        <path class="dc-left" id="dcLeft" d=""/>
+        <path class="dc-past" id="dcPast" d=""/>
+        <path class="dc-hz" d="M8 36H104"/>
+        <circle class="dc-sun" id="dcSun" cx="12" cy="36" r="6"/>
+      </svg>
+    </div>
+    <div class="btns">
+      <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
+        <svg id="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg id="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" type="button" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" role="img" aria-label="선인장 키우기 화면"></canvas>
+    <div class="finger" id="finger" hidden aria-hidden="true"><svg viewBox="0 0 48 48"><circle class="ring" cx="22" cy="10" r="10"/><circle class="ring r2" cx="22" cy="10" r="10"/><use href="#icFinger"/></svg></div>
+    <div class="ready" id="ready" hidden aria-hidden="true"><svg viewBox="0 0 56 56"><circle id="readyArc" cx="28" cy="28" r="25"/></svg><b class="num" id="readyNum">2</b></div>
+    <div class="prick" id="prick" hidden aria-hidden="true"><div class="p1"><span>따끔!</span><svg class="pi" aria-hidden="true"><use href="#icSand"/></svg></div><div class="p2" hidden></div></div>
+
+    <div class="overlay" id="ovStart">
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div class="card">
+        <div class="demo-col">
+          <h2>선인장 키우기</h2>
+          <div class="demo" id="demo" aria-hidden="true">
+            <canvas id="demoCv"></canvas>
+            <div class="finger" id="demoFinger"><svg viewBox="0 0 48 48"><circle class="ring" cx="22" cy="10" r="10"/><circle class="ring r2" cx="22" cy="10" r="10"/><use href="#icFinger"/></svg></div>
+            <div class="prick small" id="demoPrick" hidden><div class="p1"><span>따끔!</span><svg class="pi"><use href="#icSand"/></svg></div><div class="p2" hidden></div></div>
+            <button class="secondary play" id="demoPlay" type="button" aria-label="설명 재생" hidden><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+          </div>
+          <div class="caps" aria-hidden="true">
+            <figure id="cap1"><svg viewBox="0 0 24 24"><use href="#icFinger" width="24" height="24" style="color:var(--zone-ink)"/></svg><figcaption>누르면 펴짐</figcaption></figure>
+            <figure id="cap2"><svg viewBox="0 0 24 24"><use href="#icRain"/></svg><figcaption>비 → 키</figcaption></figure>
+            <figure id="cap3"><svg viewBox="0 0 24 24" style="color:var(--sand-wave)"><use href="#icSand"/></svg><figcaption>펴진 채 모래 = 따끔</figcaption></figure>
+          </div>
+        </div>
+        <div class="side-col">
+          <div class="startrow">
+            <button class="primary" id="dailyBtn" type="button"><span class="l1">오늘의 날씨</span><span class="l2 num" id="dailyDate">11월 27일</span></button>
+            <button class="secondary" id="practiceBtn" type="button"><svg aria-hidden="true"><use href="#icLoop"/></svg>연습</button>
+            <span class="kbd">Enter</span>
+          </div>
+          <div class="bestline" id="bestLine">아직 기록 없음</div>
+          <p class="tip">소리가 안 나면 무음 모드를 확인하세요. 소리 없이도 할 수 있어요.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovPause" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <h2>잠깐 쉬어요</h2>
+      <div class="pinfo">
+        <span class="pk"><b class="num" id="pH">10.0</b><span class="unit">cm</span></span>
+        <span class="pl"><svg viewBox="0 0 112 44" aria-hidden="true"><path class="dc-hz" d="M8 36H104"/><circle class="dc-sun" cx="56" cy="14" r="8"/></svg>남은 하루 <span class="num" id="pLeft">150</span>초</span>
+      </div>
+      <button class="primary" id="resumeBtn" type="button">계속하기</button>
+      <div class="row">
+        <button class="secondary" id="restartBtn" type="button">처음부터</button>
+        <a class="secondary" href="../../">← 게임 목록</a>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovResult" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div class="rcard">
+        <div class="rcol">
+          <span class="mode rhead" id="rHead"><svg aria-hidden="true"><use href="#icCal"/></svg><span id="rHeadTxt">오늘의 날씨 · 11월 27일</span></span>
+          <div class="rtop">
+            <canvas id="miniCv" aria-hidden="true"></canvas>
+            <div class="rmain">
+              <div class="rbig"><span><b class="num" id="rH">10.0</b> <span class="unit">cm</span></span><span id="lbSlot"></span></div>
+              <div class="rsub">10.0cm에서 <span class="num" id="rGain">+0.0</span></div>
+              <div class="rend" id="rEnd"><svg aria-hidden="true"><use href="#icDusk"/></svg><span id="rEndTxt">해질녘까지 버팀</span></div>
+              <div><span class="badge" id="newRec" hidden>새 기록</span></div>
+            </div>
+          </div>
+          <div class="rbtns rb-a">
+            <button class="primary" id="againBtn" type="button">다시</button>
+            <button class="secondary" id="menuBtn" type="button">처음으로</button>
+            <span class="kbd">Enter</span>
+          </div>
+        </div>
+        <div class="rcol">
+          <div class="stats">
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icGrain"/></svg>따끔</span><span class="sv"><b class="num" id="sCnt">0</b><span>번</span></span><span class="sx" id="sDet">해 0 · 모래 0</span></div>
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icDrop"/></svg>받은 빗물</span><span class="sv"><b class="num" id="sRain">0</b></span><span class="sx">그중 키가 된 물 <span class="num" id="sGrow">0</span></span></div>
+          </div>
+          <div class="worst" id="worst"><svg aria-hidden="true" id="worstIc"><use href="#icSand"/></svg><span class="wl">가장 아까웠던 순간</span><span id="worstTxt"></span></div>
+          <canvas id="retro" role="img" aria-label="하루 되돌아보기"></canvas>
+          <div class="recline" id="recLine"></div>
+          <p class="foot" id="foot" hidden>늦게 뗌 = 기기가 손 뗌을 알아챈 때 기준</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+<script>
+/* ===== 선인장 키우기 (desert-breath) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
+ * AudioContext 미지원·생성 실패 시 모든 호출은 조용히 무시된다(게임은 소리 없이 정상 진행).
+ *
+ * 사용법: 사용자 제스처(click/touchend/pointerup/keydown) 핸들러 맨 앞에서 Sound.unlock() →
+ *   판 시작: Sound.startAmbient()
+ *   매 프레임: Sound.update({ now:'rain', heavy:0.4, next:'sand', nextIn:1.8, open:true })
+ *   순간 효과음: Sound.play('open'), Sound.play('close'), Sound.play('grow', { cm: 23 }), Sound.play('sting') ...
+ *
+ * [박자 없음] 이 게임 소리에는 박자·루프 멜로디가 없다. 환경음은 노이즈 + 서로 맞지 않는 느린 흔들림(LFO),
+ *   빗방울·꿀렁·지글은 매번 무작위 간격. 리듬 게임처럼 들리면 안 된다.
+ * [공정성] 다가오는 날씨는 화면 예고 띠와 똑같이 "도착 3초 전"부터만 작게(최대 50%, 빗방울 알갱이 없이) 들린다. 그보다 일찍은 절대 안 남.
+ *   날씨가 실제로 바뀌는 순간은 빠르게(시정수 50ms) 바뀌어 귀로도 경계가 분명하다.
+ * [연타] open/close는 가장 자주 나는 소리라 가장 작고 짧다. 동시 발음 최대 2개, 50ms 스로틀, 연타할수록 작아짐.
+ *
+ * 신호 경로: sfxBus → LP 9kHz ─────────────┐
+ *            ambBus(환경음) → ambDuck ─────┴→ master(음소거) → limiter → destination
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'desert-breath-muted';
+  var MASTER_VOL = 0.6;
+  var AMB_VOL = 1.0;        // 환경음 버스(각 층 레벨은 LV 표)
+  var DUCK = 0.45;          // 해질녘·말라 쓰러짐·새 기록 때 환경음을 잠깐 낮추는 비율
+  var OC_CAP = 2;           // open/close 동시 발음 최대 수
+  var PREVIEW_MAX = 0.5;    // 예고 중인 날씨의 최대 음량 비율(도착 순간 1.0, 빗방울·지글 같은 알갱이는 도착 순간부터)
+  var PREVIEW_SEC = 3;      // 예고 시간(화면 예고 띠와 같음). 이보다 일찍 들려주지 않는다
+
+  // 환경음 층 레벨(층 게인 값, master 0.6 앞)
+  var LV = {
+    wind: 0.055,      // 바탕 사막 바람(항상). 해 날씨에는 0.5배(고요하고 뜨거움)
+    rainLo: 0.045,    // 빗소리: 빗줄 가늘 때(heavy 0)
+    rainHi: 0.125,    // 빗소리: 빗줄 굵을 때(heavy 1)
+    sand: 0.11,      // 모래바람(고음 노이즈 + 낮은 바람)
+    sun: 0.035,       // 한낮 해(아주 옅은 고음 아지랑이)
+    sizzle: 0.03,    // 해에 열려 있는 동안 '치이—'
+    grit: 0.035,     // 모래에 열려 있는 동안 '사사삭'
+    rainPv: 0.07,    // 예고 중인 비의 기준(빗방울 없이 '쏴—' 몸통만이라 가는 비보다 기준을 높게)
+    sunPv: 0.06      // 예고 중인 해의 기준
+  };
+
+  var ctx = null, master = null, limiter = null, sfxBus = null, sfxTone = null;
+  var ambBus = null, ambDuck = null, noiseBuf = null;
+  var muted = false, offline = false;
+  var last = {}, ocPool = [];
+  var amb = { want: false, on: false, nodes: null, stopTimer: null };
+  var paused = false;       // 일시정지 화면(날씨 띠가 가려짐) 동안 환경음·알갱이 모두 멈춤
+  // 현재 적용된 상태(차이가 있을 때만 AudioParam을 건드린다 — 매 프레임 호출해도 가벼움)
+  var st = { now: 'clear', heavy: 0, next: null, pv: 0, open: false };
+  var applied = {};
+  var micro = { drop: 0, gulp: 0, crackle: 0 };   // 무작위 알갱이 다음 예정 시각
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+
+  function build(c) {
+    ctx = c;
+    limiter = ctx.createDynamicsCompressor();          // 마스터 리미터
+    limiter.threshold.value = -6; limiter.knee.value = 2; limiter.ratio.value = 20;
+    limiter.attack.value = 0.002; limiter.release.value = 0.15;
+    limiter.connect(ctx.destination);
+
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER_VOL;
+    master.connect(limiter);
+
+    sfxTone = ctx.createBiquadFilter();
+    sfxTone.type = 'lowpass'; sfxTone.frequency.value = 9000; sfxTone.Q.value = 0.5;
+    sfxTone.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(sfxTone);
+
+    ambDuck = ctx.createGain(); ambDuck.gain.value = 1; ambDuck.connect(master);
+    ambBus = ctx.createGain(); ambBus.gain.value = 0; ambBus.connect(ambDuck);
+
+    // 노이즈 버퍼 1개(4초, 스테레오, 고정 시드)를 환경음·효과음 모두 재사용. 4초라 반복이 귀에 잡히지 않고,
+    // 두 재생기는 루프 구간·속도를 다르게 해 같은 무늬가 겹쳐 돌지 않는다.
+    var len = Math.floor(ctx.sampleRate * 4);
+    noiseBuf = ctx.createBuffer(2, len, ctx.sampleRate);
+    var seed = 20261127;
+    for (var ch = 0; ch < 2; ch++) {
+      var d = noiseBuf.getChannelData(ch);
+      for (var j = 0; j < len; j++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; d[j] = seed / 0x3fffffff - 1; }
+      // 루프 이음매 클릭 방지: 끝 20ms를 앞부분과 교차 페이드
+      var xf = Math.floor(ctx.sampleRate * 0.02);
+      for (var k = 0; k < xf; k++) { var a = k / xf; d[len - xf + k] = d[len - xf + k] * (1 - a) + d[k] * a; }
+    }
+    applied = {};
+  }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var c;
+      try { c = new AC({ latencyHint: 'interactive' }); } catch (e1) { c = new AC(); }
+      build(c);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function running() { return !!ctx && (offline || ctx.state === 'running'); }
+  function ready() { return running() && !muted; }
+
+  function throttled(key, t, gap) {
+    if (last[key] !== undefined && t - last[key] < gap && t >= last[key]) return true;
+    last[key] = t;
+    return false;
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  // ---------- 음원 기본 블록 (엔벨로프는 0.0001에서 지수 어택/감쇠 — 클릭음 방지) ----------
+  function tone(type, f0, f1, t, dur, vol, attack, dest) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+      var a = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.03);
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function noise(t, dur, vol, ftype, f0, f1, q, attack, dest) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = ftype; f.Q.value = q || 0.8;
+      f.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      var a = attack || 0.004;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(dest || sfxBus);
+      s.start(t, Math.random() * 3.5); s.stop(t + dur + 0.03);
+      return s;
+    } catch (e) { return null; }
+  }
+
+  // 마림바풍: sine 기음 + 4배 배음(짧게)
+  function mallet(f, t, dur, vol, dest) {
+    tone('sine', f, 0, t, dur, vol, 0.003, dest);
+    tone('sine', f * 4, 0, t, Math.min(0.03, dur * 0.3), vol * 0.08, 0.001, dest);
+  }
+  // 작은 종: sine 기음 + 2배 + 3배(짧게)
+  function bell(f, t, dur, vol, dest) {
+    tone('sine', f, 0, t, dur, vol, 0.002, dest);
+    tone('sine', f * 2, 0, t, dur * 0.35, vol * 0.25, 0.002, dest);
+    tone('sine', f * 3, 0, t, dur * 0.15, vol * 0.07, 0.001, dest);
+  }
+
+  // open/close 전용 보이스: 동시 발음이 OC_CAP을 넘으면 가장 오래된 소리를 10ms 안에 줄여 없앤다
+  function ocVoice(t, dur) {
+    var keep = [];
+    for (var i = 0; i < ocPool.length; i++) if (ocPool[i].end > t) keep.push(ocPool[i]);
+    ocPool = keep;
+    if (ocPool.length >= OC_CAP) {
+      var old = ocPool.shift();
+      try { old.g.gain.setTargetAtTime(0, t, 0.004); } catch (e) {}
+    }
+    var g = ctx.createGain(); g.gain.value = 1; g.connect(sfxBus);
+    ocPool.push({ g: g, end: t + dur });
+    return g;
+  }
+  // 직전 open/close와의 간격(초) → 음량 계수(0.2초 이상 1.0, 짧을수록 최소 0.55)
+  function density(t) {
+    var prev = last['oc:d'];
+    var gap = (prev === undefined || t < prev) ? 1 : t - prev;
+    last['oc:d'] = t;
+    return clamp(0.55 + gap * 2.25, 0.55, 1);
+  }
+
+  function duck(t, hold) {
+    try {
+      ambDuck.gain.cancelScheduledValues(t);
+      ambDuck.gain.setTargetAtTime(DUCK, t, 0.05);
+      ambDuck.gain.setTargetAtTime(1, t + hold, 0.5);
+    } catch (e) {}
+  }
+
+  var N = { D3: 146.83, A3: 220.0, D4: 293.66, E4: 329.63, Fs4: 369.99, G4: 392.0, A4: 440.0, B4: 493.88,
+            D5: 587.33, E5: 659.25, Fs5: 739.99, G5: 783.99, A5: 880.0, B5: 987.77,
+            D6: 1174.66, E6: 1318.51, Fs6: 1479.98, A6: 1760.0, B6: 1975.53, G3: 196.0, G2: 98.0, D2: 73.42 };
+  // 자람 음계: D 장조 5음 음계 2옥타브(키 1cm마다 한 칸 위로, 10칸마다 처음으로 — 매번 다른 간격이라 박자 아님)
+  var GROW = [N.D5, N.E5, N.Fs5, N.A5, N.B5, N.D6, N.E6, N.Fs6, N.A6, N.B6];
+
+  // ---------- 효과음 ----------
+  var sfx = {
+    // 일반 UI 버튼: 부드러운 '톡'
+    button: function (t) {
+      if (throttled('button', t, 0.05)) return;
+      tone('sine', 640, 500, t, 0.055, 0.10, 0.002);
+      noise(t, 0.02, 0.04, 'bandpass', 2400, 0, 1.2, 0.001);
+    },
+    // 열기(누르는 순간) '스읍': 부드러운 들숨 — 밴드패스 노이즈 700→1900Hz, 0.15초(펴지는 시간과 같음), 느린 어택
+    open: function (t) {
+      if (throttled('open', t, 0.05)) return;
+      var k = density(t), v = ocVoice(t, 0.2), r = rnd(0.95, 1.05);
+      noise(t, 0.16, 0.10 * k, 'bandpass', 700 * r, 1900 * r, 1.1, 0.09, v);
+      tone('sine', 420 * r, 520 * r, t + 0.02, 0.12, 0.012 * k, 0.06, v);   // 숨결의 아주 옅은 몸통
+    },
+    // 닫기(떼는 순간) '톡': 작은 나무 톡 25ms + 숨 끝 노이즈 30ms
+    close: function (t) {
+      if (throttled('close', t, 0.05)) return;
+      var k = density(t), v = ocVoice(t, 0.06), r = rnd(0.96, 1.04);
+      tone('sine', 950 * r, 620 * r, t, 0.03, 0.05 * k, 0.001, v);
+      noise(t, 0.03, 0.03 * k, 'bandpass', 1500 * r, 1100 * r, 1.0, 0.002, v);
+    },
+    // 자람(키 1cm 늘 때마다): 아래에서 위로 미끄러져 올라가는 맑은 음. opts.cm(정수 키)로 음계 한 칸씩 위로
+    grow: function (t, o) {
+      if (throttled('grow', t, 0.12)) return;
+      var cm = Math.max(0, Math.round(+o.cm || 0));
+      var f = GROW[cm % GROW.length];
+      tone('sine', f * 0.75, f, t, 0.26, 0.085, 0.012);           // 4도 아래에서 쓱 올라옴
+      tone('sine', f * 2, 0, t + 0.05, 0.12, 0.012, 0.004);       // 반짝 배음
+      if (cm % GROW.length === 0 && cm > 0) bell(f * 2, t + 0.07, 0.35, 0.03);   // 10cm마다 작은 종
+    },
+    // 따끔(모래에 열린 채 들어감, 구간당 1번) '츳': 모래알 3개 고음 클릭 + 짧은 '츠' 노이즈. 신음·낮은 음 없음
+    sting: function (t) {
+      if (throttled('sting', t, 0.15)) return;
+      for (var i = 0; i < 3; i++) noise(t + i * 0.011 + rnd(0, 0.004), 0.008, 0.16 - i * 0.03, 'bandpass', rnd(3800, 5200), 0, 2.2, 0.0007);
+      noise(t + 0.004, 0.075, 0.10, 'highpass', 3200, 5200, 0.8, 0.003);
+      tone('triangle', 1800, 1500, t, 0.03, 0.025, 0.001);
+    },
+    // 해 열기(해에 열린 채 들어감, 구간당 1번) '지글': 탁탁 튀는 작은 클릭 + '치이' 하강 노이즈 0.35초
+    scorch: function (t) {
+      if (throttled('scorch', t, 0.15)) return;
+      for (var i = 0; i < 7; i++) noise(t + rnd(0, 0.3), 0.004, rnd(0.04, 0.09), 'highpass', 3000, 0, 0.7, 0.0005);
+      noise(t, 0.36, 0.07, 'bandpass', 6000, 3000, 0.9, 0.01);
+    },
+    // 말라 쓰러짐(쓰러짐 연출 1.2초): 힘 빠지는 하강(sine 392→165Hz, 1.1초) + 0.95초에 모래에 '퍽'(저역 노이즈). 날카로운 소리 없음
+    wilt: function (t) {
+      if (throttled('wilt', t, 1)) return;
+      duck(t, 1.8);
+      tone('sine', N.G4, 165, t, 1.1, 0.10, 0.03);
+      tone('triangle', N.G3, 82, t, 1.05, 0.05, 0.03);
+      noise(t + 0.15, 0.75, 0.03, 'bandpass', 1200, 500, 0.8, 0.2);   // 바람 빠지는 '휘유'
+      noise(t + 0.95, 0.22, 0.12, 'lowpass', 420, 160, 0.7, 0.006);   // 모래에 '퍽'
+      tone('sine', 110, 70, t + 0.95, 0.2, 0.08, 0.004);
+    },
+    // 해질녘 도착(150초 완주): 따뜻한 D 장조 add9 화음 천천히 피어남 + 종 A5·D6
+    dusk: function (t) {
+      if (throttled('dusk', t, 1)) return;
+      duck(t, 2.4);
+      var ch = [N.D4, N.Fs4, N.A4, N.E5], i;
+      for (i = 0; i < ch.length; i++) tone('sine', ch[i], 0, t + i * 0.06, 2.4, 0.045, 0.35);
+      tone('triangle', N.D3, 0, t, 2.2, 0.10, 0.25);
+      bell(N.A5, t + 0.25, 1.0, 0.07);
+      bell(N.D6, t + 0.55, 1.2, 0.05);
+    },
+    // 결과 화면(새 기록 아님): 작은 마림바 2음
+    result: function (t) {
+      if (throttled('result', t, 0.5)) return;
+      mallet(N.A5, t, 0.25, 0.08);
+      mallet(N.D6, t + 0.09, 0.35, 0.08);
+    },
+    // 새 기록: 마림바 D5-E5-F#5-A5-B5-D6 빠른 상승 + 종 D6 + G→D 두 화음
+    record: function (t) {
+      if (throttled('record', t, 0.8)) return;
+      duck(t, 2.0);
+      var run = [N.D5, N.E5, N.Fs5, N.A5, N.B5, N.D6], i;
+      for (i = 0; i < run.length; i++) mallet(run[i], t + i * 0.055, 0.2, 0.10);
+      bell(N.D6, t + 0.36, 0.7, 0.10);
+      var c1 = [N.G4, N.B4, N.D5], c2 = [N.Fs4, N.A4, N.D5];
+      for (i = 0; i < 3; i++) tone('sine', c1[i], 0, t + 0.36, 0.45, 0.05, 0.02);
+      tone('triangle', N.G2 * 2, 0, t + 0.36, 0.4, 0.10, 0.02);
+      for (i = 0; i < 3; i++) tone('sine', c2[i], 0, t + 0.78, 1.1, 0.055, 0.02);
+      tone('triangle', N.D3, 0, t + 0.78, 1.0, 0.11, 0.02);
+      bell(N.A6, t + 0.78, 0.5, 0.035);
+    }
+  };
+
+  // ---------- 환경음(연속, 박자 없음) ----------
+  // 노이즈 재생기 2개 → 필터 → 층별 게인. 층: 바람(항상) / 비 / 모래 / 해 / 해-열림 지글 / 모래-열림 사각
+  function lfo(freq, depth, param, t) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq; g.gain.value = depth;
+    o.connect(g); g.connect(param); o.start(t);
+    return o;
+  }
+  function filt(type, f, q) { var b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+  function gain(v, dest) { var g = ctx.createGain(); g.gain.value = v; if (dest) g.connect(dest); return g; }
+
+  function buildAmbient(t) {
+    var n = { src: [], osc: [] };
+    var A = ctx.createBufferSource(), B = ctx.createBufferSource();
+    A.buffer = noiseBuf; A.loop = true;
+    B.buffer = noiseBuf; B.loop = true; B.loopStart = 0.53; B.loopEnd = 3.71; B.playbackRate.value = 0.97;
+    n.src.push(A, B);
+
+    // 바람(항상): LP 450Hz, 서로 맞지 않는 느린 흔들림 0.067/0.113Hz로 크기·밝기가 천천히 변함
+    n.wind = gain(0, ambBus);
+    var wMod = gain(1, n.wind), wLp = filt('lowpass', 450, 0.6);
+    A.connect(wLp); wLp.connect(wMod);
+    n.osc.push(lfo(0.067, 0.25, wMod.gain, t), lfo(0.113, 0.18, wMod.gain, t), lfo(0.041, 140, wLp.frequency, t));
+
+    // 비: HP 450 → LP(굵기에 따라 2.6k→6.5k). 빗방울 알갱이는 rainDrops로 따로(같은 층 게인 아래)
+    n.rain = gain(0, ambBus);
+    var rHp = filt('highpass', 450, 0.5), rLp = filt('lowpass', 2600, 0.5);
+    B.connect(rHp); rHp.connect(rLp); rLp.connect(n.rain);
+    n.rainLp = rLp;
+    n.drops = gain(1, n.rain);
+
+    // 모래바람: BP 3.6kHz(고음 사르르) + LP 200Hz(낮은 바람). 돌풍 흔들림 0.31/0.53Hz(서로 안 맞음 → 박자 없음)
+    n.sand = gain(0, ambBus);
+    var sMod = gain(1, n.sand), sBp = filt('bandpass', 3600, 0.9), sLp = filt('lowpass', 200, 0.7), sLow = gain(0.9, sMod);
+    A.connect(sBp); sBp.connect(sMod); B.connect(sLp); sLp.connect(sLow);
+    n.osc.push(lfo(0.31, 0.28, sMod.gain, t), lfo(0.53, 0.17, sMod.gain, t), lfo(0.23, 700, sBp.frequency, t));
+
+    // 한낮 해: 아주 옅은 고음 아지랑이(BP 5.5kHz Q2) — 해 날씨에선 바람이 반으로 줄어 '고요하고 뜨거움'
+    n.sun = gain(0, ambBus);
+    var uBp = filt('bandpass', 5500, 2.0); B.connect(uBp); uBp.connect(n.sun);
+    n.osc.push(lfo(0.17, 1200, uBp.frequency, t));
+
+    // 해에 열려 있는 동안 '치이—'(HP 4kHz) + 무작위 탁탁(crackle)
+    n.sizzle = gain(0, ambBus);
+    var zHp = filt('highpass', 4200, 0.7); A.connect(zHp); zHp.connect(n.sizzle);
+    n.crackle = gain(1, n.sizzle);
+
+    // 모래에 열려 있는 동안 '사사삭'(BP 6.5kHz) — 모래 돌풍 흔들림을 같이 탄다
+    n.grit = gain(0, ambBus);
+    var gMod = gain(1, n.grit), gBp = filt('bandpass', 6500, 1.4); B.connect(gBp); gBp.connect(gMod);
+    n.osc.push(lfo(0.37, 0.35, gMod.gain, t));
+
+    A.start(t, 0); B.start(t, 1.9);
+    return n;
+  }
+
+  function target(param, v, t, tc) {
+    try { param.cancelScheduledValues(t); param.setTargetAtTime(v, t, tc); } catch (e) {}
+  }
+  function setIf(key, param, v, t, tc, eps) {
+    if (applied[key] !== undefined && Math.abs(applied[key] - v) < (eps || 0.004)) return;
+    applied[key] = v;
+    target(param, v, t, tc);
+  }
+
+  // 상태 → 층별 목표 음량. 지금 날씨는 1.0, 예고 중 날씨는 PREVIEW_MAX × 진행도(도착 3초 전 0 → 도착 직전 0.5)
+  function layerLevels() {
+    var L = { wind: LV.wind, rain: 0, sand: 0, sun: 0, sizzle: 0, grit: 0 };
+    var rainFull = LV.rainLo + (LV.rainHi - LV.rainLo) * st.heavy;
+    if (st.now === 'rain') L.rain = rainFull;
+    if (st.now === 'sand') L.sand = LV.sand;
+    if (st.now === 'sun') { L.sun = LV.sun; L.wind = LV.wind * 0.5; }
+    if (st.next && st.next !== st.now && st.pv > 0) {
+      if (st.next === 'rain') L.rain = Math.max(L.rain, LV.rainPv * st.pv);
+      if (st.next === 'sand') L.sand = Math.max(L.sand, LV.sand * st.pv);
+      if (st.next === 'sun') L.sun = Math.max(L.sun, LV.sunPv * st.pv);
+    }
+    if (st.open && st.now === 'sun') L.sizzle = LV.sizzle;
+    if (st.open && st.now === 'sand') L.grit = LV.grit;
+    return L;
+  }
+
+  function apply(t, nowChanged) {
+    if (!amb.on || !amb.nodes) return;
+    var n = amb.nodes, L = layerLevels();
+    var fast = 0.05, slow = 0.15;
+    setIf('wind', n.wind.gain, L.wind, t, 0.3);
+    setIf('rain', n.rain.gain, L.rain, t, nowChanged ? fast : slow);
+    setIf('sand', n.sand.gain, L.sand, t, nowChanged ? fast : slow);
+    setIf('sun', n.sun.gain, L.sun, t, nowChanged ? fast : slow);
+    setIf('sizzle', n.sizzle.gain, L.sizzle, t, 0.03);
+    setIf('grit', n.grit.gain, L.grit, t, 0.03);
+    setIf('rainLp', n.rainLp.frequency, 2600 + 3900 * st.heavy, t, 0.15, 60);
+  }
+
+  // 무작위 알갱이(빗방울·꿀렁·탁탁)를 t ~ t+0.12초 앞까지 예약. 간격은 매번 무작위(지수 분포) → 박자가 생기지 않음
+  function grains(t) {
+    if (!amb.on || !amb.nodes || paused) return;
+    var n = amb.nodes, until = t + 0.12, guard;
+    // 빗방울: 비가 '지금'일 때만. 굵을수록 잦음(초당 8→34개)
+    if (st.now === 'rain') {
+      var rate = 8 + 26 * st.heavy;
+      if (micro.drop < t) micro.drop = t + Math.random() * 0.05;
+      for (guard = 0; micro.drop < until && guard < 12; guard++) {
+        noise(micro.drop, rnd(0.005, 0.012), rnd(0.06, 0.16), 'bandpass', rnd(2200, 6000), 0, 1.6, 0.0008, n.drops);
+        micro.drop += -Math.log(1 - Math.random() * 0.999) / rate;
+      }
+    } else micro.drop = 0;
+    // 물 머금음 '꿀렁': 비 + 열림일 때. 물방울 소리처럼 sine이 위로 꿀떡(260~340Hz → 1.8배, 70ms), 0.18~0.6초 무작위 간격
+    if (st.now === 'rain' && st.open) {
+      if (micro.gulp < t) micro.gulp = t + rnd(0.05, 0.15);
+      for (guard = 0; micro.gulp < until && guard < 4; guard++) {
+        var f = rnd(260, 340);
+        tone('sine', f, f * 1.8, micro.gulp, 0.07, 0.04 + 0.02 * st.heavy, 0.01);
+        tone('sine', f * 0.5, f * 0.8, micro.gulp, 0.06, 0.025, 0.01);
+        micro.gulp += rnd(0.18, 0.6) * (1.15 - 0.35 * st.heavy);
+      }
+    } else micro.gulp = 0;
+    // 해 + 열림: '탁탁' 튀는 작은 클릭(초당 약 12개, 무작위)
+    if (st.now === 'sun' && st.open) {
+      if (micro.crackle < t) micro.crackle = t + Math.random() * 0.04;
+      for (guard = 0; micro.crackle < until && guard < 6; guard++) {
+        noise(micro.crackle, 0.003, rnd(0.2, 0.6), 'highpass', 3000, 0, 0.7, 0.0005, n.crackle);
+        micro.crackle += -Math.log(1 - Math.random() * 0.999) / 12;
+      }
+    } else micro.crackle = 0;
+  }
+
+  var WEATHER = { clear: 1, rain: 1, sun: 1, sand: 1 };
+  function update(s, t) {
+    if (!s) return;
+    var now = WEATHER[s.now] ? s.now : 'clear';
+    var nowChanged = now !== st.now;
+    st.now = now;
+    st.heavy = clamp(+s.heavy || 0, 0, 1);
+    st.open = !!s.open;
+    st.next = WEATHER[s.next] ? s.next : null;
+    var ni = +s.nextIn;
+    // 예고: 도착 3초 전부터만(그보다 이르면 0). 0.05 단위로 끊어 매 프레임 AudioParam을 건드리지 않음
+    st.pv = (st.next && ni >= 0 && ni <= PREVIEW_SEC) ? Math.round(PREVIEW_MAX * (1 - ni / PREVIEW_SEC) * 20) / 20 : 0;
+    apply(t, nowChanged);
+    grains(t);
+  }
+
+  function ambStart(t) {
+    paused = false;
+    if (amb.stopTimer) { clearTimeout(amb.stopTimer); amb.stopTimer = null; }
+    if (!amb.on) {
+      try { amb.nodes = buildAmbient(t); amb.on = true; } catch (e) { amb.on = false; amb.nodes = null; return; }
+      applied = {}; micro = { drop: 0, gulp: 0, crackle: 0 };
+    }
+    target(ambBus.gain, AMB_VOL, t, 0.4);
+    apply(t, true);
+  }
+  function killAmb(at) {
+    var n = amb.nodes; amb.nodes = null; amb.on = false;
+    if (!n) return;
+    var all = n.src.concat(n.osc);
+    for (var k = 0; k < all.length; k++) { try { all[k].stop(at); } catch (e) {} }
+  }
+  // 일시정지: 환경음을 약 0.25초에 0으로(예고 소리도 함께 사라짐 — 가려진 띠를 소리로 엿듣지 못하게)
+  function ambPause(on, t) {
+    paused = !!on;
+    if (!amb.on) return;
+    micro = { drop: 0, gulp: 0, crackle: 0 };
+    target(ambBus.gain, paused ? 0 : AMB_VOL, t, paused ? 0.06 : 0.12);
+  }
+  function ambStop(t) {
+    if (!amb.on) return;
+    target(ambBus.gain, 0, t, 0.45);      // 약 1.5초에 걸쳐 사라짐
+    st.open = false; micro = { drop: 0, gulp: 0, crackle: 0 };
+    if (offline) return;
+    if (amb.stopTimer) clearTimeout(amb.stopTimer);
+    amb.stopTimer = setTimeout(function () {
+      amb.stopTimer = null;
+      try { killAmb(ctx.currentTime + 0.02); } catch (e) {}
+    }, 2500);
+  }
+
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx || offline) return;
+      try {
+        if (document.hidden) { var p1 = ctx.suspend(); if (p1 && p1.catch) p1.catch(function () {}); }
+        else { var p2 = ctx.resume(); if (p2 && p2.catch) p2.catch(function () {}); }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  return {
+    // 반드시 사용자 제스처 핸들러 안에서 호출. 여러 번 호출해도 안전.
+    unlock: function () {
+      if (!ensureCtx() || offline) return;
+      try {
+        if (ctx.state !== 'running') { var p = ctx.resume(); if (p && p.catch) p.catch(function () {}); }
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+      if (amb.want && !amb.on) { try { ambStart(ctx.currentTime + 0.02); } catch (e) {} }
+    },
+    // name: button|open|close|grow|sting|scorch|wilt|dusk|result|record   opts: grow {cm}
+    play: function (name, opts) {
+      try {
+        if (!ready() || !sfx.hasOwnProperty(name)) return;
+        sfx[name](ctx.currentTime + 0.01, opts || {});
+      } catch (e) {}
+    },
+    // 판 시작 때 환경음 시작(이미 켜져 있으면 무시). unlock 전에 불렸으면 unlock 때 시작
+    startAmbient: function () {
+      amb.want = true;
+      try { if (running()) ambStart(ctx.currentTime + 0.02); } catch (e) {}
+    },
+    // 판 끝(해질녘·말라 쓰러짐·나가기) 때 환경음 정지(약 1.5초 페이드아웃)
+    stopAmbient: function () {
+      amb.want = false;
+      try { if (ctx) ambStop(ctx.currentTime); } catch (e) {}
+    },
+    // 일시정지 화면을 띄울 때 true, "계속"을 눌러 다시 준비(띠가 보임)로 갈 때 false
+    setPaused: function (on) {
+      try { if (ctx) ambPause(on, ctx.currentTime); else paused = !!on; } catch (e) {}
+    },
+    // 매 프레임(또는 상태가 바뀔 때마다) 호출. 값이 바뀐 것만 반영하므로 가볍다.
+    // { now:'clear'|'rain'|'sun'|'sand', heavy:0~1(비 굵기: 비 구간 진행도), next:다음 날씨|null, nextIn:다음 날씨까지 초, open:bool }
+    update: function (s) {
+      try { if (running() && amb.on) update(s, ctx.currentTime + 0.01); } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try {
+        if (master) {
+          var t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, t, 0.02);
+        }
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    // 공통 인터페이스 호환: 이 게임은 배경음악(박자 있는 곡)이 없다 → 환경음으로 대신
+    startMusic: function () { this.startAmbient(); },
+    stopMusic: function () { this.stopAmbient(); },
+    // 테스트 전용: OfflineAudioContext에 그래프를 붙여 렌더 검사
+    _test: {
+      attach: function (c) {
+        offline = true; paused = false; last = {}; ocPool = []; amb = { want: false, on: false, nodes: null, stopTimer: null };
+        st = { now: 'clear', heavy: 0, next: null, pv: 0, open: false }; build(c);
+      },
+      playAt: function (name, t, opts) { if (sfx.hasOwnProperty(name)) sfx[name](t, opts || {}); },
+      ambientAt: function (t) { ambStart(t); },
+      stopAmbientAt: function (t) { ambStop(t); },
+      pauseAt: function (on, t) { ambPause(on, t); },
+      updateAt: function (s, t) { update(s, t); },
+      sfxNames: function () { return Object.keys(sfx); },
+      stats: function () { return { on: amb.on, applied: JSON.parse(JSON.stringify(applied)) }; }
+    }
+  };
+})();
+</script>
+<script>
+/* ===== 선인장 키우기 엔진 (화면과 무관, 순수 계산) =====
+ * 시간은 정수 ms, 시뮬 단계 5ms. 열림 정도 o는 정수 0~600(= 0~1) — 0.15초 펴짐 = 단계당 +20, 0.10초 닫힘 = 단계당 -30.
+ * 정수로 두어 "30% 문턱"(180)과 "완전히 편 상태에서 뗀 뒤 0.07초" 같은 경계가 부동소수 오차 없이 정확히 맞는다. */
+var Engine = (function () {
+  'use strict';
+  var STEP = 5, DAY = 150000, O_MAX = 600, O_UP = 20, O_DN = 30, O_TH = 180;
+  var P = {
+    startW: 60, startH: 100, wCap: 90, mmPerWater: 0.5, openCost: 2,
+    clear: [-2.5, -4], rain: [-2, 12, 18], sun: [-4, -30, 6], sand: [-2.5, -90, 12],
+    noonFrom: 40000, noonTo: 110000, noonDry: 2.75, pmBase: 2, pmAccel: 0.08
+  };
+
+  // ---------- 날씨 생성기 ----------
+  function fnv(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h >>> 0;
+  }
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function shuffle(a, rng) { a = a.slice(); for (var i = a.length - 1; i >= 1; i--) { var j = Math.floor(rng() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  function seedOf(date) { return fnv('desert-breath|' + date); }
+  function kstDate(nowMs) {
+    var d = new Date((nowMs == null ? Date.now() : nowMs) + 9 * 3600 * 1000);
+    return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2);
+  }
+  var MORNING = [['clear', 1000], ['rain', 4000], ['clear', 2000], ['rain', 3500], ['clear', 1500], ['sun', 2000], ['clear', 1500], ['rain', 4500]];
+  var Z = {
+    r2: [2000, 2500, 2750, 3000, 3250, 3500], g2: [600, 800, 900, 1000, 1100, 1200], h2: [1500, 1800, 2000, 2200, 2400, 2500],
+    k2: ['sand', 'sand', 'sand', 'sun', 'sun'],
+    r3: [1200, 1400, 1500, 1700, 1800, 1900, 2000, 2200, 2300, 2500], g3: [200, 250, 300, 300, 350, 350, 400, 400, 450, 500],
+    h3: [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 2000], k3: ['sand', 'sand', 'sand', 'sand', 'sand', 'sand', 'sun', 'sun', 'sun', 'sun'],
+    s3: [500, 600, 700, 800], m3: [1200, 1400, 1500, 1700],
+    r4: [500, 600, 700, 800, 1000, 1000, 1100, 1200, 1200, 1300, 1400, 1400, 1500, 1500, 1600, 1600, 1700, 1800],
+    c4: [200, 200, 300, 300, 300, 300, 400, 400, 400, 400, 400, 400, 500, 500, 500, 500, 600, 600],
+    m4: [800, 800, 900, 900, 1000, 1000, 1000, 1100, 1100, 1100, 1100, 1100, 1100, 1200, 1300, 1300, 1300, 1400, 1400]
+  };
+  function weather(seed) {
+    var rng = mulberry32(seed >>> 0), segs = [], t = 0;
+    function add(type, len) { segs.push({ type: type, start: t, end: t + len }); t += len; }
+    MORNING.forEach(function (m) { add(m[0], m[1]); });
+    // 난수 호출 순서 고정: r2 g2 h2 k2 r3 g3 h3 k3 단위번호 s m r4 c4 m4
+    var r2 = shuffle(Z.r2, rng), g2 = shuffle(Z.g2, rng), h2 = shuffle(Z.h2, rng), k2 = ['sand'].concat(shuffle(Z.k2, rng));
+    var r3 = shuffle(Z.r3, rng), g3 = shuffle(Z.g3, rng), h3 = shuffle(Z.h3, rng), k3 = shuffle(Z.k3, rng);
+    var units = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], rng), s3 = shuffle(Z.s3, rng), m3 = shuffle(Z.m3, rng);
+    var r4 = shuffle(Z.r4, rng), c4 = shuffle(Z.c4, rng), m4 = shuffle(Z.m4, rng);
+    var i;
+    for (i = 0; i < 6; i++) { add('clear', g2[i]); add(k2[i], h2[i]); add('rain', r2[i]); }
+    var bund = units.slice(0, 4).sort(function (a, b) { return a - b; });
+    for (i = 0; i < 10; i++) {
+      add('clear', g3[i]); add(k3[i], h3[i]);
+      var bi = bund.indexOf(i);
+      if (bi >= 0) { add('rain', s3[bi]); add('sand', m3[bi]); }
+      add('rain', r3[i]);
+    }
+    for (i = 0; i < 18; i++) { add('sand', m4[i]); add('clear', c4[i]); add('rain', r4[i]); }
+    add('sand', m4[18]);
+    return segs;
+  }
+
+  // ---------- 물 변화율 ----------
+  function extraDry(tm) {
+    if (tm < P.noonFrom) return 0;
+    if (tm < P.noonTo) return -P.noonDry;
+    return -(P.pmBase + P.pmAccel * (tm - P.noonTo) / 1000);
+  }
+  function rates(type, p) { // [닫힘값, 열림값]
+    if (type === 'rain') return [P.rain[0], P.rain[1] + P.rain[2] * p];
+    var v = P[type]; return [v[0], v[1]];
+  }
+  // 뗌 시각을 바꿨을 때 o(tSeg) < 30%가 되는 경계(= 피할 수 있었던 가장 늦은 뗌 시각 t*), 5ms 단위 내림
+  function tStar(tDown, oDown, tSeg) {
+    var tSat = tDown + (O_MAX - oDown) / 4;               // 이 누름으로 완전히 펴지는 시각
+    var r = (O_TH - oDown + 4 * tDown + 6 * tSeg) / 10;    // 펴지는 도중 뗐을 때의 경계
+    if (r > tSat) r = tSeg - (O_MAX - O_TH) / 6;           // 완전히 편 뒤: tSeg - 70ms
+    return Math.floor(r / STEP + 1e-9) * STEP;
+  }
+  function oAt(tDown, oDown, rel, tq) { // 누름(tDown, oDown) 뒤 rel에 뗐을 때 tq 시각의 o (정수 단위)
+    var orl = Math.min(O_MAX, oDown + 4 * (rel - tDown));
+    return Math.max(0, orl - 6 * (tq - rel));
+  }
+
+  // ---------- 한 판 시뮬레이터 ----------
+  // opts: { segs, startW, startH, hooks:{open,close,sting,late,grow,end} }
+  function Sim(segs, opts) {
+    opts = opts || {};
+    this.segs = segs; this.dayEnd = segs[segs.length - 1].end;
+    this.t = 0; this.W = opts.startW != null ? opts.startW : P.startW; this.H = opts.startH != null ? opts.startH : P.startH;
+    this.o = 0; this.si = 0; this.down = {}; this.nDown = 0; this.queue = []; this.hooks = opts.hooks || {};
+    this.presses = []; this.stings = []; this.pending = []; this.rainGain = 0; this.opened = 0;
+    this.segInfo = segs.map(function () { return { oStart: 0, stung: null, extra: 0, missed: 0 }; });
+    this.openSpans = []; this.spanFrom = null;
+    this.over = false; this.sunset = false; this.driedAt = null; this.lastCm = Math.floor(this.H / 10);
+  }
+  Sim.prototype.input = function (t, down, id, forced) {
+    t = Math.max(this.t, Math.round(t / STEP) * STEP);
+    var q = this.queue, ev = { t: t, down: !!down, id: id == null ? 'k' : String(id), forced: !!forced }, i = q.length;
+    while (i > 0 && q[i - 1].t > t) i--;
+    q.splice(i, 0, ev);
+  };
+  Sim.prototype.releaseAll = function (t, forced) {
+    var self = this;
+    Object.keys(this.down).forEach(function (id) { self.input(t, false, id, forced); });
+    // 아직 적용 안 된 누름도 함께 뗀다
+    var ids = {}; this.queue.forEach(function (e) { if (e.down) ids[e.id] = 1; });
+    Object.keys(ids).forEach(function (id) { if (!self.down[id]) self.input(t, false, id, forced); });
+  };
+  // 지금 시각(this.t) 이하의 입력을 바로 적용(일시정지 순간 강제 뗌을 즉시 반영). 다음 단계 ①과 같은 결과
+  Sim.prototype.applyNow = function () { while (this.queue.length && this.queue[0].t <= this.t) this._apply(this.queue.shift()); };
+  Sim.prototype._apply = function (ev) {
+    if (ev.down) {
+      if (this.down[ev.id]) return;
+      this.down[ev.id] = 1; this.nDown++;
+      if (this.nDown === 1) {
+        this.W -= P.openCost; this.opened++;
+        this.presses.push({ tDown: this.t, oDown: this.o, tUp: null });
+        if (this.hooks.open) this.hooks.open(this);
+      }
+    } else {
+      if (!this.down[ev.id]) return;
+      delete this.down[ev.id]; this.nDown--;
+      if (this.nDown === 0) {
+        var pr = this.presses[this.presses.length - 1]; pr.tUp = this.t;
+        if (this.hooks.close) this.hooks.close(this, ev.forced);
+        this._resolvePending(pr);
+      }
+    }
+  };
+  Sim.prototype._resolvePending = function (pr) {
+    var keep = [];
+    for (var i = 0; i < this.pending.length; i++) {
+      var s = this.pending[i];
+      if (s.press === pr) { this._fillLate(s, pr); if (this.hooks.late) this.hooks.late(this, s); } else keep.push(s);
+    }
+    this.pending = keep;
+  };
+  Sim.prototype._fillLate = function (s, pr) {
+    s.tUp = pr.tUp; s.lateMs = pr.tUp - s.tStar; delete s.press;
+  };
+  Sim.prototype.step = function () {
+    if (this.over) return;
+    var t = this.t, segs = this.segs;
+    // ① t 이하의 입력
+    while (this.queue.length && this.queue[0].t <= t) this._apply(this.queue.shift());
+    while (this.si < segs.length - 1 && t >= segs[this.si].end) this.si++;
+    var sg = segs[this.si], info = this.segInfo[this.si];
+    if (t === sg.start) info.oStart = this.o;
+    // ② 따끔
+    var hz = sg.type === 'sun' || sg.type === 'sand';
+    if (hz && !info.stung && this.o >= O_TH) {
+      var imm = P[sg.type][2];
+      this.W -= imm;
+      var s = { t: t, seg: this.si, segStart: sg.start, type: sg.type, imm: imm, lost: imm, kind: 'inside', lateMs: null, tStar: null, tUp: null };
+      if (info.oStart >= O_TH) {
+        var pr = null;
+        for (var k = this.presses.length - 1; k >= 0; k--) if (this.presses[k].tDown < sg.start) { pr = this.presses[k]; break; }
+        if (pr) {
+          var ts = tStar(pr.tDown, pr.oDown, sg.start);
+          if (ts < pr.tDown || oAt(pr.tDown, pr.oDown, pr.tDown, sg.start) >= O_TH) s.kind = 'repress';
+          else {
+            s.kind = 'late'; s.tStar = ts;
+            if (pr.tUp != null && pr.tUp <= t) this._fillLate(s, pr); else { s.press = pr; this.pending.push(s); }
+          }
+        } else s.kind = 'repress';
+      }
+      info.stung = s; this.stings.push(s);
+      if (this.hooks.sting) this.hooks.sting(this, s);
+    }
+    // ③ o 갱신
+    var o0 = this.o, o1 = this.nDown > 0 ? Math.min(O_MAX, o0 + O_UP) : Math.max(0, o0 - O_DN);
+    this.o = o1;
+    // ④ 물 변화
+    var ob = (o0 + o1) / 2 / O_MAX, tm = t + STEP / 2, p = (tm - sg.start) / (sg.end - sg.start);
+    var rv = rates(sg.type, p), dt = STEP / 1000;
+    var dW = dt * ((1 - ob) * rv[0] + ob * rv[1] + extraDry(tm));
+    this.W += dW;
+    if (sg.type === 'rain') { if (dW > 0) this.rainGain += dW; info.missed += (rv[1] - rv[0]) * (1 - ob) * dt; }
+    else if (hz) info.extra += ob * (rv[0] - rv[1]) * dt;
+    // 펼친 구간 기록(o ≥ 30%)
+    var opn = o1 >= O_TH;
+    if (opn && this.spanFrom == null) this.spanFrom = t + STEP; else if (!opn && this.spanFrom != null) { this.openSpans.push([this.spanFrom, t + STEP]); this.spanFrom = null; }
+    this.t = t + STEP;
+    // ⑤ 성장
+    if (this.W > P.wCap) {
+      this.H += (this.W - P.wCap) * P.mmPerWater; this.W = P.wCap;
+      var cm = Math.floor(this.H / 10);
+      if (cm > this.lastCm) { this.lastCm = cm; if (this.hooks.grow) this.hooks.grow(this, cm); }
+    }
+    // ⑥ 마름 / 해질녘
+    if (this.W <= 0) { this.W = Math.max(this.W, 0); this.driedAt = this.t; this._end(); }
+    else if (this.t >= this.dayEnd) { this.sunset = true; this._end(); }
+  };
+  Sim.prototype._end = function () {
+    this.over = true;
+    if (this.spanFrom != null) { this.openSpans.push([this.spanFrom, this.t]); this.spanFrom = null; }
+    if (this.hooks.end) this.hooks.end(this);
+  };
+  Sim.prototype.runTo = function (tEnd) { while (!this.over && this.t + STEP <= tEnd) this.step(); };
+  Sim.prototype.runAll = function () { while (!this.over) this.step(); };
+  Sim.prototype.seg = function () {
+    var i = this.si; while (i < this.segs.length - 1 && this.t >= this.segs[i].end) i++;
+    return this.segs[i];
+  };
+  Sim.prototype.result = function () {
+    var self = this, sun = 0, sand = 0, lost = 0, worst = null, lateAny = false;
+    this.stings.forEach(function (s) {
+      s.lost = s.imm + self.segInfo[s.seg].extra;
+      if (s.type === 'sun') sun++; else sand++;
+      lost += s.lost;
+      if (s.kind === 'late' && s.lateMs != null) lateAny = true;
+      if (!worst || s.lost > worst.lost + 1e-9) worst = s;
+    });
+    var w = null;
+    if (worst) w = { t: worst.t, segStart: worst.segStart, type: worst.type, lost: worst.lost, kind: worst.kind, lateMs: worst.lateMs };
+    else {
+      var best = null;
+      this.segs.forEach(function (sg, i) {
+        if (sg.type !== 'rain' || sg.start >= self.t) return;
+        var m = self.segInfo[i].missed;
+        if (!best || m > best.missed + 1e-9) best = { t: sg.start, type: 'rain', missed: m };
+      });
+      w = best;
+    }
+    var mm = Math.floor(this.H + 1e-9);
+    return {
+      mm: mm, cm: (mm / 10).toFixed(1), sunset: this.sunset, driedAt: this.driedAt, endT: this.t, W: this.W, H: this.H,
+      stings: { sun: sun, sand: sand, count: sun + sand, lostWater: lost },
+      rainGain: this.rainGain, growWater: (this.H - P.startH) * 2, opened: this.opened,
+      worst: w, lateAny: lateAny, openSpans: this.openSpans.slice(),
+      stingList: this.stings.map(function (s) { return { t: s.t, type: s.type, kind: s.kind, lateMs: s.lateMs, lost: s.imm + self.segInfo[s.seg].extra, segStart: s.segStart }; })
+    };
+  };
+
+  // ---------- 봇 ----------
+  function gauss(rng) { var u = 1 - rng(), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  var BOTS = {
+    beginner: { name: '초보', sigma: 150 }, coward: { name: '겁쟁이', sigma: 60 }, greedy: { name: '욕심쟁이', sigma: 90 },
+    middle: { name: '중간', sigma: 60 }, skilled: { name: '숙련', sigma: 35 }, perfect: { name: '완벽', sigma: 0 }
+  };
+  // 짧은 비를 받았을 때 순이득(완벽 봇): 미리 펴기 손해 + 여는 값 + 비 흡수 이득 + 뒤 조각에 남은 닫힘 손해
+  function netGain(segs, i, dn, up) {
+    var sg = segs[i], o = 0, g = -P.openCost, t = dn, k = i - 1;
+    while (k > 0 && segs[k].end > dn) k--;
+    for (t = dn; ; t += STEP) {
+      var o1 = t < up ? Math.min(O_MAX, o + O_UP) : Math.max(0, o - O_DN);
+      if (o === 0 && o1 === 0 && t >= up) break;
+      var j = k; while (j < segs.length - 1 && t >= segs[j].end) j++; k = j;
+      var s = segs[j], ob = (o + o1) / 2 / O_MAX, tm = t + STEP / 2, rv = rates(s.type, (tm - s.start) / (s.end - s.start));
+      g += ob * (rv[1] - rv[0]) * STEP / 1000;
+      o = o1;
+    }
+    return g;
+  }
+  function botInputs(segs, bot, seed) {
+    var cfg = BOTS[bot.name] || BOTS[bot], name = bot.name || bot;
+    var sigma = bot.sigma != null ? bot.sigma : cfg.sigma;
+    var rng = mulberry32(((bot.botSeed != null ? bot.botSeed : seed) ^ 0x9E3779B9) >>> 0);
+    var N = function () { return sigma ? sigma * gauss(rng) : 0; };
+    var ev = [], last = -Infinity;
+    segs.forEach(function (sg, i) {
+      if (sg.type !== 'rain') return;
+      var S = sg.start, E = sg.end, len = E - S, dn, up, prev = segs[i - 1];
+      if (name === 'beginner') { dn = S + 300 + N(); up = E + 150 + N(); }
+      else if (name === 'coward') { if (len < 900) return; dn = S + 50 + N(); up = E - 450 + N(); }
+      else if (name === 'greedy') { dn = S + N(); up = E + N(); }
+      else if (name === 'middle') { if (len < 600) return; dn = S + N(); up = E - 200 + N(); }
+      else if (name === 'skilled' || name === 'perfect') {
+        dn = S - (prev && prev.type === 'clear' ? 150 : 0);
+        up = name === 'perfect' ? E - 75 : E - 100 + N();
+      } else return;
+      dn = Math.round(dn / STEP) * STEP; up = Math.round(up / STEP) * STEP;
+      if (dn <= last) dn = last + STEP;
+      if (dn < 0) dn = 0;
+      if (dn >= up) return;
+      if (name === 'perfect' && netGain(segs, i, dn, up) <= 0) return;
+      ev.push({ t: dn, down: true }); ev.push({ t: up, down: false }); last = up;
+    });
+    return ev;
+  }
+  function simulate(o) {
+    var segs = o.segs || weather(o.seed != null ? o.seed : seedOf(o.date));
+    var sim = new Sim(segs, { startW: o.startW, startH: o.startH });
+    var inputs = o.inputs || botInputs(segs, o.bot, o.seed != null ? o.seed : seedOf(o.date));
+    inputs.forEach(function (e) { sim.input(e.t, e.down, e.id != null ? e.id : 'bot'); });
+    sim.runAll();
+    return sim.result();
+  }
+  function quant(a, q) { var s = a.slice().sort(function (x, y) { return x - y; }); var i = (s.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return s[lo] + (s[hi] - s[lo]) * (i - lo); }
+  function runBots(o) {
+    var list = o.seeds ? o.seeds.map(function (s) { return { seed: s }; }) : o.dates.map(function (d) { return { seed: seedOf(d) }; });
+    var hs = [], sun = 0, st = 0, len = [];
+    list.forEach(function (x) {
+      var bot = typeof o.bot === 'string' ? { name: o.bot } : o.bot;
+      var r = simulate({ seed: x.seed, bot: bot });
+      hs.push(r.mm / 10); if (r.sunset) sun++; st += r.stings.count; len.push(r.endT / 1000);
+    });
+    return { n: hs.length, median: quant(hs, 0.5), p10: quant(hs, 0.1), p90: quant(hs, 0.9), sunsetRate: sun / hs.length, stingsAvg: st / hs.length, lengthMedian: quant(len, 0.5) };
+  }
+
+  return {
+    STEP: STEP, DAY: DAY, O_MAX: O_MAX, O_TH: O_TH, P: P, Z: Z, BOTS: BOTS,
+    fnv: fnv, mulberry32: mulberry32, seedOf: seedOf, kstDate: kstDate, weather: weather, rates: rates, extraDry: extraDry,
+    tStar: tStar, oAt: oAt, Sim: Sim, botInputs: botInputs, simulate: simulate, runBots: runBots, quant: quant
+  };
+})();
+
+/* ===== 그리기 (art-ui.md / art-ref.js에서 옮김) ===== */
+var Draw = (function () {
+  'use strict';
+  var PAL = {
+    light: {
+      skyDawn: ['#9fb1c6', '#d6dee6'], skyNoon: ['#e9d3a6', '#f6ebd3'], skyDusk: ['#a994c6', '#ecd3d8'],
+      sand: '#e4cc9c', dune: '#c4a46a', zoneLine: '#b89559', zoneInk: '#6e5530', zoneFill: 'rgba(63,127,44,.08)',
+      open: '#7cc35a', openEdge: '#3f7f2c', closed: '#7f9683', closedEdge: '#4b5f50', dry: '#b59a62', dryEdge: '#7d6538',
+      pore: '#f4fbe6', poreDot: '#3f7f2c', crease: '#4b5f50', spine: '#fbf6e6', grain: '#8a5a2b', grainHi: '#e2b77a',
+      fullRing: '#2f7fc4', drop: '#5aa7e0', dropEdge: '#2f6fa8', prick: '#d64545', lossInk: '#b2452f', bloom: '#ef8aa6', bloomC: '#f2b134',
+      ruler: '#6b5a3e', rulerTxt: '#5c4a2e', nowLine: '#1f2430', gold: '#f2b134', accent: '#e4572e', well: '#fbfaf7', muted: '#6b7280',
+      cloud: '#eef2f6', cloudEdge: '#6f86a0', rain: '#2f6fb0', rainTint: 'rgba(47,111,176,.13)',
+      sandWave: '#b07a36', dust: '#a8773f', sandTint: 'rgba(176,122,54,.16)', sandGrad: 'rgba(176,122,54,.45)',
+      sun: '#f5b82e', sunEdge: '#c9761a', ray: '#e8862a', sunTint: 'rgba(245,184,46,.20)', heat: 'rgba(245,170,40,.16)',
+      band: 'rgba(255,255,255,.35)', past: 'rgba(244,241,234,.6)', retroBg: '#f4f1ea'
+    },
+    dark: {
+      skyDawn: ['#16202d', '#263446'], skyNoon: ['#2b2518', '#3d3424'], skyDusk: ['#1f1a32', '#3b2a40'],
+      sand: '#3a3125', dune: '#55462f', zoneLine: '#7a6544', zoneInk: '#d9c39a', zoneFill: 'rgba(143,212,106,.10)',
+      open: '#8fd46a', openEdge: '#cdeeb4', closed: '#6e8573', closedEdge: '#a9bcad', dry: '#9c8455', dryEdge: '#d2bb8a',
+      pore: '#f4fbe6', poreDot: '#2f6a20', crease: '#3c4c40', spine: '#e8e0c8', grain: '#c08a4c', grainHi: '#f0cf98',
+      fullRing: '#7cc0f2', drop: '#7cc0f2', dropEdge: '#cfe8fb', prick: '#ff6b6b', lossInk: '#f39a84', bloom: '#f39ab3', bloomC: '#ffc94d',
+      ruler: '#b9a77f', rulerTxt: '#cbb98f', nowLine: '#eceef3', gold: '#ffc94d', accent: '#ff7a50', well: '#161921', muted: '#9aa1ae',
+      cloud: '#c9d3df', cloudEdge: '#8ea6c2', rain: '#8cc0ec', rainTint: 'rgba(140,192,236,.12)',
+      sandWave: '#d9a35c', dust: '#c89558', sandTint: 'rgba(217,163,92,.14)', sandGrad: 'rgba(217,163,92,.45)',
+      sun: '#ffc94d', sunEdge: '#ff9d3a', ray: '#ffb049', sunTint: 'rgba(255,201,77,.14)', heat: 'rgba(255,190,70,.10)',
+      band: 'rgba(18,20,26,.35)', past: 'rgba(18,20,26,.55)', retroBg: '#12141a'
+    }
+  };
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  var hexCache = {};
+  function hex(h) { var c = hexCache[h]; if (c) return c; c = [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; hexCache[h] = c; return c; }
+  function mixHex(a, b, t) { var x = hex(a), y = hex(b); return '#' + [0, 1, 2].map(function (i) { return ('0' + Math.round(lerp(x[i], y[i], t)).toString(16)).slice(-2); }).join(''); }
+  function hash(i, k) { var s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return s - Math.floor(s); }
+  function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  // CSS cubic-bezier(x1,y1,x2,y2) 계산
+  function bezier(x1, y1, x2, y2) {
+    function cx(t) { return 3 * x1 * t * (1 - t) * (1 - t) + 3 * x2 * t * t * (1 - t) + t * t * t; }
+    function cy(t) { return 3 * y1 * t * (1 - t) * (1 - t) + 3 * y2 * t * t * (1 - t) + t * t * t; }
+    return function (x) {
+      if (x <= 0) return 0; if (x >= 1) return 1;
+      var lo = 0, hi = 1, t = x;
+      for (var i = 0; i < 24; i++) { t = (lo + hi) / 2; if (cx(t) < x) lo = t; else hi = t; }
+      return cy(t);
+    };
+  }
+  var EASE = { fall: bezier(.5, 0, .9, .6), pop: bezier(.3, 1.4, .5, 1), inOut: bezier(.42, 0, .58, 1), out: bezier(0, 0, .58, 1), in_: bezier(.42, 0, 1, 1) };
+
+  function skyColors(P, t) {
+    var u = clamp(t / 150, 0, 1), a, b, k;
+    if (u < 0.5) { a = P.skyDawn; b = P.skyNoon; k = u / 0.5; } else { a = P.skyNoon; b = P.skyDusk; k = (u - 0.5) / 0.5; }
+    k = k * k * (3 - 2 * k);
+    return [mixHex(a[0], b[0], k), mixHex(a[1], b[1], k)];
+  }
+
+  function bodyPath(ctx, w, hh, bulge, wob, seed) {
+    var r = w / 2, top = -Math.max(hh - r, r * 0.4), N = 12, i, y, x;
+    ctx.beginPath();
+    ctx.moveTo(-r, 0);
+    for (i = 1; i <= N; i++) { y = top * i / N; x = -r - bulge * Math.sin(Math.PI * i / N) + wob * Math.sin(i * 2.1 + seed); ctx.lineTo(x, y); }
+    ctx.arc(0, top, r, Math.PI, 0);
+    for (i = N - 1; i >= 0; i--) { y = top * i / N; x = r + bulge * Math.sin(Math.PI * i / N) + wob * Math.sin(i * 1.7 + seed + 1); ctx.lineTo(x, y); }
+    ctx.closePath();
+    return top;
+  }
+
+  // s = { x, gy, bw, h, o(0..1), W, grains, flash, flashSolid, fade(해 따끔 바램 0..1), tilt, bloom, withered, fullA, breathe(0..1) }
+  function drawCactus(ctx, P, s) {
+    var o = s.o, w = s.bw * (0.5 + 0.5 * Math.min(Math.max(s.W, 0), 90) / 90);
+    var dry = clamp((35 - s.W) / 35, 0, 1), wd = Math.max(dry * 0.7, s.withered || 0, (s.fade || 0) * 0.5);
+    var hh = s.h * (1 - 0.08 * (1 - o)) * (1 - 0.05 * dry);
+    var body = mixHex(mixHex(P.closed, P.open, o), P.dry, wd);
+    var edge = mixHex(mixHex(P.closedEdge, P.openEdge, o), P.dryEdge, wd);
+    var lw = Math.max(2, s.bw * 0.035);
+    var bulge = w * (0.07 * o - 0.035 * (1 - o)) - dry * w * 0.05;
+    var wob = dry * w * 0.035;
+    ctx.save();
+    ctx.translate(s.x, s.gy);
+    if (s.tilt) ctx.rotate(s.tilt);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (!s.withered) {
+      var full = s.W >= 88;
+      ctx.save();
+      bodyPath(ctx, s.bw, hh, s.bw * 0.07 * o - s.bw * 0.035 * (1 - o), 0, 0);
+      ctx.setLineDash(full ? [] : [5, 5]);
+      ctx.strokeStyle = P.fullRing; ctx.globalAlpha = s.fullA != null ? s.fullA : (full ? 0.85 : 0.4); ctx.lineWidth = full ? 2.5 : 1.5;
+      ctx.stroke(); ctx.restore();
+    }
+    var aw = Math.max(7, w * 0.34);
+    [[-1, 0.42], [1, 0.6]].forEach(function (a) {
+      var side = a[0], ay = -hh * a[1];
+      var reach = w * (0.16 + 0.42 * o) * (1 - 0.3 * dry);
+      var up = hh * (0.12 + 0.16 * o) * (1 - 0.5 * dry);
+      var ex = side * (w / 2 + reach), tipx = ex + side * w * (0.12 * o - 0.06 * (1 - o));
+      var tipy = ay - aw * 0.4 - up + dry * up * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(side * w * 0.2, ay);
+      ctx.quadraticCurveTo(ex, ay, ex, ay - aw * 0.4);
+      ctx.lineTo(tipx, tipy);
+      ctx.strokeStyle = edge; ctx.lineWidth = aw + lw * 2; ctx.stroke();
+      ctx.strokeStyle = body; ctx.lineWidth = aw; ctx.stroke();
+      ctx.strokeStyle = P.spine; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(tipx, tipy - aw / 2); ctx.lineTo(tipx, tipy - aw / 2 - 4); ctx.stroke();
+    });
+    var top = bodyPath(ctx, w, hh, bulge, wob, 3);
+    ctx.fillStyle = body; ctx.fill();
+    ctx.save(); ctx.clip();
+    var spread = 0.15 + 0.1 * o;
+    ctx.strokeStyle = edge; ctx.lineWidth = Math.max(1.5, w * 0.03) + 1.2 * (1 - o); ctx.globalAlpha = 0.28 + 0.4 * (1 - o);
+    [-1, 0, 1].forEach(function (k) {
+      ctx.beginPath(); ctx.moveTo(k * w * spread * 1.15, 2); ctx.quadraticCurveTo(k * w * spread * 1.25, top * 0.6, k * w * spread * 0.6, top - w * 0.3); ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+    if (o > 0.05) {
+      ctx.globalAlpha = clamp((o - 0.05) / 0.6, 0, 1);
+      var pr = Math.max(1.8, w * 0.04), cols = [-0.31, -0.1, 0.1, 0.31], row = Math.max(11, w * 0.2), y, j = 0;
+      for (y = -row * 0.8; y > top - w * 0.15; y -= row, j++) {
+        for (var ci = 0; ci < 4; ci++) {
+          var px = cols[ci] * w * (0.85 + 0.3 * o) + ((j % 2) ? w * 0.02 : -w * 0.02);
+          ctx.fillStyle = P.pore; ctx.beginPath(); ctx.ellipse(px, y, pr, pr * 1.35, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = P.poreDot; ctx.beginPath(); ctx.ellipse(px, y, pr * 0.35, pr * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (o < 0.95) {
+      ctx.globalAlpha = (1 - o) * 0.75; ctx.strokeStyle = P.crease; ctx.lineWidth = Math.max(1.5, w * 0.03);
+      var cy, step = Math.max(10, w * 0.17), jj = 0;
+      for (cy = -step * 0.7; cy > top; cy -= step, jj++) {
+        [-0.25, 0, 0.25].forEach(function (c) {
+          var cx = c * w + ((jj % 2) ? w * 0.06 : -w * 0.06);
+          ctx.beginPath(); ctx.moveTo(cx - w * 0.09, cy); ctx.quadraticCurveTo(cx, cy + w * 0.06, cx + w * 0.09, cy); ctx.stroke();
+        });
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (dry > 0) {
+      ctx.globalAlpha = dry * 0.85; ctx.strokeStyle = mixHex(P.dryEdge, P.crease, 0.3); ctx.lineWidth = Math.max(1.2, w * 0.025);
+      var dy, st = Math.max(7, w * 0.12);
+      for (dy = -st * 0.6; dy > top; dy -= st) {
+        ctx.beginPath();
+        for (var xx = -w / 2; xx <= w / 2; xx += 3) { var yy = dy + Math.sin(xx * 0.55 + dy) * w * 0.03; if (xx === -w / 2) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (s.heat) { ctx.globalAlpha = 0.25 * s.heat; ctx.fillStyle = P.sun; ctx.fillRect(-w, top - w, w * 2, -top + w + 4); ctx.globalAlpha = 1; }
+    for (var g = 0; g < Math.min(s.grains || 0, 16); g++) {
+      var gx = (hash(g, 1) - 0.5) * w * 0.75, gy2 = top * (0.08 + 0.85 * hash(g, 2)), gr = Math.max(2.4, w * 0.05);
+      ctx.fillStyle = P.grain; ctx.strokeStyle = P.crease; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(gx, gy2, gr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = P.grainHi; ctx.beginPath(); ctx.arc(gx - gr * 0.35, gy2 - gr * 0.35, gr * 0.38, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    bodyPath(ctx, w, hh, bulge, wob, 3);
+    ctx.strokeStyle = edge; ctx.lineWidth = lw; ctx.stroke();
+    if (s.breathe) { ctx.strokeStyle = P.lossInk; ctx.globalAlpha = s.breathe; ctx.lineWidth = lw; ctx.stroke(); ctx.globalAlpha = 1; }
+    if (s.flash) { ctx.strokeStyle = P.prick; ctx.globalAlpha = s.flash; ctx.lineWidth = lw + 2; ctx.stroke(); ctx.globalAlpha = 1; }
+    ctx.strokeStyle = P.spine; ctx.lineWidth = 1.5;
+    for (var sy = -10; sy > top; sy -= 14) {
+      [-1, 1].forEach(function (sd) { var sx = sd * (w / 2 + bulge * Math.sin(Math.PI * sy / top)); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + sd * 4, sy - 3); ctx.stroke(); });
+    }
+    [-0.5, 0, 0.5].forEach(function (k) { var a = -Math.PI / 2 + k * 0.6; ctx.beginPath(); ctx.moveTo(Math.cos(a) * w / 2 * 0.9, top + Math.sin(a) * w / 2 * 0.9); ctx.lineTo(Math.cos(a) * (w / 2 + 6), top + Math.sin(a) * (w / 2 + 6)); ctx.stroke(); });
+    if (s.bloom) {
+      var b = s.bloom, fr = Math.max(6, w * 0.2) * b, fy = top - w / 2 - fr * 0.3;
+      ctx.globalAlpha = s.bloomA != null ? s.bloomA : 1;
+      ctx.fillStyle = P.bloom;
+      for (var pi = 0; pi < 5; pi++) { var pa = -Math.PI / 2 + pi * Math.PI * 2 / 5; ctx.beginPath(); ctx.ellipse(Math.cos(pa) * fr * 0.6, fy + Math.sin(pa) * fr * 0.6, fr * 0.55, fr * 0.32, pa, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = P.bloomC; ctx.beginPath(); ctx.arc(0, fy, fr * 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+    return { top: top - w / 2, w: w, hh: hh };
+  }
+
+  function drawDrop(ctx, P, x, y, r, a) {
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.beginPath(); ctx.moveTo(x, y - r * 1.6); ctx.quadraticCurveTo(x + r, y - r * 0.2, x, y + r); ctx.quadraticCurveTo(x - r, y - r * 0.2, x, y - r * 1.6);
+    ctx.strokeStyle = P.pore; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = P.drop; ctx.fill(); ctx.strokeStyle = P.dropEdge; ctx.lineWidth = 1.2; ctx.stroke(); ctx.restore();
+  }
+
+  // 날씨 조각(띠 안). 조각은 진짜 좌표 x0..x1, 보이는 범위 vl..vr만 계산(무늬는 x0 기준이라 조각에 붙어 흐른다)
+  function drawSeg(ctx, P, type, x0, x1, by, bh, at, vl, vr) {
+    var col = { rain: P.rainTint, sand: P.sandTint, sun: P.sunTint }[type];
+    if (!col) return;
+    var L = Math.max(x0, vl - 20), R = Math.min(x1, vr + 20);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, by, x1 - x0, bh); ctx.clip();
+    ctx.fillStyle = col; ctx.fillRect(L, by, R - L, bh);
+    var k, x;
+    if (type === 'rain') {
+      ctx.strokeStyle = P.rain; ctx.lineCap = 'round';
+      for (k = Math.max(0, Math.floor((L - x0 - 5) / 9)); ; k++) {
+        x = x0 + 5 + 9 * k; if (x >= x1 - 2 || x > R) break;
+        var p = (x - x0) / Math.max(1, x1 - x0);
+        var off = (at * 20 + hash(k, 4) * bh) % (bh * 0.3);
+        ctx.lineWidth = 1.5 + 3.5 * p;
+        ctx.beginPath(); ctx.moveTo(x, by + bh * 0.5 + off * 0.3); ctx.lineTo(x, by + bh - 4); ctx.stroke();
+      }
+      var cr = bh * 0.2, cyy = by + bh * 0.33, step = cr * 1.3;
+      ctx.fillStyle = P.cloud; ctx.strokeStyle = P.cloudEdge; ctx.lineWidth = 2;
+      ctx.beginPath();
+      var any = false;
+      for (k = Math.max(0, Math.floor((L - x0 - cr * 0.9) / step) - 1); ; k++) {
+        var c = x0 + cr * 0.9 + step * k; if (c >= x1 + cr * 0.2 || c > R + cr * 2) break;
+        var rr = cr * (k % 2 ? 1.15 : 0.95), cyk = cyy - (k % 2 ? cr * 0.15 : 0);
+        ctx.moveTo(c + rr, cyk); ctx.arc(c, cyk, rr, 0, Math.PI * 2); any = true;
+      }
+      if (!any) { ctx.moveTo((x0 + x1) / 2 + cr, cyy); ctx.arc((x0 + x1) / 2, cyy, cr, 0, Math.PI * 2); }
+      ctx.rect(L - 4, cyy, R - L + 8, cr * 0.85);
+      ctx.stroke(); ctx.fill();
+    } else if (type === 'sand') {
+      ctx.strokeStyle = P.sandWave; ctx.lineCap = 'round';
+      for (var i = 0; i < 3; i++) {
+        ctx.lineWidth = 3.2 - i * 0.4;
+        ctx.beginPath();
+        var yb = by + bh * [0.3, 0.52, 0.74][i], first = true;
+        for (x = L - 10; x <= R + 10; x += 3) { var y = yb + Math.sin((x - x0 + at * 30 + i * 9) * 0.12) * bh * 0.05; if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y); }
+        ctx.stroke();
+      }
+      ctx.fillStyle = P.dust; ctx.globalAlpha = 0.6;
+      var n = (x1 - x0) / 7;
+      for (var d = 0; d < n; d++) { var dx = x0 + hash(d, 7) * (x1 - x0); if (dx < L - 4 || dx > R + 4) continue; ctx.beginPath(); ctx.arc(dx, by + bh * (0.15 + 0.8 * hash(d, 8)), 1.4 + hash(d, 9) * 1.2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = 1;
+    } else if (type === 'sun') {
+      var r = Math.min(bh * 0.24, (x1 - x0) * 0.32), sy = by + bh * 0.5;
+      var reps = Math.max(1, Math.floor((x1 - x0) / (bh * 1.4)));
+      for (var q = 0; q < reps; q++) {
+        var sx = x0 + (x1 - x0) * (q + 0.5) / reps;
+        if (sx + r * 2 < L || sx - r * 2 > R) continue;
+        ctx.strokeStyle = P.ray; ctx.lineWidth = Math.max(2, r * 0.18); ctx.lineCap = 'round';
+        for (var a = 0; a < 8; a++) { var an = a * Math.PI / 4 + at * 0.12; ctx.beginPath(); ctx.moveTo(sx + Math.cos(an) * r * 1.35, sy + Math.sin(an) * r * 1.35); ctx.lineTo(sx + Math.cos(an) * r * 1.8, sy + Math.sin(an) * r * 1.8); ctx.stroke(); }
+        ctx.fillStyle = P.sun; ctx.strokeStyle = P.sunEdge; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      }
+    }
+    ctx.restore();
+    var ec = { rain: P.rain, sand: P.sandWave, sun: P.sunEdge }[type];
+    ctx.fillStyle = ec; ctx.fillRect(Math.round(x0), by, 2, bh); ctx.fillRect(Math.round(x1) - 2, by, 2, bh);
+  }
+
+  function drawSegScene(ctx, P, type, x0, x1, top, gy, at, vl, vr) {
+    if (type === 'clear') return;
+    var L = Math.max(x0, vl), R = Math.min(x1, vr);
+    if (R <= L) return;
+    ctx.save(); ctx.beginPath(); ctx.rect(L, top, R - L, gy - top); ctx.clip();
+    var k, x;
+    if (type === 'rain') {
+      ctx.strokeStyle = P.rain; ctx.lineCap = 'round'; ctx.globalAlpha = 0.5;
+      for (k = Math.max(0, Math.floor((L - x0 - 7) / 16)); ; k++) {
+        x = x0 + 7 + 16 * k; if (x >= x1 - 2 || x > R + 2) break;
+        var p = (x - x0) / Math.max(1, x1 - x0), len = 12 + 10 * p;
+        ctx.lineWidth = 1.2 + 2.6 * p;
+        for (var y = top - 70 + (at * 600 + hash(k, 2) * 70) % 70; y < gy; y += 70) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + len); ctx.stroke(); }
+      }
+    } else if (type === 'sand') {
+      var h = (gy - top) * 0.45;
+      var grd = ctx.createLinearGradient(0, gy - h, 0, gy); grd.addColorStop(0, 'rgba(0,0,0,0)'); grd.addColorStop(1, P.sandGrad);
+      ctx.fillStyle = grd; ctx.fillRect(L, gy - h, R - L, h);
+      ctx.strokeStyle = P.sandWave; ctx.lineWidth = 2; ctx.globalAlpha = 0.7;
+      for (var i = 0; i < 4; i++) {
+        var yy = gy - h * (0.15 + 0.2 * i), sh = ((-(at * 90) + i * 37) % 60 + 60) % 60;
+        for (var sx = x0 + sh + Math.max(0, Math.floor((L - x0 - sh) / 60) - 1) * 60; sx < R; sx += 60) { ctx.beginPath(); ctx.moveTo(sx, yy); ctx.quadraticCurveTo(sx + 9, yy - 4, sx + 18, yy); ctx.stroke(); }
+      }
+      ctx.fillStyle = P.dust; ctx.globalAlpha = 0.65;
+      var n = (x1 - x0) / 5;
+      for (var d = 0; d < n; d++) { var dx = x0 + hash(d, 3) * (x1 - x0); if (dx < L - 3 || dx > R + 3) continue; ctx.beginPath(); ctx.arc(dx, gy - h * hash(d, 5), 1.3 + hash(d, 6), 0, Math.PI * 2); ctx.fill(); }
+    } else if (type === 'sun') {
+      ctx.fillStyle = P.heat; ctx.fillRect(L, top, R - L, gy - top);
+      ctx.strokeStyle = P.ray; ctx.lineWidth = 2; ctx.globalAlpha = 0.35; ctx.setLineDash([6, 10]);
+      for (var bx = x0 + 12 + Math.max(0, Math.floor((L - x0 - 12) / 26)) * 26; bx < R + 10; bx += 26) { ctx.beginPath(); ctx.moveTo(bx, top); ctx.lineTo(bx - 8, gy); ctx.stroke(); }
+    }
+    ctx.restore();
+  }
+
+  // 레이아웃: W×SH 무대. zoneR이 있으면 누르는 곳 비율을 고정(데모)
+  function layout(W, SH, zoneR) {
+    var landscape = W > SH, low = SH < 420;
+    var r = low ? 0.64 : landscape ? 0.6 : 0.56, SZ;
+    if (zoneR) SZ = Math.round(SH * (1 - zoneR));
+    else { SZ = Math.round(SH * r); if (SH - SZ < 110) SZ = SH - 110; }
+    var by = low ? 6 : 10;
+    var BH = clamp(Math.round(SZ * 0.2), zoneR ? 34 : 52, 112);
+    var nowX = Math.round(W * (W < 520 ? 0.34 : 0.3));
+    var right = W - 8, fpx = right - nowX;
+    var gap = low ? 16 : 26;
+    var space = SZ - (by + BH) - gap;
+    var Hmax = Math.round(space * 0.86);
+    var bw = clamp(Math.round(Math.min(W * 0.1, space * 0.32)), zoneR ? 24 : 36, 96);
+    var rulerX = Math.round(nowX - bw * 1.3 - 14);
+    return { W: W, SH: SH, SZ: SZ, gy: SZ, by: by, BH: BH, nowX: nowX, right: right, pxPerSec: fpx / 3, Hmax: Hmax, bw: bw, rulerX: rulerX, zoneTop: SZ, zoneH: SH - SZ, low: low, small: !!zoneR };
+  }
+  var ZOOM = [25, 40, 60, 90];
+  function zoomFor(Hcm) { for (var i = 0; i < ZOOM.length; i++) if (Hcm <= ZOOM[i] * 0.85) return ZOOM[i]; return ZOOM[ZOOM.length - 1]; }
+
+  function drawRuler(ctx, P, L, R, Hcm, bestCm, flagScale) {
+    var ppcm = L.Hmax / R, x = L.rulerX, gy = L.gy;
+    ctx.save();
+    ctx.strokeStyle = P.ruler; ctx.fillStyle = P.rulerTxt; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy - L.Hmax); ctx.stroke();
+    ctx.font = '700 11px system-ui, -apple-system, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (var c = 0; c <= Math.floor(R); c++) {
+      var y = gy - c * ppcm, len = c % 10 === 0 ? 10 : c % 5 === 0 ? 7 : 4;
+      if (y < gy - L.Hmax - 0.5) break;
+      if (len === 4 && ppcm < 3.5) continue;
+      ctx.lineWidth = c % 10 === 0 ? 2 : 1.2; ctx.globalAlpha = len === 4 ? 0.55 : 1;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
+      if (c % 10 === 0 && c > 0 && !L.small) { ctx.globalAlpha = 1; ctx.fillText(String(c), x - 5, y); }
+    }
+    ctx.globalAlpha = 1;
+    if (bestCm != null && bestCm * ppcm <= L.Hmax + 1) {
+      var by_ = gy - bestCm * ppcm, fs = flagScale || 1;
+      ctx.strokeStyle = P.gold; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x + 2, by_); ctx.lineTo(x + 12, by_); ctx.stroke();
+      ctx.fillStyle = P.gold; ctx.beginPath(); ctx.moveTo(x + 12, by_); ctx.lineTo(x + 12, by_ - 7 * fs); ctx.lineTo(x + 12 + 6 * fs, by_ - 3.5 * fs); ctx.closePath(); ctx.fill();
+    }
+    var hy = gy - Hcm * ppcm;
+    ctx.fillStyle = P.fullRing;
+    ctx.beginPath(); ctx.moveTo(x + 3, hy); ctx.lineTo(x + 12, hy - 6); ctx.lineTo(x + 12, hy + 6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = P.fullRing; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x + 14, hy); ctx.lineTo(L.nowX, hy); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* 장면 전체. st = { t(초, 게임 시각), segs(ms), o, W, Hcm, R(표시 범위), grains, flash, flashSolid, fade, shake(px), tilt, bloom, withered,
+       drops:[{k(0..1), a}], splashes, dusts, heat, paused, bandA(0..1), at(장식 시간 초), pressed, ready(bool), zoneText, zoneKbd, zoneIcon(α),
+       ripples:[{x,y,k}], bestCm, flagScale, modeLabel, fullA, breathe }  → 선인장 머리 위치 등 반환 */
+  function drawScene(ctx, P, L, st) {
+    var W = L.W, SH = L.SH, sky = skyColors(P, st.t);
+    var g = ctx.createLinearGradient(0, 0, 0, L.gy); g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, L.gy + 8);
+    var tms = st.t * 1000, pps = L.pxPerSec;
+    var X = function (ms) { return L.nowX + (ms - tms) / 1000 * pps; };
+    var pastX = L.nowX - 0.5 * pps, top = L.by + L.BH;
+    var segs = st.segs, i, s, a, b;
+    if (!st.paused && st.bandA > 0) {
+      ctx.save(); ctx.globalAlpha = st.bandA;
+      for (i = 0; i < segs.length; i++) { s = segs[i]; a = X(s.start); b = X(s.end); if (b <= pastX) continue; if (a >= L.right) break; drawSegScene(ctx, P, s.type, a, b, top, L.gy, st.at, pastX, L.right); }
+      ctx.restore();
+    }
+    // 띠
+    ctx.save();
+    roundRect(ctx, 4, L.by, W - 8, L.BH, 10);
+    if (st.paused) { ctx.fillStyle = P.well; ctx.globalAlpha = 1; ctx.fill(); ctx.restore(); }
+    else {
+      ctx.fillStyle = P.band; ctx.fill();
+      ctx.clip();
+      ctx.save(); ctx.beginPath(); ctx.rect(pastX, L.by, L.right - pastX, L.BH); ctx.clip();
+      ctx.globalAlpha = st.bandA;
+      for (i = 0; i < segs.length; i++) { s = segs[i]; a = X(s.start); b = X(s.end); if (b <= pastX) continue; if (a >= L.right) break; drawSeg(ctx, P, s.type, a, b, L.by, L.BH, st.at, pastX, L.right); }
+      ctx.restore();
+      ctx.fillStyle = P.past; ctx.fillRect(pastX, L.by, L.nowX - pastX, L.BH);
+      ctx.fillStyle = P.nowLine; ctx.globalAlpha = 0.45;
+      for (var k = 1; k <= 3; k++) { var tx = Math.round(L.nowX + k * pps) - 1; ctx.fillRect(tx - (k === 3 ? 6 : 0), L.by + L.BH - 7, 2, 7); }
+      ctx.restore();
+      if (!L.small) {
+        ctx.save(); ctx.fillStyle = P.nowLine; ctx.globalAlpha = 0.7; ctx.font = '700 11px system-ui, -apple-system, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+        ctx.fillText('3초', W - 10, L.by + L.BH - 8); ctx.restore();
+      }
+    }
+    // 땅
+    ctx.fillStyle = P.sand; ctx.beginPath(); ctx.moveTo(0, L.gy + 6);
+    var x, yy;
+    for (x = 0; x <= W + 8; x += 8) ctx.lineTo(x, L.gy + Math.sin(x * 0.012) * 5 - (Math.abs(x - L.nowX) < L.bw ? 4 : 0));
+    ctx.lineTo(W, SH); ctx.lineTo(0, SH); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = P.dune; ctx.lineWidth = 2; ctx.beginPath();
+    for (x = 0; x <= W + 8; x += 8) { yy = L.gy + Math.sin(x * 0.012) * 5 - (Math.abs(x - L.nowX) < L.bw ? 4 : 0); if (!x) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+    ctx.stroke();
+    var Z = drawZone(ctx, P, L, st);
+    // 지금 선
+    if (!st.paused) {
+      ctx.save(); ctx.strokeStyle = P.nowLine; ctx.lineWidth = 2; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(L.nowX, L.by - 2); ctx.lineTo(L.nowX, L.by + L.BH + 2); ctx.stroke();
+      ctx.fillStyle = P.nowLine; ctx.beginPath(); ctx.moveTo(L.nowX - 7, L.by + L.BH + 3); ctx.lineTo(L.nowX + 7, L.by + L.BH + 3); ctx.lineTo(L.nowX, L.by + L.BH + 11); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    drawRuler(ctx, P, L, st.R, st.Hcm, st.bestCm, st.flagScale);
+    var hpx = st.Hcm * L.Hmax / st.R;
+    var cx = L.nowX + (st.shake || 0);
+    var c = drawCactus(ctx, P, { x: cx, gy: L.gy + 2, bw: L.bw, h: hpx, o: st.o, W: st.W, grains: st.grains, flash: st.flash, fade: st.fade, heat: st.heat,
+      bloom: st.bloom, bloomA: st.bloomA, tilt: st.tilt, withered: st.withered, fullA: st.fullA, breathe: st.breathe });
+    var dr = Math.max(3, L.bw * 0.07);
+    if (st.drops) st.drops.forEach(function (d) {
+      var k = d.k, e = EASE.in_(k), y0 = L.gy - c.hh * 0.4, y1 = L.gy + c.top;
+      var a = k > 0.76 ? Math.max(0, 1 - (k - 0.76) / 0.24) : 1;
+      drawDrop(ctx, P, cx + d.side * c.w * 0.55 * (1 - e), lerp(y0, y1, e), dr * (1 - 0.45 * e), a);
+    });
+    if (st.splashes) st.splashes.forEach(function (sp) {
+      var k = EASE.out(sp.k), y = L.gy - c.hh * sp.h, xx = cx + sp.side * (c.w / 2 + 3);
+      ctx.save(); ctx.strokeStyle = P.rain; ctx.globalAlpha = 1 - sp.k; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(xx + sp.side * 4 * k, y, 3 + 5 * k, sp.side > 0 ? -Math.PI * 0.9 : -Math.PI * 0.1, sp.side > 0 ? -Math.PI * 0.4 : -Math.PI * 0.6, sp.side < 0); ctx.stroke();
+      ctx.beginPath(); ctx.arc(xx + sp.side * 7 * k, y - 4, 2 + 3 * k, sp.side > 0 ? -Math.PI * 0.8 : -Math.PI * 0.2, sp.side > 0 ? -Math.PI * 0.3 : -Math.PI * 0.7, sp.side < 0); ctx.stroke();
+      ctx.restore();
+    });
+    if (st.dusts) st.dusts.forEach(function (d) {
+      var xx = cx + c.w / 2 + 40 * (1 - d.k) + 2, y = L.gy - c.hh * d.h;
+      ctx.save(); ctx.fillStyle = P.dust; ctx.globalAlpha = 0.8 * (1 - d.k); ctx.beginPath(); ctx.arc(xx, y, 1.6, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    });
+    if (st.dustPuff) { // 쓰러질 때 땅 먼지
+      var pk = st.dustPuff;
+      ctx.save(); ctx.fillStyle = P.dust; ctx.globalAlpha = 0.5 * (1 - pk);
+      for (var q = 0; q < 3; q++) { ctx.beginPath(); ctx.arc(cx + L.bw * (0.9 + q * 0.5), L.gy - 2, 4 + 14 * pk * (0.6 + q * 0.2), 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+    return { headX: cx, headY: L.gy + 2 + c.top, w: c.w, zone: Z };
+  }
+
+  function drawZone(ctx, P, L, st) {
+    var m = L.low || L.small ? 8 : 14, x = m, y = L.zoneTop + m + 6, w = L.W - m * 2, h = L.zoneH - m * 2 - 6;
+    ctx.save();
+    if (st.pressed) { ctx.fillStyle = P.zoneFill; roundRect(ctx, x, y, w, h, 16); ctx.fill(); }
+    ctx.strokeStyle = P.zoneLine; ctx.lineWidth = 2; ctx.setLineDash([8, 7]); ctx.globalAlpha = st.ready ? 0.25 : st.pressed ? 0.9 : 0.55;
+    roundRect(ctx, x, y, w, h, 16); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    if (st.ripples) st.ripples.forEach(function (rp) {
+      ctx.strokeStyle = P.zoneLine; ctx.globalAlpha = 0.35 * (1 - rp.k); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(rp.x, rp.y, 36 * EASE.out(rp.k), 0, Math.PI * 2); ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+    var cx = L.W / 2, cy = y + h / 2, r = Math.min(11, h * 0.12);
+    if (!st.ready && st.zoneIcon > 0) {
+      ctx.fillStyle = P.zoneInk; ctx.strokeStyle = P.zoneInk; ctx.lineWidth = 2.5;
+      var label = st.zoneText || '';
+      ctx.font = '700 ' + (L.low || L.small ? 14 : 16) + 'px system-ui, -apple-system, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      var kw = st.zoneKbd ? ctx.measureText(st.zoneKbd).width + 14 : 0, tw = label ? ctx.measureText(label).width + (kw ? kw + 6 : 0) : 0;
+      var ix = label ? cx - (2 * r + 12 + tw) / 2 + r : cx;
+      ctx.globalAlpha = st.zoneIcon;
+      ctx.beginPath(); ctx.arc(ix, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ix, cy, r * 0.42, 0, Math.PI * 2); ctx.fill();
+      if (label) {
+        var tx = ix + r + 12;
+        if (kw) {
+          ctx.lineWidth = 1.5; roundRect(ctx, tx, cy - 12, kw, 24, 6); ctx.stroke();
+          ctx.fillText(st.zoneKbd, tx + 7, cy + 1); tx += kw + 6;
+        }
+        ctx.fillText(label, tx, cy + 1);
+      }
+    }
+    if (st.modeLabel) {
+      ctx.globalAlpha = 0.9; ctx.fillStyle = P.zoneInk; ctx.font = '700 12px system-ui, -apple-system, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText(st.modeLabel, x + 10, y + 8);
+    }
+    ctx.restore();
+    return { cx: cx, cy: cy, x: x, y: y, w: w, h: h };
+  }
+
+  return { PAL: PAL, clamp: clamp, lerp: lerp, mixHex: mixHex, hash: hash, roundRect: roundRect, bezier: bezier, EASE: EASE, skyColors: skyColors,
+    drawCactus: drawCactus, drawDrop: drawDrop, drawSeg: drawSeg, drawSegScene: drawSegScene, layout: layout, zoomFor: zoomFor, ZOOM: ZOOM,
+    drawRuler: drawRuler, drawScene: drawScene, drawZone: drawZone };
+})();
+
+/* ===== 선인장 키우기 게임 진행 ===== */
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var D = Draw, STEP = Engine.STEP;
+  var RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  var DARKQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
+  var FINE = window.matchMedia ? matchMedia('(hover: hover) and (pointer: fine)') : { matches: false };
+  function reduced() { return RM.matches; }
+  function now() { return performance.now(); }
+  var KEY = { best: 'desert-breath-best', day: 'desert-breath-day', seen: 'desert-breath-seen' };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function readJSON(k) { try { var v = JSON.parse(lsGet(k)); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
+  function readBest() { var v = readJSON(KEY.best); return v && typeof v.mm === 'number' && isFinite(v.mm) ? v : null; }
+  function readDay(date) { var v = readJSON(KEY.day); return v && v.date === date && typeof v.mm === 'number' && isFinite(v.mm) ? v : null; }
+
+  // ---------- 팔레트 ----------
+  var P = D.PAL.light;
+  function isDark() {
+    var a = document.documentElement.getAttribute('data-theme');
+    if (a === 'dark') return true; if (a === 'light') return false;
+    return DARKQ.matches;
+  }
+  function syncPalette() {
+    P = isDark() ? D.PAL.dark : D.PAL.light;
+    try {
+      var cs = getComputedStyle(document.documentElement);
+      ['well', 'accent', 'gold', 'muted'].forEach(function (k) { var v = cs.getPropertyValue('--' + k).trim(); if (/^#[0-9a-f]{6}$/i.test(v)) P[k] = v; });
+    } catch (e) {}
+  }
+  if (DARKQ.addEventListener) DARKQ.addEventListener('change', syncPalette);
+
+  // ---------- 형식 ----------
+  function cmStr(mm) { return (Math.floor(mm) / 10).toFixed(1); }
+  function fmtTime(ms) { var s = Math.floor(ms / 1000); return s < 60 ? s + '초' : Math.floor(s / 60) + '분 ' + ('0' + (s % 60)).slice(-2) + '초'; }
+  function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function dateKo(d) { var p = d.split('-'); return (+p[1]) + '월 ' + (+p[2]) + '일'; }
+  function dateDot(d) { var p = d.split('-'); return (+p[1]) + '.' + (+p[2]); }
+  function lateText(ms) { return ms > 1000 ? null : (Math.ceil(ms / 10 - 1e-9) / 100).toFixed(2); }
+  var TYPE_KO = { sun: '해', sand: '모래', rain: '비', clear: '맑음' };
+
+  // ---------- 상태 ----------
+  var G = {
+    phase: 'menu', mode: 'daily', date: Engine.kstDate(), seed: 0, segs: null, sim: null,
+    origin: 0, lastFrame: 0, pausedT: 0, resumeAt: 0, readyFrom: 0, endAt: 0, endKind: null,
+    result: null, lastResult: null, resultLockUntil: 0, auto: null, firstPressDone: false, seen: lsGet(KEY.seen) === '1',
+    fx: { flashAt: -1e9, shakeAt: -1e9, fadeAt: -1e9, drops: [], splashes: [], dusts: [], ripples: [], growAt: -1e9, lastDropMm: 0, flagAt: -1e9, passedBest: false, splashAcc: 0, dustAcc: 0 },
+    zoom: { from: 25, to: 25, at: -1e9 }, fullA: 0.4, prick: null, bestCm: null, dayBest: null, lastHText: '', lastAria: 0
+  };
+  var L = null, dpr = 1;
+
+  // ---------- 레이아웃 ----------
+  function px(v) { return parseFloat(v) || 0; }
+  function layout() {
+    var vw = window.innerWidth, vh = window.innerHeight, root = document.documentElement.style, body = document.body;
+    root.setProperty('--app-h', vh + 'px');
+    body.classList.toggle('low', vh <= 520);
+    body.classList.add('ov-full');
+    var bs = getComputedStyle(body);
+    var W = vw - px(bs.paddingLeft) - px(bs.paddingRight), H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    var TB = vh <= 520 ? 44 : 52, SW = Math.floor(Math.min(W, 1400)), SH = Math.max(140, Math.floor(H - TB - 8));
+    root.setProperty('--tb', TB + 'px'); root.setProperty('--sw', SW + 'px'); root.setProperty('--sh', SH + 'px');
+    body.classList.toggle('tb-720', SW < 720); body.classList.toggle('tb-480', SW < 480); body.classList.toggle('tb-380', SW < 380);
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    var cv = $('cv'); cv.width = Math.round(SW * dpr); cv.height = Math.round(SH * dpr);
+    L = D.layout(SW, SH);
+    // 데모 창 크기
+    var lowH = vh <= 520, dw, dh;
+    var cardW = Math.min(vw - 32, 560);
+    if (lowH) { dw = Math.min(360, Math.floor((vw - 48) * 0.55)); dh = Math.round(dw * 0.5); }
+    else { dw = Math.min(cardW, 480); dh = Math.round(dw * 0.62); var maxH = vh - 330; if (dh > maxH) { dh = Math.max(150, maxH); dw = Math.min(dw, Math.round(dh / 0.62)); dh = Math.round(dw * 0.62); } }
+    root.setProperty('--dw', dw + 'px'); root.setProperty('--dh', dh + 'px');
+    Demo.resize(dw, dh);
+    draw();
+  }
+
+  // ---------- 판 시작 ----------
+  function newSim(segs) {
+    var sim = new Engine.Sim(segs, {
+      hooks: {
+        open: function () { if (G.phase === 'play') { Sound.play('open'); } onFirstPress(); },
+        close: function (s, forced) { if (!forced) Sound.play('close'); },
+        sting: function (s, st) { onSting(st); },
+        late: function (s, st) { onLate(st); },
+        grow: function (s, cm) { G.growCm = cm; },
+        end: function (s) { onEnd(s); }
+      }
+    });
+    return sim;
+  }
+  function startGame(opt) {
+    opt = opt || {};
+    var mode = opt.mode === 'practice' ? 'practice' : 'daily';
+    G.mode = mode;
+    if (mode === 'daily') { G.date = opt.date || Engine.kstDate(); G.seed = opt.seed != null ? opt.seed >>> 0 : Engine.seedOf(G.date); }
+    else { G.date = Engine.kstDate(); G.seed = opt.seed != null ? opt.seed >>> 0 : randSeed(); }
+    G.segs = Engine.weather(G.seed);
+    G.sim = newSim(G.segs);
+    G.result = null; G.endKind = null; G.prick = null; G.growCm = null;
+    G.fx = { flashAt: -1e9, shakeAt: -1e9, fadeAt: -1e9, drops: [], splashes: [], dusts: [], ripples: [], growAt: -1e9, lastDropMm: 100, flagAt: -1e9, passedBest: false, splashAcc: 0, dustAcc: 0 };
+    G.zoom = { from: 25, to: 25, at: -1e9 }; G.fullA = 0.4;
+    var dayRec = mode === 'daily' ? readDay(G.date) : null;
+    G.dayBest = dayRec; G.bestCm = dayRec ? dayRec.mm / 10 : null;
+    G.ptrs = {};
+    hidePrick(true);
+    ['ovStart', 'ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
+    Demo.stop();
+    G.phase = 'ready'; G.origin = now() + 2000; G.lastFrame = now();
+    updateTopStatic();
+    if (G.auto) injectAuto();
+    live(mode === 'daily' ? '오늘의 날씨 시작' : '연습 시작');
+  }
+  function randSeed() {
+    try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0]; } catch (e) { return (Math.random() * 4294967296) >>> 0; }
+  }
+  function beginFromButton(mode) {
+    Sound.unlock(); Sound.play('button'); Sound.startAmbient();
+    startGame({ mode: mode });
+  }
+
+  // ---------- 입력 ----------
+  function gameT(ts) {
+    var tg = (ts != null && ts > 0 ? ts : now()) - G.origin, cap = now() - G.origin;
+    if (tg > cap) tg = cap;
+    return tg;
+  }
+  function inputAt(t, down, id, forced) {
+    if (!G.sim || G.sim.over) return;
+    G.sim.input(t, down, id, forced);
+  }
+  function canPress() { return G.phase === 'play' && G.sim && !G.sim.over; }
+  var stage = $('stage');
+  stage.addEventListener('pointerdown', function (e) {
+    Sound.unlock();
+    if (e.target.closest && e.target.closest('button, a, .overlay')) return;
+    if (e.button != null && e.button > 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    if (!canPress()) return;
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    G.ptrs['p' + e.pointerId] = 1;
+    var r = stage.getBoundingClientRect();
+    G.lastPress = { x: e.clientX - r.left, y: e.clientY - r.top };
+    inputAt(gameT(e.timeStamp), true, 'p' + e.pointerId);
+  }, { passive: false });
+  function ptrUp(e) {
+    var id = 'p' + e.pointerId;
+    if (!G.ptrs || !G.ptrs[id]) return;
+    delete G.ptrs[id];
+    if (e.type === 'pointerup') Sound.unlock();
+    if (G.sim && (G.phase === 'play' || G.phase === 'dying')) inputAt(gameT(e.timeStamp), false, id);
+  }
+  stage.addEventListener('pointerup', ptrUp);
+  stage.addEventListener('pointercancel', ptrUp);
+  stage.addEventListener('lostpointercapture', ptrUp);
+  ['contextmenu', 'selectstart', 'dblclick', 'gesturestart', 'dragstart'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (!(e.target.closest && e.target.closest('a'))) e.preventDefault(); }, { passive: false });
+  });
+  stage.addEventListener('touchstart', function (e) { if (!(e.target.closest && e.target.closest('button, a, .overlay'))) e.preventDefault(); }, { passive: false });
+  // 아무 데서나 첫 터치로 오디오 잠금 해제
+  window.addEventListener('pointerup', function () { Sound.unlock(); }, { passive: true });
+
+  function releaseAllInputs(forced) {
+    if (!G.sim) return;
+    var t = G.sim.t;
+    G.ptrs = {}; G.keyDown = false;
+    G.sim.releaseAll(t, forced);
+    G.sim.applyNow();
+  }
+
+  function overlayOpen() { return !$('ovStart').hidden || !$('ovPause').hidden || !$('ovResult').hidden; }
+  document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen && Leaderboard.isOpen()) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    Sound.unlock();
+    var k = e.key;
+    var isSpace = k === ' ' || e.code === 'Space';
+    var onBtn = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A');
+    if ((k === 'm' || k === 'M') && !e.repeat) { toggleMute(); return; }
+    if (!$('ovPause').hidden) {
+      if ((k === 'Escape' || k === 'p' || k === 'P') && !e.repeat) { e.preventDefault(); Sound.play('button'); resumeGame(); }
+      else if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); Sound.play('button'); resumeGame(); }
+      return;
+    }
+    if (!$('ovStart').hidden) { if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); beginFromButton('daily'); } return; }
+    if (!$('ovResult').hidden) {
+      if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); if (now() >= G.resultLockUntil) again(); }
+      if (isSpace && now() < G.resultLockUntil) e.preventDefault();
+      return;
+    }
+    if (isSpace) {
+      e.preventDefault();
+      if (e.repeat) return;
+      if (canPress() && !G.keyDown) { G.keyDown = true; G.lastPress = null; inputAt(gameT(e.timeStamp), true, 'k'); }
+      return;
+    }
+    if ((k === 'p' || k === 'P' || k === 'Escape') && !e.repeat) {
+      if (G.phase === 'play' || G.phase === 'ready' || G.phase === 'resume') { e.preventDefault(); Sound.play('button'); pauseGame('key'); }
+    }
+  });
+  document.addEventListener('keyup', function (e) {
+    var isSpace = e.key === ' ' || e.code === 'Space';
+    if (!isSpace) return;
+    if (!overlayOpen()) e.preventDefault();
+    if (G.keyDown) { G.keyDown = false; if (G.sim && (G.phase === 'play' || G.phase === 'dying')) inputAt(gameT(e.timeStamp), false, 'k'); }
+  });
+  window.addEventListener('blur', function () { pauseGame('blur'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame('hidden'); });
+  window.addEventListener('pagehide', function () { pauseGame('hidden'); });
+
+  // ---------- 일시정지 ----------
+  function pauseGame(reason) {
+    if (G.phase !== 'play' && G.phase !== 'ready' && G.phase !== 'resume') { if (reason !== 'key') { G.keyDown = false; G.ptrs = {}; } return; }
+    if (G.phase === 'play') {
+      // 지금까지 시뮬을 따라잡고, 모든 누름을 이 시각에 뗀 것으로(o는 그대로 — 재개 후 남은 닫힘 진행)
+      advance(now());
+      if (G.phase !== 'play') return;
+      G.pausedT = G.sim.t;
+      releaseAllInputs(true);
+    } else if (G.phase === 'ready') {
+      G.pausedT = Math.min(0, now() - G.origin);
+      G.ptrs = {}; G.keyDown = false;
+    } else { /* resume 준비 중 → pausedT 그대로 */ G.ptrs = {}; G.keyDown = false; }
+    G.phase = 'paused';
+    Sound.setPaused(true);
+    $('pH').textContent = cmStr(G.sim.H);
+    $('pLeft').textContent = String(Math.max(0, Math.ceil((Engine.DAY - Math.max(0, G.pausedT)) / 1000)));
+    $('ovPause').hidden = false;
+    hidePrick(true);
+    draw();
+    setTimeout(function () { if (!$('ovPause').hidden && reason !== 'blur' && reason !== 'hidden') $('resumeBtn').focus({ preventScroll: true }); }, 0);
+  }
+  function resumeGame() {
+    if (G.phase !== 'paused') return;
+    $('ovPause').hidden = true;
+    Sound.setPaused(false);
+    G.phase = 'resume'; G.resumeAt = now() + 1500; G.lastFrame = now();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+
+  // ---------- 진행 ----------
+  function advance(tnow) {
+    if (!G.sim) return;
+    if (G.phase === 'ready') {
+      if (tnow - G.origin >= 0) G.phase = 'play'; else return;
+    }
+    if (G.phase !== 'play') return;
+    var target = Math.floor((tnow - G.origin) / STEP) * STEP;
+    if (target > G.sim.t) G.sim.runTo(target);
+  }
+  function frame() {
+    requestAnimationFrame(frame);
+    var tn = now();
+    var gap = tn - G.lastFrame; G.lastFrame = tn;
+    if (G.phase === 'play' && gap > 250) G.origin += gap - 250; // 긴 끊김: 250ms까지만 진행
+    if (G.phase === 'ready' && gap > 250) G.origin += gap - 250;
+    if (G.phase === 'resume' && tn >= G.resumeAt) {
+      G.origin = tn - G.pausedT; G.phase = G.pausedT < 0 ? 'ready' : 'play';
+    }
+    advance(tn);
+    if (G.phase === 'dying' && tn - G.endAt >= 1200 && !G.resultShown) showResult();
+    if (G.phase === 'menu' || !$('ovStart').hidden) Demo.frame(tn);
+    if (document.hidden) return;
+    if (G.phase === 'paused' || G.phase === 'result') return;
+    if (G.phase === 'menu' && G.drawnMenu) return;
+    draw();
+    soundUpdate();
+  }
+
+  function curT() { // 화면용 게임 시각(ms)
+    if (!G.sim) return -2000;
+    if (G.phase === 'ready') return Math.max(-2000, Math.min(0, now() - G.origin));
+    if (G.phase === 'resume' || G.phase === 'paused') return G.pausedT < 0 ? G.pausedT : G.sim.t;
+    return G.sim.t;
+  }
+  function segAt(t) {
+    var segs = G.segs; if (!segs) return null;
+    if (t < 0) return { type: 'clear', start: -2000, end: 0, i: -1 };
+    var i = G.sim ? G.sim.si : 0; while (i < segs.length - 1 && t >= segs[i].end) i++;
+    while (i > 0 && t < segs[i].start) i--;
+    var s = segs[i]; return { type: s.type, start: s.start, end: s.end, i: i };
+  }
+  function soundUpdate() {
+    if (!G.sim || (G.phase !== 'ready' && G.phase !== 'play' && G.phase !== 'resume')) return;
+    var t = curT(), s = segAt(t), nx = G.segs[s.i + 1] || null;
+    Sound.update({ now: s.type, heavy: s.type === 'rain' ? Math.max(0, Math.min(1, (t - s.start) / (s.end - s.start))) : 0,
+      next: nx ? nx.type : null, nextIn: nx ? (nx.start - t) / 1000 : 99, open: G.phase === 'play' && G.sim.o >= Engine.O_TH });
+    if (G.growCm != null) { Sound.play('grow', { cm: G.growCm }); G.growCm = null; }
+  }
+
+  // ---------- 이벤트 ----------
+  function onFirstPress() {
+    if (!G.firstPressDone) G.firstPressDone = true;
+    var lp = G.lastPress;
+    if (!reduced() && L) {
+      var zx = L.W / 2, zy = L.zoneTop + (L.zoneH) / 2;
+      G.fx.ripples.push({ x: lp ? lp.x : zx, y: lp ? lp.y : zy, at: now() });
+    }
+    G.lastPress = null;
+  }
+  function onSting(st) {
+    var tn = now();
+    if (st.type === 'sand') Sound.play('sting'); else Sound.play('scorch');
+    if (tn - G.fx.flashAt >= 400) G.fx.flashAt = tn;
+    G.fx.shakeAt = tn;
+    if (st.type === 'sun') G.fx.fadeAt = tn;
+    showPrick(st);
+  }
+  function onLate(st) { if (G.prick && G.prick.st === st) showPrick(st, true); }
+  function onEnd(sim) {
+    G.endKind = sim.sunset ? 'sunset' : 'dried';
+    G.phase = 'dying'; G.endAt = now(); G.resultShown = false;
+    G.ptrs = {}; G.keyDown = false;
+    if (G.endKind === 'sunset') Sound.play('dusk'); else Sound.play('wilt');
+    Sound.stopAmbient();
+    G.result = buildResult();
+    G.lastResult = G.result;
+    G.seen = true; lsSet(KEY.seen, '1');
+  }
+  function buildResult() {
+    var r = G.sim.result();
+    return {
+      mm: r.mm, cm: r.cm, sunset: r.sunset, driedAt: r.driedAt,
+      stings: { sun: r.stings.sun, sand: r.stings.sand, lostWater: r.stings.lostWater },
+      rainGain: r.rainGain, growWater: r.growWater,
+      worst: r.worst, date: G.date, mode: G.mode, seed: G.seed, opened: r.opened, lateAny: r.lateAny,
+      openSpans: r.openSpans, stingList: r.stingList, endT: r.endT
+    };
+  }
+
+  // ---------- 따끔 표시 ----------
+  var prickEl = $('prick');
+  function fillPrick(el, st) {
+    el.querySelector('.pi use').setAttribute('href', st.type === 'sand' ? '#icSand' : '#icSun');
+    var p2 = el.querySelector('.p2'), txt = '따끔';
+    if (st.kind === 'late') {
+      if (st.lateMs != null) {
+        var lt = lateText(st.lateMs);
+        p2.innerHTML = lt ? '<span class="num">' + lt + '</span><span>초 늦게 뗌</span>' : '<span>1초 넘게 늦게 뗌</span>';
+        p2.toggleAttribute('hidden', false);
+        txt += ', ' + (lt ? lt + '초 늦게 뗌' : '1초 넘게 늦게 뗌');
+      } else p2.toggleAttribute('hidden', true);
+    } else if (st.kind === 'inside') {
+      p2.innerHTML = '<svg aria-hidden="true"><use href="#icFingerIn"/></svg><span>' + TYPE_KO[st.type] + ' 속에서 폄</span>';
+      p2.toggleAttribute('hidden', false); txt += ', ' + TYPE_KO[st.type] + ' 속에서 폄';
+    } else {
+      p2.innerHTML = '<svg aria-hidden="true"><use href="#icRepress"/></svg><span>다시 누름</span>';
+      p2.toggleAttribute('hidden', false); txt += ', 다시 누름';
+    }
+    return txt;
+  }
+  function showPrick(st, update) {
+    var txt = fillPrick(prickEl, st), tn = now();
+    var waiting = st.kind === 'late' && st.lateMs == null;
+    if (!update) G.prick = { st: st, at: tn, hold: waiting, from: tn };
+    else { G.prick.hold = false; G.prick.from = tn; }
+    prickEl.hidden = false;
+    if (!waiting) live(txt);
+  }
+  function hidePrick(now_) { G.prick = null; prickEl.hidden = true; prickEl.style.opacity = '0'; }
+  function prickFrame(head) {
+    var pk = G.prick; if (!pk) return;
+    var tn = now(), age = tn - pk.at, a, sc = 1;
+    if (!pk.hold && tn - pk.from > 1500) { hidePrick(); return; }
+    if (age < 120) { var k = D.EASE.pop(age / 120); a = age / 120; sc = 0.8 + 0.2 * k; }
+    else a = 1;
+    if (!pk.hold && tn - pk.from > 1200) a = Math.max(0, 1 - (tn - pk.from - 1200) / 300);
+    if (reduced()) sc = 1;
+    var w = prickEl.offsetWidth, h = prickEl.offsetHeight;
+    var x = head.headX + head.w / 2 + 10, y = Math.max(L.by + L.BH + 16, head.headY - 8);
+    x = Math.min(x, L.W - 8 - w); y = Math.min(y, L.SH - h - 4);
+    prickEl.style.opacity = String(a);
+    prickEl.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y - h / 2) + 'px) scale(' + sc.toFixed(3) + ')';
+  }
+
+  // ---------- 그리기 ----------
+  var ctx = $('cv').getContext('2d');
+  function zoomR(Hcm, tn) {
+    var target = D.zoomFor(Hcm), z = G.zoom;
+    if (target !== z.to) { var cur = zoomCur(tn); z.from = cur; z.to = target; z.at = tn; }
+    return zoomCur(tn);
+  }
+  function zoomCur(tn) {
+    var z = G.zoom; if (reduced()) return z.to;
+    var k = (tn - z.at) / 600; if (k >= 1) return z.to;
+    return D.lerp(z.from, z.to, D.EASE.inOut(Math.max(0, k)));
+  }
+  function draw() {
+    if (!L) return;
+    var tn = now(), rm = reduced(), at = rm ? 0 : tn / 1000;
+    var sim = G.sim, t = curT();
+    var W = sim ? sim.W : 60, H = sim ? sim.H : 100, o = sim ? sim.o / Engine.O_MAX : 0;
+    var Hcm = H / 10, fx = G.fx;
+    var R = zoomR(Hcm, tn);
+    var playing = G.phase === 'play';
+    var seg = sim ? segAt(t) : null;
+    // 효과 생성
+    var dtf = Math.min(0.1, (tn - (G.lastDraw || tn)) / 1000); G.lastDraw = tn;
+    if (!rm && sim && playing) {
+      while (fx.lastDropMm + 2 <= H) { fx.lastDropMm += 2; if (fx.drops.length < 8) fx.drops.push({ at: tn, side: fx.drops.length % 2 ? 1 : -1 }); }
+      if (seg && seg.type === 'rain' && o > 0.3) {
+        var p = (t - seg.start) / (seg.end - seg.start); fx.splashAcc += dtf * (4 + 6 * p);
+        while (fx.splashAcc >= 1) { fx.splashAcc--; fx.splashes.push({ at: tn, side: Math.random() < 0.5 ? -1 : 1, h: 0.3 + Math.random() * 0.5 }); }
+      }
+      if (seg && seg.type === 'sand' && o > 0.3) {
+        fx.dustAcc += dtf * 12;
+        while (fx.dustAcc >= 1) { fx.dustAcc--; fx.dusts.push({ at: tn, h: 0.1 + Math.random() * 0.7 }); }
+      }
+    } else if (sim) fx.lastDropMm = Math.max(fx.lastDropMm, H - 2);
+    if (sim && playing && H > (G.prevH || 0) + 1e-9 && G.prevH) G.fx.growAt = tn;
+    G.prevH = H;
+    fx.drops = fx.drops.filter(function (d) { return tn - d.at < 500; });
+    fx.splashes = fx.splashes.filter(function (d) { return tn - d.at < 160; });
+    fx.dusts = fx.dusts.filter(function (d) { return tn - d.at < 300; });
+    fx.ripples = fx.ripples.filter(function (d) { return tn - d.at < 300; });
+    // 90선 α
+    var fullT = W >= 88 ? 0.85 : 0.4; G.fullA += (fullT - G.fullA) * Math.min(1, dtf / 0.2 * 3);
+    if (rm) G.fullA = fullT;
+    // 따끔 번쩍·흔들림·바램
+    var fk = (tn - fx.flashAt) / 400, flash = 0;
+    if (fk >= 0 && fk < 1) flash = rm ? 1 : 1 - D.EASE.out(fk);
+    var shake = 0, sk = (tn - fx.shakeAt) / 220;
+    if (!rm && sk >= 0 && sk < 1) { var seq = [0, -3, 3, -2, 0], u = sk * 4, i0 = Math.floor(u); shake = D.lerp(seq[i0], seq[i0 + 1], D.EASE.inOut(u - i0)); }
+    var fade = 0, fd = (tn - fx.fadeAt) / 300; if (fd >= 0 && fd < 1) fade = 1 - fd;
+    // 끝 연출
+    var tilt = 0, withered = 0, bloom = 0, bloomA = 1, bandA = 1, dustPuff = 0;
+    if (G.endKind && sim) {
+      var ek = (tn - G.endAt);
+      if (G.endKind === 'dried') {
+        withered = Math.min(1, ek / 300);
+        if (rm) { tilt = ek >= 300 ? 1.15 : 0; }
+        else { tilt = 1.15 * D.EASE.fall(Math.min(1, ek / 1200)); if (ek >= 900) dustPuff = Math.min(1, (ek - 900) / 300); }
+      } else {
+        bandA = Math.max(0, 1 - ek / 400);
+        if (rm) { bloom = 1; bloomA = Math.min(1, ek / 700); } else bloom = D.EASE.pop(Math.min(1, ek / 700));
+      }
+    }
+    var breathe = 0;
+    if (sim && W < 15 && !withered) breathe = 0.4 + 0.5 * (0.5 + 0.5 * Math.sin(tn / 1200 * Math.PI * 2));
+    // 오늘 최고 깃발
+    var flagScale = 1;
+    if (G.bestCm != null && Hcm > G.bestCm && !fx.passedBest) { fx.passedBest = true; fx.flagAt = tn; }
+    var fg = (tn - fx.flagAt) / 200; if (!rm && fg >= 0 && fg < 1) flagScale = 1 + 0.3 * Math.sin(fg * Math.PI);
+    var pressed = !!(sim && sim.nDown > 0);
+    var ready = G.phase === 'ready' || G.phase === 'resume';
+    var zoneText = '', zoneKbd = '';
+    if (!G.firstPressDone) { if (FINE.matches) { zoneKbd = 'Space'; zoneText = '누르고 있기'; } else zoneText = '누르고 있으면 펴져요'; }
+    var st = {
+      t: Math.max(0, t) / 1000, segs: G.segs || [], o: o, W: W, Hcm: Hcm, R: R, grains: sim ? sim.stings.filter(function (s) { return s.type === 'sand'; }).length : 0,
+      flash: flash, fade: fade, shake: shake, tilt: tilt, withered: withered, bloom: bloom, bloomA: bloomA, dustPuff: dustPuff, bandA: bandA,
+      heat: seg && seg.type === 'sun' ? o : 0, paused: G.phase === 'paused', at: at, pressed: pressed, ready: ready,
+      zoneText: zoneText, zoneKbd: zoneKbd, zoneIcon: G.firstPressDone ? 0.35 : 0.85,
+      ripples: fx.ripples.map(function (r) { return { x: r.x, y: r.y, k: (tn - r.at) / 300 }; }),
+      drops: fx.drops.map(function (d) { return { k: (tn - d.at) / 500, side: d.side }; }),
+      splashes: fx.splashes.map(function (d) { return { k: (tn - d.at) / 160, side: d.side, h: d.h }; }),
+      dusts: fx.dusts.map(function (d) { return { k: (tn - d.at) / 300, h: d.h }; }),
+      bestCm: G.bestCm, flagScale: flagScale, fullA: G.fullA, breathe: breathe,
+      modeLabel: document.body.classList.contains('tb-480') && sim ? (G.mode === 'daily' ? '오늘의 날씨' : '연습') : ''
+    };
+    // 시계 바깥 t(준비 중 음수)는 띠가 이미 흐르도록 진짜 시각 사용
+    st.t = t / 1000;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, L.W, L.SH);
+    var head = D.drawScene(ctx, P, L, st);
+    G.lastHead = head;
+    if (G.phase === 'menu') G.drawnMenu = true;
+    prickFrame(head);
+    readyFrame(head.zone, tn);
+    fingerFrame(head.zone, t, pressed);
+    updateTop(t, H, tn);
+  }
+
+  // 준비 고리
+  var readyEl = $('ready'), readyArc = $('readyArc'), RC = 2 * Math.PI * 25;
+  readyArc.setAttribute('stroke-dasharray', RC.toFixed(2));
+  function readyFrame(z, tn) {
+    var left = -1, total = 1;
+    if (G.phase === 'ready') { left = G.origin - tn; total = 2000; }
+    else if (G.phase === 'resume') { left = G.resumeAt - tn; total = 1500; }
+    if (left <= 0) { readyEl.hidden = true; return; }
+    readyEl.hidden = false;
+    readyEl.style.transform = 'translate(' + Math.round(z.cx - 28) + 'px,' + Math.round(z.cy - 28) + 'px)';
+    readyArc.setAttribute('stroke-dashoffset', (RC * (1 - left / total)).toFixed(2));
+    var n = String(Math.ceil(left / 1000));
+    if ($('readyNum').textContent !== n) $('readyNum').textContent = n;
+  }
+  // 첫 판 손가락 힌트 (아침 비 3개)
+  var fingerEl = $('finger');
+  function fingerFrame(z, t, pressed) {
+    if (G.seen || !G.sim || (G.phase !== 'play' && G.phase !== 'ready' && G.phase !== 'resume') || t >= 20500) { fingerEl.hidden = true; return; }
+    var rains = G.segs.filter(function (s) { return s.type === 'rain' && s.start < 20000; });
+    var state = 'dim';
+    for (var i = 0; i < rains.length; i++) {
+      var r = rains[i];
+      if (t >= r.start - 300 && t < r.end - 200) { state = 'down'; break; }
+      if (t >= r.end - 200 && t < r.end + 400) { state = 'up'; break; }
+    }
+    fingerEl.hidden = false;
+    fingerEl.classList.toggle('down', state === 'down');
+    var y = z.cy - 10 + (state === 'down' ? 0 : -12);
+    fingerEl.style.transform = 'translate(' + Math.round(z.cx - 22) + 'px,' + Math.round(y) + 'px)';
+    fingerEl.style.opacity = String(pressed ? 0.3 : state === 'down' ? 1 : 0.3);
+  }
+
+  // 상단 바
+  var lastClock = -1;
+  function updateTop(t, H, tn) {
+    var txt = cmStr(H);
+    if (txt !== G.lastHText) {
+      G.lastHText = txt; $('hNum').textContent = txt;
+      var cmI = Math.floor(H / 10);
+      if (cmI !== G.lastAriaCm) { G.lastAriaCm = cmI; $('hpill').setAttribute('aria-label', '키 ' + cmI + '센티미터'); }
+    }
+    $('hpill').classList.toggle('grow', tn - G.fx.growAt < 400);
+    var ts = Math.round(Math.max(0, Math.min(150000, t)) / 100);
+    if (ts !== lastClock) { lastClock = ts; drawClock(ts / 10); }
+    var leftS = Math.max(0, Math.ceil((150000 - Math.max(0, t)) / 1000));
+    var tenth = Math.ceil(leftS / 10) * 10;
+    if (tenth !== G.lastAria) {
+      G.lastAria = tenth;
+      $('dayclock').setAttribute('aria-label', '남은 하루 ' + leftS + '초');
+      $('cv').setAttribute('aria-label', '키 ' + txt + '센티미터, 남은 하루 ' + leftS + '초');
+    }
+  }
+  function arcPt(a) { return [56 + 44 * Math.cos(a), 36 + 24 * Math.sin(a)]; }
+  function drawClock(ts) {
+    var a = Math.PI * (1 + ts / 150), p = arcPt(a);
+    var x = p[0].toFixed(1), y = p[1].toFixed(1);
+    $('dcPast').setAttribute('d', ts <= 0 ? '' : 'M12 36 A44 24 0 0 1 ' + x + ' ' + y);
+    $('dcLeft').setAttribute('d', ts >= 150 ? '' : 'M' + x + ' ' + y + ' A44 24 0 0 1 100 36');
+    $('dcPast').classList.toggle('late', ts >= 130);
+    var sun = $('dcSun'); sun.setAttribute('cx', x); sun.setAttribute('cy', (p[1] - 0).toFixed(1));
+  }
+  function updateTopStatic() {
+    var chip = $('modeChip');
+    chip.classList.toggle('practice', G.mode === 'practice');
+    chip.querySelector('use').setAttribute('href', G.mode === 'practice' ? '#icLoop' : '#icCal');
+    $('modeTxt').textContent = G.mode === 'practice' ? '연습' : dateDot(G.date);
+    $('modeTxt').className = G.mode === 'practice' ? '' : 'num';
+    G.lastHText = ''; G.lastAria = -1; G.lastAriaCm = -1; lastClock = -1;
+  }
+
+  // ---------- 결과 ----------
+  function showResult() {
+    G.resultShown = true;
+    var r = G.result; if (!r) return;
+    G.phase = 'result';
+    hidePrick(true); fingerEl.hidden = true; readyEl.hidden = true;
+    // 기록
+    var isNew = false, best = readBest(), day = readDay(r.date);
+    if (r.mode === 'daily') {
+      if (!best || r.mm > best.mm) { isNew = true; best = { mm: r.mm, date: r.date }; lsSet(KEY.best, JSON.stringify(best)); }
+      day = day ? { date: r.date, mm: Math.max(day.mm, r.mm), plays: (day.plays || 0) + 1 } : { date: r.date, mm: r.mm, plays: 1 };
+      lsSet(KEY.day, JSON.stringify(day));
+    }
+    G.lastResult.isNew = isNew;
+    // 머리
+    var head = $('rHead');
+    head.classList.toggle('practice', r.mode === 'practice');
+    head.querySelector('use').setAttribute('href', r.mode === 'practice' ? '#icLoop' : '#icCal');
+    $('rHeadTxt').textContent = r.mode === 'practice' ? '연습 날씨' : '오늘의 날씨 · ' + dateKo(r.date);
+    $('rH').textContent = cmStr(r.mm);
+    $('rGain').textContent = '+' + ((r.mm - 100) / 10).toFixed(1);
+    var endEl = $('rEnd');
+    endEl.classList.toggle('sunset', r.sunset);
+    endEl.querySelector('use').setAttribute('href', r.sunset ? '#icDusk' : '#icWilt');
+    $('rEndTxt').textContent = r.sunset ? '해질녘까지 버팀' : fmtTime(r.driedAt) + '에 말랐어요';
+    var cnt = r.stings.sun + r.stings.sand;
+    $('sCnt').textContent = String(cnt);
+    $('sCnt').className = 'num ' + (cnt ? 'loss' : 'good');
+    $('sDet').innerHTML = cnt ? '해 <span class="num">' + r.stings.sun + '</span> · 모래 <span class="num">' + r.stings.sand + '</span> · 물 <span class="num loss">-' + Math.round(r.stings.lostWater) + '</span>' : '깨끗한 하루';
+    $('sRain').textContent = fmtNum(Math.round(r.rainGain));
+    $('sGrow').textContent = fmtNum(Math.round(r.growWater));
+    // 가장 아까웠던 순간
+    var w = r.worst, wEl = $('worst'), wt = '';
+    if (w && w.type !== 'rain') {
+      var cause = w.kind === 'late' ? (w.lateMs != null ? (lateText(w.lateMs) ? '<span class="num">' + lateText(w.lateMs) + '</span>초 늦게 뗌' : '1초 넘게 늦게 뗌') : '늦게 뗌')
+        : w.kind === 'inside' ? TYPE_KO[w.type] + ' 속에서 폄' : '다시 누름';
+      wt = fmtTime(w.t) + ' ' + TYPE_KO[w.type] + ' — 물 <span class="num">-' + Math.round(w.lost) + '</span> · ' + cause;
+      wEl.classList.remove('rain'); $('worstIc').querySelector('use').setAttribute('href', w.type === 'sand' ? '#icSand' : '#icSun');
+      $('worstIc').style.color = w.type === 'sand' ? 'var(--sand-wave)' : 'var(--sun-edge)';
+    } else if (w) {
+      wt = fmtTime(w.t) + ' 비 — 끝까지 펴 뒀다면 <span class="num">+' + Math.round(w.missed) + '</span>';
+      wEl.classList.add('rain'); $('worstIc').querySelector('use').setAttribute('href', '#icRain'); $('worstIc').style.color = '';
+    }
+    $('worstTxt').innerHTML = wt;
+    wEl.hidden = !w;
+    // 기록 줄
+    var rl = $('recLine');
+    if (r.mode === 'daily') {
+      rl.innerHTML = '오늘 최고 <b class="num">' + cmStr(day.mm) + '</b>cm <span class="sep">·</span> 최고 <b class="num">' + cmStr(best.mm) + '</b>cm' + (isNew ? '<span class="badge">새 기록</span>' : '');
+    } else rl.innerHTML = '<span style="font-size:12px">연습은 기록에 안 남아요</span>';
+    $('newRec').hidden = true;
+    $('foot').hidden = !r.lateAny;
+    $('ovResult').hidden = false;
+    drawMini(r); drawRetro(r);
+    // 출시 대비(실험실에서는 순위표 모듈을 불러오지 않음)
+    var lbSlot = $('lbSlot'); lbSlot.innerHTML = '';
+    try { window.Leaderboard && Leaderboard.report({ game: 'desert-breath', score: r.mm, eligible: r.mode === 'daily', reason: '연습 날씨는 순위에 오르지 않아요', slot: lbSlot }); } catch (e) {}
+    // 0.8초 입력 잠금
+    G.resultLockUntil = now() + 800;
+    ['againBtn', 'menuBtn'].forEach(function (id) { $(id).disabled = true; });
+    setTimeout(function () { ['againBtn', 'menuBtn'].forEach(function (id) { $(id).disabled = false; }); if (!$('ovResult').hidden && FINE.matches) $('againBtn').focus({ preventScroll: true }); }, 800);
+    setTimeout(function () { if (G.phase === 'result') Sound.play(isNew && r.mode === 'daily' ? 'record' : 'result'); }, 300);
+    live('결과: 키 ' + cmStr(r.mm) + '센티미터. ' + (r.sunset ? '해질녘까지 버팀' : fmtTime(r.driedAt) + '에 말랐어요'));
+  }
+  function drawMini(r) {
+    var c = $('miniCv'); if (document.body.classList.contains('low')) return;
+    var w = 96, h = 128, x = c.getContext('2d');
+    c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var sky = D.skyColors(P, (r.endT || 0) / 1000), g = x.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    x.fillStyle = P.sand; x.fillRect(0, h - 18, w, 18);
+    var Hcm = r.mm / 10, R = D.zoomFor(Hcm), hp = Hcm / R * 94;
+    D.drawCactus(x, P, { x: r.sunset ? w / 2 : w * 0.32, gy: h - 18, bw: 30, h: hp, o: 0, W: G.sim.W, grains: r.stings.sand, bloom: r.sunset ? 1 : 0,
+      tilt: r.sunset ? 0 : 1.15, withered: r.sunset ? 0 : 1, fullA: 0.4 });
+  }
+  function drawRetro(r) {
+    var c = $('retro'), wcss = c.clientWidth || 300, hcss = c.clientHeight || 44, x = c.getContext('2d');
+    c.width = Math.round(wcss * dpr); c.height = Math.round(hcss * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.clearRect(0, 0, wcss, hcss);
+    var tick = hcss >= 40 ? 10 : 0, bandH = (hcss - tick) * 0.6, openY = (hcss - tick) * 0.66, openH = (hcss - tick) * 0.3;
+    var sx = function (ms) { return 1 + (wcss - 2) * ms / 150000; };
+    D.roundRect(x, 0, wcss, bandH, 4); x.fillStyle = P.band; x.fill(); x.strokeStyle = P.zoneLine; x.globalAlpha = 0.4; x.lineWidth = 1; x.stroke(); x.globalAlpha = 1;
+    G.segs.forEach(function (s) {
+      var a = sx(s.start), b = sx(s.end);
+      if (s.type === 'rain') { x.fillStyle = P.rainTint; x.fillRect(a, 0, b - a, bandH); x.strokeStyle = P.rain; x.lineWidth = 1; for (var q = a + 1.5; q < b; q += 3) { x.beginPath(); x.moveTo(q, bandH * 0.25); x.lineTo(q, bandH * 0.8); x.stroke(); } }
+      else if (s.type === 'sand') { x.fillStyle = P.sandTint; x.fillRect(a, 0, b - a, bandH); x.fillStyle = P.sandWave; x.fillRect(a, bandH * 0.35, b - a, 1.5); x.fillRect(a, bandH * 0.65, b - a, 1.5); }
+      else if (s.type === 'sun') { x.fillStyle = P.sun; x.fillRect(a, 0, b - a, bandH); x.fillStyle = P.sunEdge; x.beginPath(); x.arc((a + b) / 2, bandH / 2, 1.5, 0, Math.PI * 2); x.fill(); }
+    });
+    x.fillStyle = P.open;
+    r.openSpans.forEach(function (sp) { var a = sx(sp[0]), b = sx(sp[1]); x.fillRect(a, openY, Math.max(1, b - a), openH); });
+    if (!r.sunset && r.driedAt != null) {
+      var dx = sx(r.driedAt);
+      x.save(); x.beginPath(); x.rect(dx, 0, wcss - dx, hcss - tick); x.clip(); x.strokeStyle = P.muted; x.globalAlpha = 0.4; x.lineWidth = 1;
+      for (var q = dx - hcss; q < wcss; q += 5) { x.beginPath(); x.moveTo(q, hcss); x.lineTo(q + hcss, 0); x.stroke(); }
+      x.restore();
+      x.strokeStyle = P.nowLine; x.lineWidth = 1.6; x.beginPath(); x.moveTo(dx - 3, bandH / 2 - 3); x.lineTo(dx + 3, bandH / 2 + 3); x.moveTo(dx + 3, bandH / 2 - 3); x.lineTo(dx - 3, bandH / 2 + 3); x.stroke();
+    }
+    r.stingList.forEach(function (s) {
+      var a = sx(s.t);
+      x.strokeStyle = P.prick; x.lineWidth = 1; x.beginPath(); x.moveTo(a, 4); x.lineTo(a, openY + openH); x.stroke();
+      x.fillStyle = P.prick; x.strokeStyle = '#ffffff'; x.beginPath(); x.arc(a, 4, 3.5, 0, Math.PI * 2); x.fill(); x.stroke();
+    });
+    if (G.retroMark != null) { var mx = sx(G.retroMark); x.fillStyle = P.nowLine; x.fillRect(mx - 1, 0, 2, hcss - tick); }
+    if (tick) {
+      x.fillStyle = P.muted; x.font = '10px system-ui, -apple-system, sans-serif'; x.textBaseline = 'bottom';
+      [0, 50, 100, 150].forEach(function (s, i) { x.textAlign = i === 0 ? 'left' : i === 3 ? 'right' : 'center'; x.fillText(String(s), sx(s * 1000), hcss); });
+    }
+    c.setAttribute('aria-label', '하루 되돌아보기: 펼친 횟수 ' + r.opened + '번, 따끔 ' + (r.stings.sun + r.stings.sand) + '번');
+  }
+  function flashWorst() {
+    var r = G.lastResult; if (!r || !r.worst || $('ovResult').hidden) return;
+    G.retroMark = r.worst.t; drawRetro(r);
+    clearTimeout(G.retroTimer); G.retroTimer = setTimeout(function () { G.retroMark = null; if (G.lastResult) drawRetro(G.lastResult); }, 400);
+  }
+  $('worst').addEventListener('pointerenter', flashWorst);
+  $('worst').addEventListener('click', flashWorst);
+
+  function again() {
+    if (now() < G.resultLockUntil) return;
+    beginFromButton(G.lastResult ? G.lastResult.mode : 'daily');
+  }
+  function toMenu() {
+    Sound.unlock(); Sound.play('button');
+    if (G.phase !== 'result') Sound.stopAmbient();
+    Sound.setPaused(false);
+    G.phase = 'menu'; G.sim = null; G.segs = null; G.endKind = null; G.drawnMenu = false;
+    ['ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
+    hidePrick(true); fingerEl.hidden = true; readyEl.hidden = true;
+    showStart();
+  }
+  function showStart() {
+    G.date = Engine.kstDate();
+    $('dailyDate').textContent = dateKo(G.date);
+    var best = readBest(), day = readDay(G.date), bl = $('bestLine');
+    if (!best && !day) bl.textContent = '아직 기록 없음';
+    else bl.innerHTML = (day ? '오늘 최고 <b class="num">' + cmStr(day.mm) + '</b>cm' : '오늘 기록 없음') + '<span class="sep">·</span>' + (best ? '최고 <b class="num">' + cmStr(best.mm) + '</b>cm' : '');
+    $('ovStart').hidden = false;
+    G.mode = 'daily'; updateTopStatic();
+    G.lastHText = ''; updateTop(0, 100, now());
+    Demo.start();
+  }
+
+  // ---------- 버튼 ----------
+  function syncMute() {
+    var m = Sound.isMuted();
+    $('icoOn').toggleAttribute('hidden', m);
+    $('icoOff').toggleAttribute('hidden', !m);
+    $('muteBtn').setAttribute('aria-pressed', m ? 'true' : 'false');
+    $('muteBtn').setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기');
+  }
+  function toggleMute() { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); syncMute(); }
+  $('muteBtn').addEventListener('click', function () { toggleMute(); this.blur(); });
+  $('pauseBtn').addEventListener('click', function () {
+    Sound.unlock(); this.blur();
+    if (G.phase === 'paused') { Sound.play('button'); resumeGame(); }
+    else if (G.phase === 'play' || G.phase === 'ready' || G.phase === 'resume') { Sound.play('button'); pauseGame('button'); }
+  });
+  ['muteBtn', 'pauseBtn'].forEach(function (id) { $(id).addEventListener('pointerdown', function (e) { e.preventDefault(); }); });
+  $('dailyBtn').addEventListener('click', function () { beginFromButton('daily'); });
+  $('practiceBtn').addEventListener('click', function () { beginFromButton('practice'); });
+  $('resumeBtn').addEventListener('click', function () { Sound.unlock(); Sound.play('button'); resumeGame(); });
+  $('restartBtn').addEventListener('click', function () { Sound.unlock(); Sound.setPaused(false); $('ovPause').hidden = true; Sound.stopAmbient(); beginFromButton(G.mode); });
+  $('againBtn').addEventListener('click', function () { again(); });
+  $('menuBtn').addEventListener('click', function () { if (now() >= G.resultLockUntil) toMenu(); });
+  $('demoPlay').addEventListener('click', function () { Demo.play(); });
+
+  function live(t) { var l = $('live'); l.textContent = ''; setTimeout(function () { l.textContent = t; }, 30); }
+
+  // ---------- 시작 화면 데모 (실제 엔진으로 정해진 입력 재생, 소리 없음) ----------
+  var Demo = (function () {
+    var cv = $('demoCv'), dctx = cv.getContext('2d'), DL = null, sim = null, t0 = 0, running = false, playing = false, prick = null, dpx = 1;
+    var SEGS = [
+      { type: 'clear', start: 0, end: 800 }, { type: 'rain', start: 800, end: 3300 }, { type: 'sand', start: 3300, end: 4300 },
+      { type: 'clear', start: 4300, end: 5000 }, { type: 'rain', start: 5000, end: 7500 }, { type: 'sand', start: 7500, end: 8600 }, { type: 'clear', start: 8600, end: 12000 }
+    ];
+    var INPUTS = [{ t: 800, down: true }, { t: 3200, down: false }, { t: 5000, down: true }, { t: 7510, down: false }];
+    var LOOP = 8800, PRE = 600;
+    var dF = $('demoFinger'), dP = $('demoPrick');
+    function reset() {
+      sim = new Engine.Sim(SEGS, { startW: 82, hooks: {
+        sting: function (s, st) { prick = { st: st, at: now() }; fillPrick(dP, st); dP.hidden = false; G.demoFlash = now(); },
+        late: function (s, st) { if (prick && prick.st === st) { fillPrick(dP, st); prick.from = now(); } }
+      } });
+      INPUTS.forEach(function (e) { sim.input(e.t, e.down, 'd'); });
+      prick = null; dP.hidden = true; t0 = now() + PRE;
+    }
+    function resize(w, h) {
+      dpx = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = Math.round(w * dpx); cv.height = Math.round(h * dpx);
+      DL = D.layout(w, h, 0.3);
+      if (!running) still();
+    }
+    function start() {
+      running = true;
+      if (reduced()) { playing = false; $('demoPlay').hidden = false; reset(); still(); }
+      else { playing = true; $('demoPlay').hidden = true; reset(); }
+    }
+    function play() { playing = true; $('demoPlay').hidden = true; reset(); }
+    function stop() { running = false; playing = false; }
+    function still() { if (!sim) reset(); render(0); }
+    function frame(tn) {
+      if (!running || !DL) return;
+      if (!playing) return;
+      var t = tn - t0;
+      if (t > LOOP) { if (reduced()) { playing = false; $('demoPlay').hidden = false; reset(); render(0); return; } reset(); t = tn - t0; }
+      if (t > 0) sim.runTo(Math.floor(Math.min(t, LOOP) / STEP) * STEP);
+      render(Math.max(0, t));
+    }
+    function render(t) {
+      if (!DL) return;
+      var tn = now(), o = sim.o / Engine.O_MAX, fk = (tn - (G.demoFlash || -1e9)) / 400;
+      dctx.setTransform(dpx, 0, 0, dpx, 0, 0); dctx.clearRect(0, 0, DL.W, DL.SH);
+      var head = D.drawScene(dctx, P, DL, {
+        t: Math.min(t, LOOP) / 1000 * 0 + sim.t / 1000, segs: SEGS, o: o, W: sim.W, Hcm: sim.H / 10, R: 25, grains: sim.stings.length,
+        flash: fk >= 0 && fk < 1 ? 1 - fk : 0, at: reduced() ? 0 : tn / 1000, pressed: sim.nDown > 0, bandA: 1, zoneIcon: 0, fullA: sim.W >= 88 ? 0.85 : 0.4
+      });
+      // 손가락
+      var down = sim.nDown > 0, z = head.zone;
+      dF.classList.toggle('down', down && !reduced());
+      dF.style.opacity = down ? '1' : '0.45';
+      dF.style.transform = 'translate(' + Math.round(z.cx - 16) + 'px,' + Math.round(z.cy - 12 + (down ? 0 : -10)) + 'px)';
+      // 따끔
+      if (prick) {
+        var w = dP.offsetWidth, h = dP.offsetHeight;
+        var x = Math.min(head.headX + head.w / 2 + 6, DL.W - w - 4), y = Math.max(DL.by + DL.BH + 4, Math.min(head.headY - 4, DL.SH - h - 4) - h / 2);
+        dP.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)'; dP.style.opacity = '1';
+      }
+      // 캡션 강조
+      var c1 = down && sim.W < 89.9, c3 = !!prick, c2 = !c3 && sim.W >= 89.9 && down;
+      if (sim.t < 3300 && down) { c1 = sim.t < 1500; c2 = !c1; }
+      $('cap1').classList.toggle('on', c1 && !c3); $('cap2').classList.toggle('on', c2 && !c3); $('cap3').classList.toggle('on', c3);
+    }
+    return { resize: resize, start: start, stop: stop, frame: frame, play: play, sim: function () { return sim; } };
+  })();
+
+  // ---------- 자동 플레이(테스트) ----------
+  function injectAuto() {
+    if (!G.sim || !G.auto) return;
+    var evs = Engine.botInputs(G.segs, G.auto, G.seed);
+    evs.forEach(function (e) { if (e.t >= G.sim.t) inputAt(e.t, e.down, 'auto'); });
+  }
+
+  // ---------- 테스트 훅 ----------
+  function stateCopy() {
+    var s = G.sim, t = curT(), sg = s ? segAt(t) : null;
+    return {
+      phase: G.phase, mode: G.mode, date: G.date, seed: G.seed, t: t, W: s ? s.W : null, Hmm: s ? s.H : null, o: s ? s.o / Engine.O_MAX : 0,
+      pressed: s ? s.nDown : 0,
+      segment: sg ? { type: sg.type, start: sg.start, end: sg.end, p: (t - sg.start) / (sg.end - sg.start) } : null,
+      stings: s ? s.stings.map(function (x) { return { t: x.t, type: x.type, kind: x.kind, lateMs: x.lateMs, lost: x.imm + s.segInfo[x.seg].extra }; }) : [],
+      rainGain: s ? s.rainGain : 0, opened: s ? s.opened : 0
+    };
+  }
+  function toResult(r, o) {
+    return { mm: r.mm, cm: r.cm, sunset: r.sunset, driedAt: r.driedAt, stings: { sun: r.stings.sun, sand: r.stings.sand, lostWater: r.stings.lostWater },
+      rainGain: r.rainGain, growWater: r.growWater, worst: r.worst, date: o.date || null, mode: o.date ? 'daily' : 'practice',
+      W: r.W, H: r.H, endT: r.endT, opened: r.opened, stingList: r.stingList, openSpans: r.openSpans };
+  }
+  window.__cactus = {
+    state: stateCopy,
+    kstDate: function (ms) { return Engine.kstDate(ms); },
+    seedOf: function (d) { return Engine.seedOf(d); },
+    weather: function (a) { return Engine.weather(typeof a === 'string' ? Engine.seedOf(a) : (a && a.seed != null ? a.seed : Engine.seedOf(a.date))); },
+    start: function (o) { Sound.unlock(); Sound.startAmbient(); startGame(o || {}); },
+    skipReady: function () { if (G.phase === 'ready') { G.origin = now(); G.phase = 'play'; } },
+    press: function (t) { if (!canPress()) return false; inputAt(t != null ? t : gameT(), true, 'k'); G.keyDown = true; return true; },
+    release: function (t) { if (!G.sim) return false; G.keyDown = false; inputAt(t != null ? t : gameT(), false, 'k'); return true; },
+    simulate: function (o) {
+      var r = Engine.simulate({ seed: o.seed, date: o.date, inputs: o.inputs, bot: typeof o.bot === 'string' ? { name: o.bot } : o.bot, segs: o.segs, startW: o.startW });
+      return toResult(r, o);
+    },
+    runBots: function (o) { return Engine.runBots(o); },
+    autoPlay: function (cfg) { G.auto = cfg ? (typeof cfg.bot === 'string' ? { name: cfg.bot, sigma: cfg.sigma, botSeed: cfg.botSeed } : cfg.bot) : null; if (G.auto) injectAuto(); },
+    bandSeconds: function () { return L ? (L.right - L.nowX) / L.pxPerSec : null; },
+    layout: function () { return L ? JSON.parse(JSON.stringify(L)) : null; },
+    lastResult: function () { return G.lastResult ? JSON.parse(JSON.stringify(G.lastResult)) : null; },
+    pause: function () { pauseGame('key'); },
+    resume: function () { resumeGame(); },
+    setWater: function (w) { if (G.sim) G.sim.W = w; },
+    setTime: function (ms) {
+      if (!G.sim) return;
+      if (G.phase === 'ready') { G.phase = 'play'; }
+      G.sim.runTo(Math.floor(ms / STEP) * STEP);
+      G.origin = now() - G.sim.t;
+    },
+    engine: Engine, params: Engine.P, demo: function () { var s = Demo.sim(); return s ? { t: s.t, W: s.W, H: s.H, stings: s.stings.map(function (x) { return { kind: x.kind, lateMs: x.lateMs, type: x.type }; }) } : null; }
+  };
+
+  // ---------- 시작 ----------
+  syncPalette(); syncMute();
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', layout);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  var mo = new MutationObserver(function () { syncPalette(); G.drawnMenu = false; draw(); });
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (DARKQ.addEventListener) DARKQ.addEventListener('change', function () { G.drawnMenu = false; draw(); });
+  layout();
+  showStart();
+  G.lastFrame = now();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
