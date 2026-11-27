@@ -264,7 +264,7 @@
 
   /* 상단 바 너비 구간 */
   body.tb-720 .title { display: none; }
-  body.tb-480 .mode { display: none; }
+  body.tb-480 #modeChip { display: none; }
   body.tb-480 .home .full { display: none; }
   body.tb-480 .home .short { display: inline; }
   body.tb-480 .dayclock { width: 76px; }
@@ -1017,12 +1017,14 @@ var Engine = (function () {
     if (type === 'rain') return [P.rain[0], P.rain[1] + P.rain[2] * p];
     var v = P[type]; return [v[0], v[1]];
   }
-  // 뗌 시각을 바꿨을 때 o(tSeg) < 30%가 되는 경계(= 피할 수 있었던 가장 늦은 뗌 시각 t*), 5ms 단위 내림
+  // t* = 따끔을 피할 수 있는 가장 늦은 5ms 격자 뗌 시각. o(tSeg)는 뗌 시각에 대해 증가하고
+  // o(tSeg) = 30%(경계 r)이면 따끔이므로, r보다 '엄격히' 앞선 마지막 격자 시각을 고른다
+  // (완전히 편 상태면 r = tSeg - 70ms → t* = tSeg - 75ms). 따끔이 났다면 뗌 ≥ r > t* 이므로 늦음은 항상 5ms 이상
   function tStar(tDown, oDown, tSeg) {
     var tSat = tDown + (O_MAX - oDown) / 4;               // 이 누름으로 완전히 펴지는 시각
     var r = (O_TH - oDown + 4 * tDown + 6 * tSeg) / 10;    // 펴지는 도중 뗐을 때의 경계
     if (r > tSat) r = tSeg - (O_MAX - O_TH) / 6;           // 완전히 편 뒤: tSeg - 70ms
-    return Math.floor(r / STEP + 1e-9) * STEP;
+    return Math.ceil(r / STEP - 1e-6) * STEP - STEP;
   }
   function oAt(tDown, oDown, rel, tq) { // 누름(tDown, oDown) 뒤 rel에 뗐을 때 tq 시각의 o (정수 단위)
     var orl = Math.min(O_MAX, oDown + 4 * (rel - tDown));
@@ -1747,7 +1749,7 @@ var Draw = (function () {
   // ---------- 상태 ----------
   var G = {
     phase: 'menu', mode: 'daily', date: Engine.kstDate(), seed: 0, segs: null, sim: null,
-    origin: 0, lastFrame: 0, pausedT: 0, resumeAt: 0, readyFrom: 0, endAt: 0, endKind: null,
+    origin: 0, lastFrame: 0, stall: null, pausedT: 0, resumeAt: 0, readyFrom: 0, endAt: 0, endKind: null,
     result: null, lastResult: null, resultLockUntil: 0, auto: null, firstPressDone: false, seen: lsGet(KEY.seen) === '1',
     fx: { flashAt: -1e9, shakeAt: -1e9, fadeAt: -1e9, drops: [], splashes: [], dusts: [], ripples: [], growAt: -1e9, lastDropMm: 0, flagAt: -1e9, passedBest: false, splashAcc: 0, dustAcc: 0 },
     zoom: { from: 25, to: 25, at: -1e9 }, fullA: 0.4, prick: null, bestCm: null, dayBest: null, lastHText: '', lastAria: 0
@@ -1810,7 +1812,7 @@ var Draw = (function () {
     hidePrick(true);
     ['ovStart', 'ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
     Demo.stop();
-    G.phase = 'ready'; G.origin = now() + 2000; G.lastFrame = now();
+    G.phase = 'ready'; G.origin = now() + 2000; G.lastFrame = now(); G.stall = null;
     updateTopStatic();
     if (G.auto) injectAuto();
     live(mode === 'daily' ? '오늘의 날씨 시작' : '연습 시작');
@@ -1824,8 +1826,23 @@ var Draw = (function () {
   }
 
   // ---------- 입력 ----------
+  // 긴 끊김(250ms 초과) 보정: 게임 시계는 끊김 동안 250ms까지만 진행한다.
+  // 끊김 구간을 기억해 두고, 그 사이에 찍힌 입력 시각도 같은 비율로 게임 시계에 옮긴다(뗀 순간이 늦게 적용되지 않게)
+  function syncClock(tn) {
+    var gap = tn - G.lastFrame;
+    if ((G.phase === 'play' || G.phase === 'ready') && gap > 250) {
+      G.stall = { from: G.lastFrame, to: tn, o0: G.origin, k: 250 / gap };
+      G.origin += gap - 250;
+    }
+    G.lastFrame = tn;
+  }
   function gameT(ts) {
-    var tg = (ts != null && ts > 0 ? ts : now()) - G.origin, cap = now() - G.origin;
+    var tn = now();
+    if (tn - G.lastFrame > 250) syncClock(tn); // 끊김 직후 다음 프레임보다 입력이 먼저 오면 여기서 보정
+    var t = (ts != null && ts > 0 ? ts : tn), tg, st = G.stall;
+    if (st && t < st.to) tg = t <= st.from ? t - st.o0 : (st.from - st.o0) + (t - st.from) * st.k;
+    else tg = t - G.origin;
+    var cap = tn - G.origin;
     if (tg > cap) tg = cap;
     return tg;
   }
@@ -1938,7 +1955,7 @@ var Draw = (function () {
     if (G.phase !== 'paused') return;
     $('ovPause').hidden = true;
     Sound.setPaused(false);
-    G.phase = 'resume'; G.resumeAt = now() + 1500; G.lastFrame = now();
+    G.phase = 'resume'; G.resumeAt = now() + 1500; G.lastFrame = now(); G.stall = null;
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   }
 
@@ -1955,9 +1972,7 @@ var Draw = (function () {
   function frame() {
     requestAnimationFrame(frame);
     var tn = now();
-    var gap = tn - G.lastFrame; G.lastFrame = tn;
-    if (G.phase === 'play' && gap > 250) G.origin += gap - 250; // 긴 끊김: 250ms까지만 진행
-    if (G.phase === 'ready' && gap > 250) G.origin += gap - 250;
+    syncClock(tn); // 긴 끊김: 250ms까지만 진행
     if (G.phase === 'resume' && tn >= G.resumeAt) {
       G.origin = tn - G.pausedT; G.phase = G.pausedT < 0 ? 'ready' : 'play';
     }
@@ -2419,7 +2434,7 @@ var Draw = (function () {
       { type: 'clear', start: 0, end: 800 }, { type: 'rain', start: 800, end: 3300 }, { type: 'sand', start: 3300, end: 4300 },
       { type: 'clear', start: 4300, end: 5000 }, { type: 'rain', start: 5000, end: 7500 }, { type: 'sand', start: 7500, end: 8600 }, { type: 'clear', start: 8600, end: 12000 }
     ];
-    var INPUTS = [{ t: 800, down: true }, { t: 3200, down: false }, { t: 5000, down: true }, { t: 7510, down: false }];
+    var INPUTS = [{ t: 800, down: true }, { t: 3200, down: false }, { t: 5000, down: true }, { t: 7505, down: false }];
     var LOOP = 8800, PRE = 600;
     var dF = $('demoFinger'), dP = $('demoPrick');
     function reset() {
