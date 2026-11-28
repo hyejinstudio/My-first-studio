@@ -89,6 +89,8 @@
   .hearts .lost .ho { opacity: 1; }
   .hearts .hit { animation: hpop 200ms ease-out; transform-origin: center; transform-box: fill-box; }
   @keyframes hpop { 50% { transform: scale(1.25); } }
+  .hearts.alarm svg { animation: halarm 500ms ease-in-out 3; }
+  @keyframes halarm { 50% { transform: scale(1.3); } }
 
   button {
     font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
@@ -174,7 +176,7 @@
   @keyframes ovIn { from { opacity: 0; } }
   @keyframes ovUp { from { transform: translateY(8px); } }
   .overlay[hidden] { display: none; }
-  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: var(--well);
     padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
              max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
   #ovPause, body.ov-full #ovPause { background: var(--well); }
@@ -241,6 +243,7 @@
   .stat .sv { display: flex; align-items: baseline; gap: 3px; }
   .stat .sv b { font-size: 22px; line-height: 1.1; }
   .stat .sv span { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .stat .sh { font-size: 11px; font-weight: 600; color: var(--muted); line-height: 1.3; }
   .worst { background: var(--panel); border: 1px solid var(--grid); border-left: 3px solid var(--danger); border-radius: 10px; padding: 6px 10px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: default; }
   .worst canvas { width: 120px; height: 72px; flex: none; border-radius: 8px; display: block; }
   .worst .wl { font-size: 12px; color: var(--muted); font-weight: 700; display: block; }
@@ -370,18 +373,23 @@
           </div>
           <div class="caps" aria-hidden="true">
             <figure id="cap1"><svg viewBox="0 0 96 44">
-              <g transform="translate(2 4) scale(.75)" style="color:var(--zone-ink)"><use href="#icFinger" width="48" height="48"/></g>
-              <path d="M30 34 L44 26" stroke="var(--zone-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M40 24 L45 25.5 L43 30" fill="none" stroke="var(--zone-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M54 30 L92 16" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".8"/><path d="M54 30 L92 16" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M56 29.3 L46 33 L44.6 29.4 L54.6 25.6 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
+              <path d="M4 24 L30 16" stroke="var(--mark)" stroke-width="8" stroke-linecap="round" opacity=".3"/>
+              <path d="M4 24 L30 16" stroke="var(--mark)" stroke-width="3" stroke-linecap="round"/><circle cx="4" cy="24" r="2.6" fill="var(--mark)"/>
+              <g transform="translate(16.6 10.8) scale(.6)" style="color:var(--zone-ink)"><use href="#icFinger" width="48" height="48"/></g>
+              <path d="M40 23 H48 M45 20 L48 23 L45 26" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M58 30 L92 19.6" stroke="var(--mark)" stroke-width="8" stroke-linecap="round" opacity=".3"/>
+              <path d="M58 30 L92 19.6" stroke="var(--ink)" stroke-width="2.8" stroke-linecap="round"/>
+              <path d="M60 29.4 L50 32.4 L48.8 28.8 L58.8 25.8 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
             </svg></figure>
             <figure id="cap2"><svg viewBox="0 0 96 44">
-              <g transform="translate(2 -2) scale(.75)" style="color:var(--zone-ink)" opacity=".75"><use href="#icFinger" width="48" height="48"/></g>
-              <path d="M14 40 V34" stroke="var(--zone-ink)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
-              <rect x="56" y="4" width="18" height="18" rx="4" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6"/>
-              <rect x="58" y="27" width="18" height="12" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.6" transform="rotate(14 67 33)"/>
-              <path d="M42 24 L90 24" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M44 23.3 L34 23.3 L34 19.5 L44 19.5 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
+              <path d="M2 41 L24 41" stroke="var(--mark)" stroke-width="3" stroke-linecap="round" opacity=".55"/><circle cx="24" cy="41" r="2.4" fill="none" stroke="var(--mark)" stroke-width="1.6"/>
+              <g transform="translate(1 -1) scale(.7)" style="color:var(--zone-ink)"><use href="#icFinger" width="48" height="48"/></g>
+              <path d="M34 30 V8 M29.5 13 L34 7.5 L38.5 13" fill="none" stroke="var(--mark)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M41 23 H48 M45.5 20 L48.5 23 L45.5 26" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="66" y="2" width="18" height="18" rx="4" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6"/>
+              <rect x="68" y="27" width="18" height="12" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.6" transform="rotate(18 77 33)"/>
+              <path d="M58 23 L94 23" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".8"/><path d="M58 23 L94 23" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M60 23.4 L51 23.4 L51 19.4 L60 19.4 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
             </svg></figure>
             <figure id="cap3"><svg viewBox="0 0 96 44">
               <rect x="30" y="2" width="22" height="16" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6"/>
@@ -444,8 +452,8 @@
             <span id="cFailW"><svg aria-hidden="true"><use href="#icCross"/></svg><b class="num" id="cFail">0</b></span>
           </div>
           <div class="stats">
-            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icWedge"/></svg>각도 오차 평균</span><span class="sv"><b class="num" id="sAng">0.0</b><span>°</span></span></div>
-            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icBound"/></svg>갈색까지 남긴 여유 평균</span><span class="sv"><b class="num" id="sMar">0.0</b><span>mm</span></span></div>
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icWedge"/></svg>칼과 면의 각도 차이 평균</span><span class="sv"><b class="num" id="sAng">0.0</b><span>°</span></span><span class="sh">0°에 가까울수록 잘 붙어요</span></div>
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icBound"/></svg>자른 곳과 갈색의 거리 평균</span><span class="sv"><b class="num" id="sMar">0.0</b><span>mm</span></span><span class="sh">가까울수록 길게 붙어요 (닿으면 무름)</span></div>
           </div>
           <div class="worst" id="worst"><canvas id="worstCv" aria-hidden="true"></canvas><span><span class="wl">가장 아까운 한 칼</span><span id="worstTxt"></span></span></div>
           <div class="recline" id="recLine"></div>
@@ -1171,7 +1179,7 @@ var Engine = (function () {
   };
 
   /* ---------- 입력 해석: 끌기(50ms 전 기준점, 40px) + 키보드 ---------- */
-  var DRAG_MIN = 40, LAG = 0.05, KEY_DELAY = 0.25, KEY_RATE = 60, KEY_DIR = 1;   // KEY_DIR: ← = +1(시계 반대). 반대로 바꾸려면 -1
+  var DRAG_MIN = 40, LAG = 0.05, LAG_FAST = 0.016, FLICK = 0.25, KEY_DELAY = 0.25, KEY_RATE = 60, KEY_DIR = 1;   // KEY_DIR: ← = +1(시계 반대). 반대로 바꾸려면 -1
   function foldDeg(dx, dy) {
     var deg = Math.atan2(-dy, dx) * 180 / Math.PI;
     if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
@@ -1188,10 +1196,20 @@ var Engine = (function () {
     this.knife = 0; this.raw = 0; this.bladeShown = false;
     if (this.hold) { this.hold.base = 0; this.hold.t0 = t - KEY_DELAY; }
   };
-  Ctl.prototype.refAt = function (t) {
+  // 기준점 E(t) (v1.1): ① 끌기 시작 0.25초 안(휙 긋기) = t − 16ms 이하의 마지막 샘플(거의 지금 위치)
+  //   ② 그 뒤 = t − 50ms 이하의 마지막 샘플, 단 그 점이 S에서 40px 미만이면 t − 16ms 이하의 마지막 샘플로 대신함
+  //   떼는 순간(pointerup)의 위치는 샘플에 넣지 않는다. 16ms 지연은 떼기 직전 한 프레임 안의 미끄러짐을 무시하려는 것.
+  //   미리보기와 자르기는 이 함수 하나를 같이 쓴다.
+  Ctl.prototype._lastAt = function (t, lag) {
     var smp = this.samples, best = null;
-    for (var i = 0; i < smp.length; i++) { if (smp[i].t <= t - LAG + 1e-9) best = smp[i]; else break; }
+    for (var i = 0; i < smp.length; i++) { if (smp[i].t <= t - lag + 1e-9) best = smp[i]; else break; }
     return best || this.S;
+  };
+  Ctl.prototype.refAt = function (t) {
+    var cur = this._lastAt(t, LAG_FAST);
+    if (t - this.S.t <= FLICK + 1e-9) return cur;
+    var E = this._lastAt(t, LAG), dx = E.x - this.S.x, dy = E.y - this.S.y;
+    return Math.sqrt(dx * dx + dy * dy) < DRAG_MIN ? cur : E;
   };
   Ctl.prototype.angleAt = function (t) {
     if (!this.dragging) return null;
@@ -1222,7 +1240,7 @@ var Engine = (function () {
   Ctl.prototype.down = function (x, y, t, pid) {
     if (this.dragging) return false;
     if (this.hold) this.keyUp(this.hold.key, t);
-    this.dragging = true; this.pid = pid; this.S = { x: x, y: y, t: t }; this.samples = [this.S]; this.armedPrev = false; this.lastInputT = t;
+    this.dragging = true; this.pid = pid; this.S = { x: x, y: y, t: t }; this.samples = [this.S]; this.armedPrev = false; this.lastInputT = t; this.frameT = null;
     this._h('down');
     return true;
   };
@@ -1232,9 +1250,14 @@ var Engine = (function () {
     if (t < last.t) t = last.t;
     this.samples.push({ x: x, y: y, t: t });
   };
+  // 화면이 이 끌기의 칼선을 그린 마지막 시각(게임이 매 프레임 알려 줌). 자를 각도는 이 시각 기준 = 놓기 직전 보인 선 (v1.1)
+  Ctl.prototype.markFrame = function (t) { if (this.dragging) this.frameT = t; };
   Ctl.prototype.up = function (x, y, t, pid) {
     if (!this.dragging || pid !== this.pid) return null;
-    var a = this.angleAt(t);
+    var ft = this.frameT, a = null;
+    if (ft != null && ft <= t && t - ft < 0.1) a = this.angleAt(ft);   // 마지막으로 그린 프레임의 각도
+    if (a == null) a = this.angleAt(t);                                  // 한 번도 실선으로 그리지 못한 아주 빠른 긋기
+    this.frameT = null;
     this.dragging = false; this.pid = null; this.armedPrev = false; this.lastInputT = t;
     if (a == null) { this._h('cancel', 'tap'); return null; }
     this.knife = a; this.raw = a;
@@ -1375,7 +1398,7 @@ var Engine = (function () {
   function r3(x) { return Math.round(x * 1000) / 1000; }
 
   return {
-    TABLE: TABLE, DUR: DUR, N_SEG: N_SEG, KNIFE_MAX: KNIFE_MAX, GREEN: GREEN, HALF_W: HALF_W, DRAG_MIN: DRAG_MIN, LAG: LAG, BOTS: BOTS,
+    TABLE: TABLE, DUR: DUR, N_SEG: N_SEG, KNIFE_MAX: KNIFE_MAX, GREEN: GREEN, HALF_W: HALF_W, DRAG_MIN: DRAG_MIN, LAG: LAG, FLICK: FLICK, BOTS: BOTS,
     params: params, faces: faces, scion: scion, sOf: sOf, judgeRow: judgeRow, brownSeg: brownSeg, mulberry32: mulberry32, r1: r1, rInt: rInt, clamp: clamp,
     Run: Run, Ctl: Ctl, simulate: simulate, runBots: runBots, demoScript: demoScript, foldDeg: foldDeg,
     tune: { GOOD_MUL: GOOD_MUL, TILT_K: TILT_K }
@@ -1402,7 +1425,8 @@ var Draw = (function () {
       warn: '#c0392b', warnFill: 'rgba(192,57,43,.28)', ok: '#3f7a4f',
       ruler: '#6b5a3e', rulerTxt: '#5c4a2e', mark: '#2f7fc4', ink: '#1f2430', muted: '#6b7280',
       level: '#fbfaf7', levelEdge: '#6b5a3e',
-      bloom: '#ef8aa6', bloomC: '#f2b134', finger: '#6e5530', fingerFill: '#fbe3c8', card: '#fbfaf7', well: '#fbfaf7', grid: '#e7e2d8'
+      bloom: '#ef8aa6', bloomC: '#f2b134', finger: '#6e5530', fingerFill: '#fbe3c8', card: '#fbfaf7', well: '#fbfaf7', grid: '#e7e2d8',
+      hand: '#2f7fc4', handGlow: 'rgba(47,127,196,.30)'
     },
     dark: {
       sky: { noon: ['#2b2518', '#3d3424'], dusk: ['#1f1a32', '#3b2a40'], night: ['#0c1020', '#1c2140'] }, star: '#fff2c4',
@@ -1419,7 +1443,8 @@ var Draw = (function () {
       warn: '#ff6b6b', warnFill: 'rgba(255,107,107,.28)', ok: '#8fd09d',
       ruler: '#b9a77f', rulerTxt: '#cbb98f', mark: '#7cc0f2', ink: '#eceef3', muted: '#9aa1ae',
       level: '#1b1e27', levelEdge: '#b9a77f',
-      bloom: '#f39ab3', bloomC: '#ffc94d', finger: '#d9c39a', fingerFill: '#e8d2b6', card: '#161921', well: '#161921', grid: '#262a35'
+      bloom: '#f39ab3', bloomC: '#ffc94d', finger: '#d9c39a', fingerFill: '#e8d2b6', card: '#161921', well: '#161921', grid: '#262a35',
+      hand: '#7cc0f2', handGlow: 'rgba(124,192,242,.30)'
     }
   };
   var D = Math.PI / 180, SCION_W = 36, GREEN = 80, K_TO_STOCK = 105, BASE_MM = 30;
@@ -1655,9 +1680,15 @@ var Draw = (function () {
     ctx.save(); ctx.lineCap = 'round';
     var A0 = (kn.armed ? 1 : 0.55) * (kn.dim ? 0.55 : 1) * (kn.alpha == null ? 1 : kn.alpha);
     var P0 = [L.Kx - c * half, L.Ky - s * half], P1 = [L.Kx + c * half, L.Ky + s * half];
+    if (kn.held) {   // 끄는 중(준비됨): 손가락 선과 같은 색 테 + K를 중심으로 도는 원 (v1.1)
+      ctx.save(); ctx.strokeStyle = P.hand; ctx.globalAlpha = 0.22; ctx.lineWidth = 2; ctx.setLineDash([3, 6]);
+      ctx.beginPath(); ctx.arc(L.Kx, L.Ky, half, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.globalAlpha = 0.6; ctx.lineWidth = 15; ctx.beginPath(); ctx.moveTo(P0[0], P0[1]); ctx.lineTo(P1[0], P1[1]); ctx.stroke();
+      ctx.restore();
+    }
     ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 7; ctx.globalAlpha = A0 * 0.7; ctx.beginPath(); ctx.moveTo(P0[0], P0[1]); ctx.lineTo(P1[0], P1[1]); ctx.stroke();
     ctx.globalAlpha = A0;
-    ctx.strokeStyle = col; ctx.lineWidth = kn.parallel ? 4.5 : 3.5;
+    ctx.strokeStyle = col; ctx.lineWidth = kn.parallel ? 4.5 : kn.held ? 4.5 : 3.5;
     if (kn.parallel) { ctx.shadowColor = P.perfect; ctx.shadowBlur = 10 * (kn.pulse == null ? 1 : kn.pulse); }
     if (!kn.armed) ctx.setLineDash([7, 7]);
     ctx.beginPath(); ctx.moveTo(P0[0], P0[1]); ctx.lineTo(P1[0], P1[1]); ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
@@ -1693,8 +1724,18 @@ var Draw = (function () {
   }
 
   /* ---------- 수평계 ---------- */
-  function drawLevel(ctx, P, x, y, R, tilt) {
-    ctx.save(); ctx.lineCap = 'round';
+  // 작은 탑 아이콘(마디 3개 + 둥근 머리): 바늘·쓰러짐 표시에 같이 씀. 원점 = 밑동 가운데, 위로 len
+  function miniTower(ctx, P, w, len, fill, edge, lw) {
+    ctx.beginPath(); ctx.moveTo(-w / 2, 0); ctx.lineTo(-w / 2, -len + w / 2); ctx.quadraticCurveTo(-w / 2, -len, 0, -len); ctx.quadraticCurveTo(w / 2, -len, w / 2, -len + w / 2); ctx.lineTo(w / 2, 0); ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = lw; ctx.stroke();
+    ctx.strokeStyle = P.seam; ctx.lineWidth = Math.max(1, lw * 0.6);
+    [0.33, 0.62].forEach(function (k) { ctx.beginPath(); ctx.moveTo(-w / 2 + 1, -len * k); ctx.lineTo(w / 2 - 1, -len * k); ctx.stroke(); });
+  }
+  // 수평계 (v1.1): 바늘 = 작은 탑(탑 기울기 × 4), ±10° 바깥 빨간 부채 안에 쓰러진 탑 아이콘. opt = { hl(색), hlA, max }
+  function drawLevel(ctx, P, x, y, R, tilt, opt) {
+    opt = opt || {};
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (opt.hl && opt.hlA > 0) { ctx.save(); ctx.globalAlpha = opt.hlA; ctx.strokeStyle = opt.hl; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(x, y, R + 5, Math.PI, 0); ctx.closePath(); ctx.stroke(); ctx.restore(); }
     ctx.fillStyle = P.level; ctx.strokeStyle = P.levelEdge; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(x, y, R, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.fillStyle = P.warnFill; [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(x, y); if (sd > 0) ctx.arc(x, y, R * 0.96, -Math.PI / 2 + 40 * D, 0); else ctx.arc(x, y, R * 0.96, -Math.PI, -Math.PI / 2 - 40 * D); ctx.closePath(); ctx.fill(); });
@@ -1702,10 +1743,14 @@ var Draw = (function () {
       var a = -Math.PI / 2 + cv(t[0]) * 4; ctx.strokeStyle = t[2]; ctx.lineWidth = t[1];
       ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * R * (1 - t[3]), y + Math.sin(a) * R * (1 - t[3])); ctx.lineTo(x + Math.cos(a) * R * 0.96, y + Math.sin(a) * R * 0.96); ctx.stroke();
     });
-    var a = cv(clamp(tilt, -12, 12)) * 4, danger = Math.abs(tilt) >= 7;
+    // 빨간 부채 안: 쓰러진 탑 (넘으면 이렇게 된다)
+    [-1, 1].forEach(function (sd) {
+      var ang = sd * 66 * D; ctx.save(); ctx.translate(x + Math.sin(ang) * R * 0.34, y - Math.cos(ang) * R * 0.34 + 1); ctx.rotate(ang);
+      miniTower(ctx, P, Math.max(4, R * 0.16), R * 0.5, P.warnFill, P.warn, 1.3); ctx.restore();
+    });
+    var mx = opt.max || 12, a = cv(clamp(tilt, -mx, mx)) * 4, danger = Math.abs(tilt) >= 7;
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
-    ctx.fillStyle = P.body; ctx.strokeStyle = danger ? P.warn : P.edge; ctx.lineWidth = danger ? 2.6 : 1.8;
-    ctx.beginPath(); ctx.rect(-R * 0.13, -R * 0.82, R * 0.26, R * 0.82); ctx.fill(); ctx.stroke();
+    miniTower(ctx, P, R * 0.26, R * 0.84, P.body, danger ? P.warn : P.edge, danger ? 2.4 : 1.6);
     ctx.restore();
     ctx.fillStyle = P.levelEdge; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
     ctx.restore();
@@ -1743,14 +1788,67 @@ var Draw = (function () {
     ctx.restore();
     if (drag) drawDrag(ctx, P, drag);
   }
+  // 끈 선: 준비됨이면 칼선과 같은 색(hand)으로 굵게 + 끝에 작은 칼 아이콘 (v1.1)
   function drawDrag(ctx, P, drag) {
+    var col = drag.armed ? P.hand : P.zoneInk;
     ctx.save();
     ctx.strokeStyle = P.zoneInk; ctx.globalAlpha = drag.armed ? 0.3 : 0.7; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
     ctx.beginPath(); ctx.arc(drag.x0, drag.y0, 40, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-    ctx.strokeStyle = P.zoneInk; ctx.lineWidth = 3; ctx.lineCap = 'round'; if (!drag.armed) ctx.setLineDash([6, 6]);
+    ctx.lineCap = 'round';
+    if (drag.armed) { ctx.strokeStyle = P.hand; ctx.globalAlpha = 0.45; ctx.lineWidth = 14; ctx.beginPath(); ctx.moveTo(drag.x0, drag.y0); ctx.lineTo(drag.x1, drag.y1); ctx.stroke(); ctx.globalAlpha = 1; }
+    ctx.strokeStyle = col; ctx.lineWidth = drag.armed ? 4.5 : 3; if (!drag.armed) ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.moveTo(drag.x0, drag.y0); ctx.lineTo(drag.x1, drag.y1); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = P.zoneInk; ctx.beginPath(); ctx.arc(drag.x0, drag.y0, 6, 0, 7); ctx.fill();
-    ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(drag.x1, drag.y1, 13, 0, 7); ctx.stroke();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(drag.x0, drag.y0, 6, 0, 7); ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(drag.x1, drag.y1, 13, 0, 7); ctx.stroke();
+    if (drag.armed) {   // 손가락 선 = 칼: 선 시작점 바깥쪽에 칼날 아이콘 (칼선과 같은 기울기, 같은 쪽)
+      var a = Math.atan2(drag.y1 - drag.y0, drag.x1 - drag.x0); if (Math.cos(a) < 0) a += Math.PI;
+      var lx = Math.min(drag.x0, drag.x1) === drag.x0 ? drag.x0 : drag.x1, ly = lx === drag.x0 ? drag.y0 : drag.y1;
+      ctx.translate(lx, ly); ctx.rotate(a); ctx.translate(-16, 0);
+      ctx.fillStyle = P.blade; ctx.strokeStyle = P.bladeEdge; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-20, 0); ctx.lineTo(-20, -7); ctx.lineTo(-3, -7); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = P.handle; ctx.beginPath(); ctx.rect(-34, -8, 14, 10); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 들어 올리는 손가락(떼면 자른다): 작은 손가락 + 위 화살표 (v1.1)
+  function drawLift(ctx, P, x, y, k, a) {
+    var up = 5 * (0.5 - 0.5 * Math.cos(k * 2 * Math.PI));
+    ctx.save(); ctx.globalAlpha = a == null ? 0.9 : a;
+    drawFinger(ctx, P, x, y - up, ctx.globalAlpha, false, 0.42);
+    ctx.strokeStyle = P.hand; ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var ax = x + 15, ay = y + 14 - up;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax, ay - 18); ctx.moveTo(ax - 5, ay - 12); ctx.lineTo(ax, ay - 18); ctx.lineTo(ax + 5, ay - 12); ctx.stroke();
+    ctx.restore();
+  }
+  // 남은 시간 고리: left 0..1(줄어드는 호), warn = 마지막 1초 (v1.1)
+  function drawTimer(ctx, P, x, y, R, left, warn, pulse) {
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.fillStyle = P.well; ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(x, y, R + 2, 0, 7); ctx.fill();
+    ctx.globalAlpha = 0.3; ctx.strokeStyle = P.muted; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, R - 1, 0, 7); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.strokeStyle = warn ? P.warn : P.ok; ctx.lineWidth = warn ? 4 + 1.5 * (pulse || 0) : 3.5;
+    if (left > 0.002) { ctx.beginPath(); ctx.arc(x, y, R - 1, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * clamp(left, 0, 1)); ctx.stroke(); }
+    if (warn) { ctx.globalAlpha = 0.35 * (pulse || 0); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, R + 5, 0, 7); ctx.stroke(); }
+    ctx.restore();
+  }
+  // 접수가 스스로 오르내림 표시(작은 위아래 화살표)
+  function drawBob(ctx, P, x, y, h, a) {
+    ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = P.ink; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.lineTo(x, y + h / 2);
+    ctx.moveTo(x - 4, y - h / 2 + 5); ctx.lineTo(x, y - h / 2); ctx.lineTo(x + 4, y - h / 2 + 5);
+    ctx.moveTo(x - 4, y + h / 2 - 5); ctx.lineTo(x, y + h / 2); ctx.lineTo(x + 4, y + h / 2 - 5); ctx.stroke();
+    ctx.restore();
+  }
+  var HEART = typeof Path2D !== 'undefined' ? new Path2D('M12 20.5 4.2 13A4.9 4.9 0 0 1 12 6.6 4.9 4.9 0 0 1 19.8 13Z') : null;
+  function drawHearts(ctx, P, x, y, sz, lost, a) {
+    if (!HEART) return;
+    ctx.save(); ctx.globalAlpha *= a;
+    for (var i = 0; i < 3; i++) {
+      ctx.save(); ctx.translate(x + (i - 1.5) * sz * 1.15, y - sz / 2); ctx.scale(sz / 24, sz / 24);
+      ctx.fillStyle = P.well; ctx.fill(HEART);
+      if (i >= 3 - lost) { ctx.strokeStyle = P.warn; ctx.lineWidth = 2.4; ctx.setLineDash([3, 2.4]); ctx.stroke(HEART); }
+      else { ctx.fillStyle = P.warn; ctx.fill(HEART); }
+      ctx.restore();
+    }
     ctx.restore();
   }
   function drawFinger(ctx, P, x, y, a, pressed, sc) {
@@ -1876,7 +1974,7 @@ var Draw = (function () {
     PAL: PAL, layout: layout, cv: cv, clamp: clamp, lerp: lerp, mixHex: mixHex, hash: hash, rr: rr, EASE: EASE, BASE_MM: BASE_MM, GREEN: GREEN,
     skyFor: skyFor, drawSky: drawSky, drawSeg: drawSeg, drawSeam: drawSeam, drawPot: drawPot, drawTower: drawTower, drawFace: drawFace, drawAnswer: drawAnswer,
     drawScion: drawScion, drawClampOnly: drawClampOnly, drawKnife: drawKnife, drawGainBracket: drawGainBracket, drawKTicks: drawKTicks, drawLevel: drawLevel,
-    drawRuler: drawRuler, drawZone: drawZone, drawDrag: drawDrag, drawFinger: drawFinger, drawFlower: drawFlower, drawWedge: drawWedge, drawRing: drawRing,
+    drawRuler: drawRuler, drawZone: drawZone, drawDrag: drawDrag, drawLift: drawLift, drawTimer: drawTimer, drawBob: drawBob, drawHearts: drawHearts, drawFinger: drawFinger, drawFlower: drawFlower, drawWedge: drawWedge, drawRing: drawRing,
     drawCheck: drawCheck, drawCross: drawCross, drawClockRing: drawClockRing, drawPiece: drawPiece, drawMushPiece: drawMushPiece,
     drawExplainMiss: drawExplainMiss, drawExplainRot: drawExplainRot, drawExplainWither: drawExplainWither, drawCrumbs: drawCrumbs
   };
@@ -1968,6 +2066,16 @@ var Scene = (function () {
         if (!rm && endK < 0.9) { var gk = clamp(endK / 0.6, 0, 1); ctx.save(); ctx.strokeStyle = P.perfect; ctx.globalAlpha = 0.5 * (1 - gk); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(T.topX, T.topY - fr * 0.4, fr * 2 * gk + 1, 0, 7); ctx.stroke(); ctx.restore(); }
         Dr.drawFlower(ctx, P, T.topX, T.topY, fr, flowerB);
       }
+      if (!endInfo.fin) {   // 쓰러짐 원인 연결 (v1.1): 화분 앞 수평계 바늘이 빨간 한계선을 넘어감 / 실패 3번이면 빈 하트 3개
+        var gR = Math.max(16, L.levelR * topt.scale), over = Math.abs(tA) >= 10, pk = 0.5 + 0.5 * Math.sin(real * 2 * Math.PI * 2);
+        Dr.drawLevel(ctx, P, T.bx, Math.min(T.by + T.r * 1.9, L.SH - 6), gR, tA, { max: 15, hl: P.warn, hlA: over ? 0.4 + 0.6 * pk : 0 });
+        // 쓰러지는 쪽 반대편 위에 크게: 기울어 쓰러짐 = 큰 수평계(바늘이 빨간 한계선 넘음), 실패 3번 = 빈 하트 3개
+        var bgx = sign > 0 ? L.SW * 0.3 : L.SW * 0.7, bgy = L.SH * 0.3, bR = clamp(L.SW * 0.1, 40, 80), ap = clamp(endK / 0.2, 0, 1);
+        ctx.save(); ctx.globalAlpha = ap;
+        if (run.end === 'tilt') Dr.drawLevel(ctx, P, bgx, bgy, bR, tA, { max: 15, hl: P.warn, hlA: over ? 0.4 + 0.6 * pk : 0 });
+        else Dr.drawHearts(ctx, P, bgx, bgy - bR * 0.3, Math.round(bR * 0.6), 3, 0.6 + 0.4 * pk);
+        ctx.restore();
+      }
       if (!endInfo.fin && !rm && endK > 0.9 && endK < 1.25) {
         var dk = (endK - 0.9) / 0.35; ctx.save(); ctx.fillStyle = P.dune; ctx.globalAlpha = 0.5 * (1 - dk);
         for (var q = 0; q < 3; q++) { ctx.beginPath(); ctx.arc(T.topX + (q - 1) * T.r * 1.6, T.topY, T.r * (0.6 + dk * 1.2), 0, 7); ctx.fill(); }
@@ -1978,9 +2086,21 @@ var Scene = (function () {
       return out;
     }
     // 수평계 (화분 앞, 화분이 사라지면 왼쪽 아래 구석)
-    var lvY = T.by + r * 1.9;
-    if (lvY < L.scene.h - 4) Dr.drawLevel(ctx, P, T.bx, lvY, L.levelR, tiltD);
-    else Dr.drawLevel(ctx, P, L.levelX, L.scene.h - 12, L.levelR, tiltD);
+    var lvY = T.by + r * 1.9, fx = vis.tiltFx, fk = fx ? tg - fx.at : 9, fxOn = fk >= 0 && fk < 1.2;
+    var hlC = fxOn ? (Math.abs(fx.to) > Math.abs(fx.from) ? P.warn : P.ok) : null, hlA = fxOn ? (1 - fk / 1.2) * (0.6 + 0.4 * Math.sin(real * 2 * Math.PI * 2)) : 0;
+    // 기준 수직선(점선): 탑 축과 벌어진 만큼이 기울기. 기울기가 바뀌는 순간 수평계와 같은 색으로 강조 (v1.1)
+    if (Math.abs(tiltD) >= 0.3 || fxOn) {
+      var pl = Math.min(T.H, T.by - 10);
+      ctx.save(); ctx.strokeStyle = fxOn ? hlC : P.muted; ctx.globalAlpha = fxOn ? 0.35 + 0.5 * hlA : 0.4; ctx.lineWidth = fxOn ? 2.5 : 1.5; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(T.bx, T.by); ctx.lineTo(T.bx, T.by - pl); ctx.stroke(); ctx.setLineDash([]);
+      if (fxOn && Math.abs(tiltD) > 0.05) {
+        var ra = Math.min(pl, T.H) * 0.92, a0 = -Math.PI / 2, a1 = -Math.PI / 2 + cv(tiltD);
+        ctx.globalAlpha = hlA; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(T.bx, T.by, ra, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if (lvY < L.scene.h - 4) Dr.drawLevel(ctx, P, T.bx, lvY, L.levelR, tiltD, { hl: hlC, hlA: hlA });
+    else Dr.drawLevel(ctx, P, L.levelX, L.scene.h - 12, L.levelR, tiltD, { hl: hlC, hlA: hlA });
     // 눈금자 (0 = 시작 대목 윗면)
     var topY = L.Sy + camShift, zeroY = topY + tm.Hvis * m;
     Dr.drawRuler(ctx, P, L, zeroY, tm.Hvis / 10, m * 10);
@@ -2019,6 +2139,15 @@ var Scene = (function () {
       sc = { u: s0.u, alpha: s0.alpha, B: run.row.B, fade: clamp(tau / run.row.L, 0, 1), droop: clamp(tau - (run.row.L - 1), 0, 1), pulse: o.hints && o.hints.brownPulse || 0 };
       Dr.drawScion(ctx, P, L, sc, {});
     }
+    if (sc) {   // 남은 시간 고리(집게 옆) + 1~4마디 "접수는 혼자 오르내림" 화살표 (v1.1)
+      var yo = ph === 'pre' ? -(1 - (1 - Math.pow(1 - clamp((tg - run.pt) / 0.45, 0, 1), 3))) * (L.Ky + 100 * m) : 0;
+      var al = cv(sc.alpha || 0), ca = Math.cos(al), sa = Math.sin(al), G0 = (sc.u - Dr.GREEN) * m;
+      var loc = function (lx, ly) { return [L.Kx + lx * ca - ly * sa, L.Ky + yo + lx * sa + ly * ca]; };
+      var tau2 = ph === 'aim' ? tg - run.aimStart : 0, rem = run.row.L - tau2, warnT = ph === 'aim' && rem <= 1;
+      var tp = loc(r + 26, G0 - 16);
+      Dr.drawTimer(ctx, P, tp[0], tp[1], Math.max(11, Math.min(18, r * 0.55)), ph === 'aim' ? rem / run.row.L : 1, warnT, warnT ? 0.5 + 0.5 * Math.sin(real * 2 * Math.PI * 2) : 0);
+      if (ph === 'aim' && o.hints && o.hints.bob) { var bp = loc(r + 18, (G0 + sc.u * m) / 2 + 10); Dr.drawBob(ctx, P, bp[0], bp[1], 30, 0.45); }
+    }
     if (sc && o.hints && o.hints.brownX) {   // 4마디: 갈색 위 ✕
       var bc = sc.u + sc.B / 2, aa = cv(sc.alpha), yOffX = ph === 'pre' ? -(1 - (1 - Math.pow(1 - clamp((tg - run.pt) / 0.45, 0, 1), 3))) * (L.Ky + 100 * m) : 0;
       ctx.save(); ctx.globalAlpha = o.hints.brownX; Dr.drawCross(ctx, P, L.Kx - Math.sin(aa) * bc * m, L.Ky + yOffX + Math.cos(aa) * bc * m, 20); ctx.restore();
@@ -2027,11 +2156,16 @@ var Scene = (function () {
     if (showKnife) {
       var phi = ctl.knifeAt(tg), armed = ctl.armedAt(tg);
       if (ph === 'aim' && sc) { var bs = E.brownSeg(sc.u, sc.alpha, phi); brown = bs.seg; Dr.drawGainBracket(ctx, P, L, sc, !!brown); }
-      kn = Dr.drawKnife(ctx, P, L, { phi: phi, armed: armed, dim: ph !== 'aim', parallel: !!(o.hints && o.hints.parallel), pulse: rm ? 1 : 0.7 + 0.3 * Math.sin(real * 2 * Math.PI / 0.6), brown: brown });
+      var held = ctl.dragging && armed;
+      kn = Dr.drawKnife(ctx, P, L, { phi: phi, armed: armed, held: held, dim: ph !== 'aim', parallel: !!(o.hints && o.hints.parallel), pulse: rm ? 1 : 0.7 + 0.3 * Math.sin(real * 2 * Math.PI / 0.6), brown: brown });
       if (brown && o.hints && o.hints.brownX2) {
         var bx = Math.abs(brown[0]) > Math.abs(brown[1]) ? brown[0] : brown[1], ka = cv(phi);
         ctx.save(); ctx.globalAlpha = o.hints.brownX2; Dr.drawCross(ctx, P, L.Kx + Math.cos(ka) * bx * m, L.Ky + Math.sin(ka) * bx * m + 14, 14); ctx.restore();
       }
+    }
+    if (kn && ph === 'aim' && ctl.dragging && armed && o.hints && o.hints.lift) {   // 1~3마디: 떼면 잘린다(들어 올리는 손가락)
+      var lx = kn.P1[0] + 6, ly = kn.P1[1] + 12; if (lx > L.rulerX - 40) lx = L.rulerX - 40;
+      Dr.drawLift(ctx, P, lx, ly, (real % 0.9) / 0.9, 0.95);
     }
     Dr.drawKTicks(ctx, P, L);
     // 자른 뒤 연출
@@ -2043,8 +2177,13 @@ var Scene = (function () {
     // 누른 물결
     if (vis.ripple && !rm) { var rk = (real - vis.ripple.at) / 0.24; if (rk >= 0 && rk < 1) { ctx.save(); ctx.strokeStyle = P.zoneInk; ctx.globalAlpha = 0.35 * (1 - rk); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(vis.ripple.x, vis.ripple.y, 48 * EZ.out(rk), 0, 7); ctx.stroke(); ctx.restore(); } }
     if (ctl.dragging) {
-      var Ep = ctl.refPoint(tg) || ctl.S;
-      Dr.drawDrag(ctx, P, { x0: ctl.S.x, y0: ctl.S.y, x1: Ep.x, y1: Ep.y, armed: ctl.armedAt(tg) });
+      var Ep = ctl.refPoint(tg) || ctl.S, arm2 = ctl.armedAt(tg);
+      if (arm2 && o.hints && o.hints.link && (ph === 'aim' || ph === 'pre')) {   // 1~3마디: 끈 선 → 칼(K)을 잇는 흐린 연결선
+        ctx.save(); ctx.strokeStyle = P.hand; ctx.globalAlpha = 0.28; ctx.lineWidth = 2; ctx.setLineDash([2, 7]); ctx.lineCap = 'round';
+        var kEnd = kn ? (Ep.x >= ctl.S.x ? kn.P1 : kn.P0) : [L.Kx, L.Ky];
+        ctx.beginPath(); ctx.moveTo(Ep.x, Ep.y - 14); ctx.lineTo(kEnd[0], kEnd[1] + 8); ctx.stroke(); ctx.restore();
+      }
+      Dr.drawDrag(ctx, P, { x0: ctl.S.x, y0: ctl.S.y, x1: Ep.x, y1: Ep.y, armed: arm2 });
     }
     if (o.finger) drawFingerHint(ctx, P, L, o.finger, real, rm);
     if (o.demoFinger && o.demoFinger.a > 0) Dr.drawFinger(ctx, P, o.demoFinger.x, o.demoFinger.y, o.demoFinger.a, o.demoFinger.pressed, o.demoFinger.sc || 0.75);
@@ -2193,8 +2332,20 @@ var Scene = (function () {
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
-  function readBest() { var v = lsGet(KEY.best); if (v == null || !/^\d+$/.test(v)) return null; var n = parseInt(v, 10); return isFinite(n) ? n : null; }
-  function readExplained() { try { var v = JSON.parse(lsGet(KEY.explained)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; } }
+  // 저장소가 막혀도(쿠키 차단 등) 이 페이지 안에서는 같게 동작하도록 메모리 사본을 함께 둔다(v1.1)
+  var MEM = { best: null, explained: {} };
+  function readBest() {
+    var v = lsGet(KEY.best), n = null;
+    if (v != null && /^\d+$/.test(v)) { n = parseInt(v, 10); if (!isFinite(n)) n = null; }
+    if (MEM.best != null && (n == null || MEM.best > n)) n = MEM.best;
+    return n;
+  }
+  function writeBest(mm) { MEM.best = mm; lsSet(KEY.best, String(mm)); }
+  function readExplained() {
+    var v = {}; try { var j = JSON.parse(lsGet(KEY.explained)); if (j && typeof j === 'object' && !Array.isArray(j)) v = j; } catch (e) {}
+    Object.keys(MEM.explained).forEach(function (k) { v[k] = 1; });
+    return v;
+  }
 
   // ---------- 팔레트 ----------
   var P = Dr.PAL.light;
@@ -2272,7 +2423,7 @@ var Scene = (function () {
     var ctl = new E.Ctl(run, ctlHooks());
     G.run = run; G.ctl = ctl; G.vis = newVis(); G.lastResult = null; G.explain = null;
     G.hint = { finger: null, segT: 0, idleShown: false, parallel: false, brownX2Until: -1, brownChecked: false };
-    G.droopSeg = 0; G.tiltBand = 0; G.prevPar = false; G.lastHText = '';
+    G.droopSeg = 0; G.tiltBand = 0; G.prevPar = false; G.lastHText = ''; $('hearts').classList.remove('alarm');
     ['ovStart', 'ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
     $('explain').hidden = true; hideTags();
     Demo.stop();
@@ -2291,7 +2442,7 @@ var Scene = (function () {
   function explainWanted(kind) {
     if (G.auto) return false;
     var ex = readExplained(); if (ex[kind]) return false;
-    ex[kind] = 1; lsSet(KEY.explained, JSON.stringify(ex));
+    ex[kind] = 1; MEM.explained[kind] = 1; lsSet(KEY.explained, JSON.stringify(ex));
     return true;
   }
   function runHooks() {
@@ -2311,6 +2462,7 @@ var Scene = (function () {
       judge: function (run, rec) { onJudge(rec); },
       grow: function (run, rec, t) {
         if (rec && (rec.kind === 'perfect' || rec.kind === 'good')) { G.vis.skyFrom = G.vis.skyCm; G.vis.skyTo = run.H() / 10; G.vis.skyAt = t; pillGrow(); }
+        if (rec && Math.abs(rec.tiltAfter - rec.tiltBefore) > 1e-9) G.vis.tiltFx = { at: t, from: rec.tiltBefore, to: rec.tiltAfter };
         updateTop(false);
       },
       explain: function (run, rec, t) { openExplain(rec, t); },
@@ -2345,7 +2497,9 @@ var Scene = (function () {
     var lastFail = G.run.cur && G.run.cur.kind !== 'perfect' && G.run.cur.kind !== 'good';
     setTimeout(function () { if (G.mode !== 'run') return; if (end === 'finish') Sound.play('bloom'); else Sound.play('collapse'); }, end === 'finish' ? 400 : lastFail ? 300 : 0);
     Sound.stopAmbient();
-    if (end === 'finish') { pillGrow(); updateTop(false); }
+    // 끝 연출 동안 상단 키 = 실제 기록(마지막 마디까지 포함). 쓰러짐 직전의 좋음 길이가 빠져 보이던 문제 수정(v1.1)
+    var before = G.lastHText; updateTop(false); if (end === 'finish' || G.lastHText !== before) pillGrow();
+    if (end === 'fails' && !reduced()) $('hearts').classList.add('alarm');
   }
 
   // ---------- 상단 바 ----------
@@ -2396,6 +2550,7 @@ var Scene = (function () {
   function ptrUp(x, y, ts, pid) {
     if (!G.ctl || !G.ctl.dragging || G.ctl.pid !== pid) return null;
     var t = gameT(ts), r = G.run;
+    r.advanceTo(t);   // 겨누기가 막 시작된 프레임 안에서 떼도 자른다(v1.1)
     if (r.phase === 'aim' && t < r.aimStart) t = r.aimStart;
     G.ctl.update(Math.min(t, gameNow()));
     return G.ctl.up(x, y, t, pid);
@@ -2562,9 +2717,10 @@ var Scene = (function () {
 
   // ---------- 매 프레임 ----------
   function hintsNow(tg) {
-    var run = G.run, h = { ghost: false, parallel: false, brownPulse: 0, brownX: 0, brownX2: 0, finger: !!G.hint.finger };
+    var run = G.run, h = { ghost: false, parallel: false, brownPulse: 0, brownX: 0, brownX2: 0, finger: !!G.hint.finger, lift: false, link: false, bob: false };
     if (!run || run.seg < 1) return h;
     var p = run.phase, k = run.seg, act = p === 'pre' || p === 'aim';
+    h.lift = k <= 3; h.link = k <= 3; h.bob = k <= 4;
     h.ghost = k <= 2 && act;
     if (k <= 3 && act) { var e = Math.abs(G.ctl.knifeAt(tg) - run.theta); h.parallel = e <= run.row.P + 1e-9; }
     if (k === 4 && act) {
@@ -2632,6 +2788,7 @@ var Scene = (function () {
     var tg = gameNow();
     if (G.mode === 'paused') { ctx.fillStyle = P.well; ctx.fillRect(0, 0, L.SW, L.SH); return; }
     var hn = hintsNow(tg), rm = reduced();
+    if (G.ctl && G.ctl.dragging) G.ctl.markFrame(tg);
     var readyLike = run.phase === 'ready' || run.phase === 'prep' || G.mode === 'resume';
     var out = Scene.draw(ctx, P, L, run, G.ctl, tg, G.vis, { reduced: rm, real: now() / 1000, hints: hn, finger: G.hint.finger, readyZone: readyLike });
     // 꼬리표·떠오르는 숫자 (DOM, 숫자·아이콘만)
@@ -2675,7 +2832,7 @@ var Scene = (function () {
     G.lastResult = r; G.mode = 'result'; freeze();
     Sound.aimEnd();
     var best = readBest(), isNew = best == null || r.mm > best;
-    if (isNew) { lsSet(KEY.best, String(r.mm)); }
+    if (isNew) writeBest(r.mm);
     r.best = isNew ? r.mm : best; r.isNew = isNew && r.mm > 0;
     G.seen = true; lsSet(KEY.seen, '1');
     hideTags(); $('ready').hidden = true; $('keys').hidden = true;
@@ -2703,7 +2860,7 @@ var Scene = (function () {
     $('sMar').textContent = r.avgMargin == null ? '-' : fmt1(r.avgMargin);
     var w = r.worst, wt = '';
     if (w) {
-      if (r.end === 'finish') wt = '<span class="num">' + w.seg + '</span>마디 — <span class="num">' + fmt1(w.h) + '</span>mm 붙음 · 갈색까지 <span class="num">' + fmt1(w.margin) + '</span>mm 남김';
+      if (r.end === 'finish') wt = '<span class="num">' + w.seg + '</span>마디 — <span class="num">' + fmt1(w.h) + '</span>mm 붙음 · 갈색과 거리 <span class="num">' + fmt1(w.margin) + '</span>mm';
       else if (r.end === 'tilt') wt = '<span class="num">' + w.seg + '</span>마디 ' + KIND_KO[w.kind] + ' — <span class="num">' + fmtAng(w.e || 0) + '</span>° 비뚤게' + (w.kind === 'good' ? ' 붙어' : '') + ' 탑이 <span class="num">' + fmt1(Math.abs(w.tiltAfter)) + '</span>° 기욺';
       else wt = '<span class="num">' + w.seg + '</span>마디 ' + KIND_KO[w.kind] + (w.kind === 'rot' ? ' — 갈색에 <span class="num">' + fmtDepth(w.depth) + '</span>mm' : w.kind === 'miss' ? ' — <span class="num">' + fmtAng(w.e) + '</span>° 비뚤게' : '');
     }
@@ -2796,6 +2953,7 @@ var Scene = (function () {
     $('ovStart').hidden = false;
     G.lastHText = ''; $('hNum').textContent = '0.0'; $('segNum').textContent = '1/30'; $('segChip').classList.add('learn');
     Array.prototype.forEach.call($('hearts').children, function (h) { h.classList.remove('lost'); });
+    $('hearts').classList.remove('alarm');
     Demo.start();
   }
 
@@ -2869,7 +3027,7 @@ var Scene = (function () {
       if (fing.pressed) df = { x: fing.x, y: fing.y, pressed: true, a: 0.95 };
       else if (fing.upAt >= 0 && t - fing.upAt < 0.4) df = { x: fing.x, y: fing.y - 12 * (t - fing.upAt) / 0.4, pressed: false, a: 0.95 * (1 - (t - fing.upAt) / 0.4) };
       else if (nx && nx.t - t < 0.3) df = { x: nx.x, y: nx.y, pressed: false, a: 0.95 * (1 - Math.max(0, nx.t - t) / 0.3) };
-      var hn = { ghost: run.seg >= 1 && run.seg <= 2 && (run.phase === 'pre' || run.phase === 'aim'), parallel: false };
+      var hn = { ghost: run.seg >= 1 && run.seg <= 2 && (run.phase === 'pre' || run.phase === 'aim'), parallel: false, lift: run.seg <= 3, link: true, bob: true };
       if (run.seg >= 1 && run.seg <= 3 && (run.phase === 'pre' || run.phase === 'aim')) hn.parallel = Math.abs(ctl.knifeAt(t) - run.theta) <= run.row.P + 1e-9;
       var vr = { crumbs: [], skyCm: 0, skipTrim1: true, ripple: vis.ripple ? { x: vis.ripple.x, y: vis.ripple.y, at: vis.ripple.at } : null };
       Scene.draw(dctx, P, DL, run, ctl, t, vr, { reduced: false, real: t, hints: hn, demoFinger: df });
@@ -2939,7 +3097,7 @@ var Scene = (function () {
     pause: function () { pauseGame('key'); }, resume: function () { resumeGame(); },
     closeExplain: function () { if (G.explain) G.explain.lockUntil = 0; closeExplain(); },
     setTilt: function (v) { if (G.run) G.run.tilt = v; }, setFails: function (n) { if (G.run) { G.run.fails = n; updateTop(true); } },
-    clearStorage: function () { [KEY.best, KEY.seen, KEY.explained].forEach(lsDel); G.seen = false; },
+    clearStorage: function () { [KEY.best, KEY.seen, KEY.explained].forEach(lsDel); MEM.best = null; MEM.explained = {}; G.seen = false; },
     setAuto: function (on) { G.auto = !!on; },
     layout: function () { return L ? JSON.parse(JSON.stringify(L)) : null; },
     stageRect: function () { var b = stage.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; }
