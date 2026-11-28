@@ -187,6 +187,19 @@ const Sound = (function () {
       tone('sine', 640, 500, t, 0.055, 0.10, 0.002);
       noise(t, 0.02, 0.04, 'bandpass', 2400, 0, 1.2, 0.001);
     },
+    // 면 다듬기(마디 시작 0.30초, 대목 윗면을 새로 다듬음): 작은 '사각사각' 세 번 + 부스러기 톡톡. 각도 정보 없음(음 고정)
+    trim: function (t) {
+      if (throttled('trim', t, 0.2)) return;
+      var f = [3600, 3100, 2700];
+      for (var i = 0; i < 3; i++) noise(t + i * 0.085 + rnd(0, 0.01), 0.06, 0.05 - i * 0.008, 'bandpass', f[i], f[i] * 0.8, 2.2, 0.008);
+      for (var j = 0; j < 4; j++) noise(t + 0.05 + rnd(0, 0.24), 0.004, rnd(0.03, 0.06), 'bandpass', rnd(1800, 3000), 0, 2.0, 0.0005);
+    },
+    // 취소(40px 안에서 떼기·톡 치기 = 자르지 않음): 칼이 물러나는 부드러운 두 음 '포롱↓'. 노이즈 '싹'이 없어 cut과 확실히 다름
+    cancel: function (t) {
+      if (throttled('cancel', t, 0.15)) return;
+      tone('sine', 700, 0, t, 0.06, 0.035, 0.004);
+      tone('sine', 520, 0, t + 0.055, 0.09, 0.03, 0.004);
+    },
     // 새 접수가 집게에 물려 내려옴(마디 시작): 아주 작은 집게 '틱' + 옅은 스침
     scion: function (t) {
       if (throttled('scion', t, 0.2)) return;
@@ -431,7 +444,7 @@ const Sound = (function () {
       } catch (e) {}
       if (amb.want && !amb.on) { try { ambStart(ctx.currentTime + 0.02); } catch (e) {} }
     },
-    // name: button|scion|blade|align|cut|graft|good|miss|rot|droop|wither|tilt|collapse|bloom|result|record
+    // name: button|trim|scion|blade|align|cut|cancel|graft|good|miss|rot|droop|wither|tilt|collapse|bloom|result|record
     // opts: graft {n, streak} / good {n} / tilt {deg}
     play: function (name, opts) {
       try {

@@ -6,6 +6,7 @@
 **차분하고 짧게**: 판정음은 0.25~0.5초, 큰 소리는 꽃·새 기록·무너짐 세 개뿐.
 **박자 없음**: 배경음악·루프 멜로디·일정한 박자를 쓰지 않는다. 바람은 노이즈 + 서로 맞지 않는 느린 흔들림(0.043·0.061·0.107Hz).
 모든 음 배열은 오리지널.
+기준 문서: `docs/games/cactus-graft/design.md`(핵심 루프·판정 5종·조작·일시정지). 이 명세의 호출 시점은 그 문서의 단계 이름을 따른다.
 
 ## 0. 공정성 결정 — 조준 중 소리
 
@@ -17,6 +18,7 @@
 | `align` 작은 종 | 게임이 화면에 "평행 미리 빛남"을 **켜는 순간**에만 (1~3마디) | 화면 보조와 같은 정보, 같은 마디에서만 |
 | 4마디 이후 | 조준 중 평행 신호 없음. 평행 여부는 자른 뒤 `graft`/`good`/`miss`로만 | — |
 
+- `trim`(면 다듬기)·`cut`도 음높이가 고정이라 대목 면 각도·칼 각도를 알려 주지 않는다.
 - 각도마다 딸깍(눈금 소리)을 넣지 않았다 — 딸깍 수를 세면 칼 각도를 숫자로 알 수 있어 화면보다 정보가 많아진다.
 - 기울기 경고 `tilt`·말라 감 `droop`은 화면에 이미 보이는 것(탑 기울기, 접수가 고개 숙임)과 같은 시점에 한 번씩만 낸다.
 
@@ -24,24 +26,27 @@
 
 | 게임 이벤트 | 소리 |
 |---|---|
-| 시작 화면 데모(있다면) | **무음**(첫 터치 전 오디오 잠금 상태) |
-| 시작 버튼 click | `unlock` + `button` + `startAmbient` |
-| 새 접수가 집게에 물려 내려옴(마디 시작) | `scion` — 아주 작은 집게 '틱' |
-| 칼이 나타남(40px 이상 끌었을 때 / 키보드 첫 ←→) | `blade` — 칼날 '스릉'(작게) |
+| 시작 화면 엔진 데모(약 13초 반복) | **무음.** 데모 엔진 경로에서 `Sound`를 부르지 않는다(음소거 설정과 무관, design.md A) |
+| "시작"/「다시」 click (또는 Enter) | `unlock` + `button` + `startAmbient` |
+| ① 면 다듬기 0.30초(1.5초 준비 중 첫 면 포함, 매 마디·실패 뒤 다시 다듬을 때도) | `trim` — 작은 '사각사각' + 부스러기 |
+| ② 접수 내려오기 0.45초(①과 동시) | `scion` — 아주 작은 집게 '틱'(선택. trim과 겹쳐도 작음) |
+| 끌기가 40px을 넘어 "준비됨"이 된 순간(칼선 점선→실선) / 키보드 첫 ←→ | `blade` — 칼날 '스릉'(작게) |
 | 칼을 기울이는 동안(매 프레임) | `aim(칼 각도)` — 돌리는 속도에 따라 '스스' 스침, 멈추면 무음 |
 | 1~3마디, 화면 "평행 미리 빛남"이 켜지는 순간 | `align` |
-| 손 떼기 / 스페이스(자르는 순간) | `aimEnd` + `cut` '싹둑' |
-| 판정 완벽(접합선 한 줄로 번쩍) | `graft {n, streak}` 촉촉한 '쏙' + 키 상승음 |
+| 손 떼기 / 스페이스(자르는 순간, 겨누기 단계에서 준비됨일 때만) | `aimEnd` + `cut` '싹둑' |
+| **취소**: 준비 안 됨(40px 미만)으로 떼기·톡 치기 | `aimEnd` + `cancel` '포롱↓' — 노이즈 없는 부드러운 두 음, `cut`과 확실히 다름 |
+| 취소: pointercancel·blur·화면 숨김·일시정지로 끊김 / 겨누기 단계 밖에서 놓기·스페이스(무시) | `aimEnd`만(소리 없음) |
+| ⑤ 판정 완벽 "착"(접합선 한 줄로 번쩍) | `graft {n, streak}` 촉촉한 '쏙' + 키 상승음. 3번째 연속 완벽부터(새순 +5mm) 위에 작은 종 |
 | 판정 좋음(한쪽만 빛남, 틈) | `good {n}` |
 | 어긋남(틈 벌어져 미끄러짐) | `miss` |
 | 무름(갈색 밑동 자름) | `rot` '물컹' |
-| 말라 버림 남은 1초(고개 숙임 시작) | `droop` (선택) |
-| 말라 버림(시간 초과) | `wither` |
-| 탑 기울기가 경고 단계에 처음 들어갈 때 | `tilt {deg}` |
-| 끝: 실패 3번 / 기울기 10° | `collapse` + `stopAmbient` |
-| 끝: 30마디 완주, 꽃 핌 | `bloom` + `stopAmbient` |
-| 결과 화면 | 새 기록이면 `record`, 아니면 `result` |
-| 일시정지 / 계속 | `setPaused(true)` / `setPaused(false)` |
+| 말라 버림 남은 1.0초(접수 끝이 고개 숙이기 시작, design.md) | `droop` (선택) |
+| 말라 버림(τ ≥ L, 겨누기 시간 안에 안 자름) | `wither` |
+| 수평계 추가 경고 단계(권장 \|tilt\| 5°·7°·9°)에 처음 들어갈 때 | `tilt {deg}` — design.md는 별도 경고 연출 없이 수평계(±10° 흙빨강 눈금)만 두므로, 소리도 수평계 추에 보이는 것 이상을 알리지 않는다 |
+| 끝: 실패 3번 / 기울기 10° (쓰러짐 연출 1.2초) | `collapse` + `stopAmbient` |
+| 끝: 30마디 완주, 꽃 핌(꽃 연출 1.5초) | `bloom` + `stopAmbient` |
+| 결과 화면(끝 연출 뒤) | 새 기록이면 `record`, 아니면 `result` (오늘/연습 구분 없음 — 모든 판 기록 대상) |
+| 일시정지(Ⅱ/Esc/P/blur/숨김/pagehide) / 「계속」(1.0초 준비 시작) | `setPaused(true)` / `setPaused(false)` |
 
 ## 2. 신호 경로
 
@@ -62,6 +67,8 @@ ambBus(바람) → ambDuck(순간 덕킹) ────┴→ master(0.6, 음소�
 | 이름 | 언제 | 합성 레시피 | 길이 | 피크 |
 |---|---|---|---|---|
 | `button` | UI 버튼 | sine 640→500Hz 55ms + BP 노이즈 2.4kHz 20ms (전작과 같음). 50ms 스로틀 | 0.04s | −20.2 dB |
+| `trim` | 면 다듬기 | '사각' 3번: BP 노이즈 Q2.2 3.6/3.1/2.7kHz(각 −20% 하강) 60ms, 85ms 간격 + 부스러기 클릭 4개(BP 1.8~3kHz 4ms). 음 고정(면 각도와 무관) | 0.23s | −34.6 dB |
+| `cancel` | 취소 | sine 700Hz 60ms → sine 520Hz 90ms(+55ms). 노이즈 없음 | 0.13s | −30.9 dB |
 | `scion` | 마디 시작 | sine 1250→1050Hz 25ms '틱' + BP 노이즈 900→1500Hz 0.14s(어택 50ms) | 0.11s | −31.7 dB |
 | `blade` | 칼 나타남 | BP 노이즈 3.5→6.5kHz Q2 0.12s + sine 2650Hz 아주 옅게 | 0.12s | −33.9 dB |
 | `align` | 배우기 미리 빛남 | 작은 종 A6(sine + 2·3배음) 0.22s | 0.19s | −32.6 dB |
@@ -78,7 +85,7 @@ ambBus(바람) → ambDuck(순간 덕킹) ────┴→ master(0.6, 음소�
 | `result` | 결과(새 기록 아님) | 마림바 A5 → D6 (전작과 같음) | 0.33s | −22.5 dB |
 | `record` | 결과, 새 기록 | 마림바 F#5-A5-B5-D6-E6-F#6(55ms) + 종 F#6 + Bm → D(add9) 두 화음 + 종 A6. 덕킹. 전작(G → D)과 다른 진행 | 1.53s | −13.0 dB |
 
-레벨 의도: blade·align·droop·scion(−32~−34, 은은) < tilt 5°(−31) < good·miss·result(−21~−22) < cut·graft·rot·wither(−18~−21) < collapse·bloom(−18, 길다) < record(−13).
+레벨 의도: trim·blade·align·droop·scion·cancel(−31~−35, 은은) < tilt 5°(−31) < good·miss·result(−21~−22) < cut·graft·rot·wither(−18~−21) < collapse·bloom(−18, 길다) < record(−13).
 - 완벽 `graft`가 좋음 `good`보다 2.7dB 크고 맑다. 30마디 동안 음이 A4→F#6으로 올라가 "탑이 자란다"가 귀로 들린다(3마디마다 한 칸 → 매번 같은 음이 3번 이어져 질리지 않고, 박자도 생기지 않음).
 - 실패 세 가지는 서로 다른 재질: `miss` 미끄러짐+툭(중역), `rot` 물컹(저역, 출렁), `wither` 바스락(고역 마른 소리).
 
@@ -95,7 +102,7 @@ ambBus(바람) → ambDuck(순간 덕킹) ────┴→ master(0.6, 음소�
 ### API
 ```
 Sound.unlock()                  사용자 제스처(click/pointerup/keydown) 안에서. 여러 번 안전
-Sound.play(name, opts?)         효과음. opts: graft {n, streak} / good {n} / tilt {deg}
+Sound.play(name, opts?)         효과음 18종(1·3장). opts: graft {n, streak} / good {n} / tilt {deg}
 Sound.aim(deg)                  칼이 보이는 동안 매 프레임 현재 칼 각도(°). 소리 크기 = 돌리는 속도만
 Sound.aimEnd()                  자름·칼 사라짐(안 불러도 0.1초 안에 조용해짐)
 Sound.startAmbient() / Sound.stopAmbient()   바람 시작 / 약 1.5초 페이드아웃
@@ -119,27 +126,32 @@ Sound.startMusic() / stopMusic()             공통 인터페이스 호환용 = 
 | 위치 | 호출 |
 |---|---|
 | 모든 사용자 입력 핸들러(버튼 click, 게임 영역 pointerup, keydown) 맨 앞 | `Sound.unlock()` |
-| 시작 / 「다시」 click | `Sound.play('button'); Sound.startAmbient();` |
+| 시작 / 「다시」 click·Enter | `Sound.play('button'); Sound.startAmbient();` |
+| 시작 화면 엔진 데모 | **아무것도 부르지 않음**(데모 엔진이 실제 게임 함수를 쓰면 데모 모드에서 Sound 호출을 건너뛰는 가드 필요) |
+| 면 다듬기 연출 시작(준비 중 첫 면 포함, 매 마디) | `Sound.play('trim')` |
 | 그 밖의 버튼(처음으로, 일시정지 화면 등) | `Sound.play('button')` |
-| 새 접수 등장(마디 시작) | `Sound.play('scion')` |
-| 칼이 처음 보이게 된 순간(40px 넘김 / 첫 ←→) | `Sound.play('blade')` |
-| 칼이 보이는 동안 매 프레임 | `Sound.aim(knifeDeg)` |
+| 접수 내려오기 시작(면 다듬기와 동시, 선택) | `Sound.play('scion')` |
+| 끌기가 "준비 안 됨→준비됨"으로 바뀐 순간(40px, 끌기당 1번) / 마디 안 첫 ←→ | `Sound.play('blade')` |
+| 칼이 보이는 동안 매 프레임(겨누기 밖에서 미리 기울일 때도) | `Sound.aim(knifeDeg)` — 키보드로 돌릴 때도 같은 값 |
 | 1~3마디에서 "평행 미리 빛남"이 꺼짐→켜짐으로 바뀐 순간 | `Sound.play('align')` (4마디부터 절대 부르지 않음) |
-| 자르는 순간(손 떼기·스페이스) | `Sound.aimEnd(); Sound.play('cut');` |
+| 자르는 순간(손 떼기·스페이스, 겨누기 단계 + 준비됨) | `Sound.aimEnd(); Sound.play('cut');` |
+| 준비 안 됨으로 떼기·톡 치기(취소) | `Sound.aimEnd(); Sound.play('cancel');` |
+| pointercancel·lostpointercapture·blur·숨김·일시정지로 취소 / 겨누기 밖 놓기·스페이스 | `Sound.aimEnd()`만 |
 | 판정 완벽(붙는 순간 번쩍과 같이) | `Sound.play('graft', { n: 붙은 마디 번호 1~30, streak: 연속 완벽 수(이번 포함) })` |
 | 판정 좋음 | `Sound.play('good', { n })` |
 | 어긋남(미끄러지기 시작할 때) | `Sound.play('miss')` |
 | 무름 | `Sound.play('rot')` |
-| 말라 버림 남은 1초(고개 숙임 시작, 선택) | `Sound.play('droop')` |
+| 말라 버림 남은 1.0초(τ = L − 1, 고개 숙임 시작, 선택) | `Sound.play('droop')` |
 | 말라 버림 | `Sound.aimEnd(); Sound.play('wither')` |
-| 탑 기울기가 경고 단계(권장 5°·7°·9°, design.md 화면 경고 기준이 있으면 그 값)에 **처음** 들어선 순간 | `Sound.play('tilt', { deg: 현재 기울기 })` (단계마다 1번, 회복 후 다시 넘으면 다시) |
+| 판정 뒤 \|tilt\|가 5°·7°·9° 단계에 **처음** 들어선 순간(수평계 추가 그만큼 기욺; 1~3마디는 tilt가 안 바뀌므로 없음) | `Sound.play('tilt', { deg: 현재 기울기 })` (단계마다 1번, 회복 후 다시 넘으면 다시) |
 | 끝: 실패 3번 또는 기울기 10° | `Sound.play('collapse'); Sound.stopAmbient();` (이때 3번째 실패음 직후라면 0.3초쯤 뒤에 collapse 권장) |
 | 끝: 30마디 완주 | (마지막 `graft` 뒤 약 0.4초) `Sound.play('bloom'); Sound.stopAmbient();` |
-| 결과 화면 표시(collapse/bloom 뒤 ≥ 1.5초 권장) | 새 기록: `Sound.play('record')`, 아니면 `Sound.play('result')` |
-| 일시정지 진입 / 「계속」 | `Sound.setPaused(true)` / `Sound.setPaused(false)` |
+| 결과 화면 표시(쓰러짐 1.2초 / 꽃 1.5초 연출 뒤) | 새 기록: `Sound.play('record')`, 아니면 `Sound.play('result')` |
+| 일시정지 진입(Ⅱ/Esc/P/blur/숨김/pagehide) / 「계속」 | `Sound.setPaused(true)` / `Sound.setPaused(false)` |
 | 판 도중 「처음으로」 | `Sound.stopAmbient()` |
 | 음소거 버튼 / M 키 | `Sound.setMuted(!Sound.isMuted())` + 아이콘 갱신(초기 표시는 `Sound.isMuted()`) |
 
+- 판정음 시점: design.md ④ 싹둑(0.25초 떨어짐) 뒤 ⑤ 판정 시작에 `graft`/`good`/`miss`/`rot`를 부르면 `cut` → 판정음이 0.25초 간격으로 자연스럽게 이어진다.
 - 스로틀(같은 소리 연속 방지)·판정음 겹침 방지(`graft`/`good` 공유 100ms, 실패 3종 공유 300ms)는 모듈이 처리한다.
 
 ## 7. 검증 기록
@@ -149,12 +161,12 @@ Sound.startMusic() / stopMusic()             공통 인터페이스 호환용 = 
 | 항목 | 방법 | 결과 |
 |---|---|---|
 | 문법 | `node --check sound-module.js` | 통과 |
-| 효과음 레벨 | OfflineAudioContext 48kHz 스테레오, 16개(+n·streak·deg 변형) 개별 렌더 | 피크 −13.0 ~ −33.9 dBFS, 클리핑 0 |
+| 효과음 레벨 | OfflineAudioContext 48kHz 스테레오, 18개(+n·streak·deg 변형) 개별 렌더 | 피크 −13.0 ~ −34.6 dBFS, 클리핑 0 |
 | 30마디 상승 | cut+graft 30회 0.5초 간격(streak 1→30) | 마디별 피크 −18 ~ −20 dB 고르게, 음 A4→F#6, 클리핑 0 |
 | 칼 스침 | 20/80/200°/초 + 멈춤, 같은 속도 다른 각도 구간 | 위 4장 수치. 각도 구간별 차 0.3dB 이내(= 각도 정보 없음) |
 | 바람·일시정지 | 바람 8초 / 정지 1.5초 후 재개 | 바람 RMS −48.0 dBFS, 정지 중 −119 dBFS(무음), 재개 정상 |
 | 한 판 축약 | 바람 + 9마디(완벽·좋음·무름·어긋남·말라 버림) + 기울기 경고 2번 + 무너짐 | RMS −37.7, 피크 −17.9, 클리핑 0 |
-| 최악 겹침 | 바람 + 빠른 스침 + 효과음 16개 동시 | 피크 −13.3 dBFS, 클리핑 0 |
+| 최악 겹침 | 바람 + 빠른 스침 + 효과음 18개 동시 | 피크 −12.5 dBFS, 클리핑 0 |
 | 실시간 API | Chromium iPad(gen 7) 에뮬레이션, 터치 탭, localStorage 차단/정상 각각: unlock 전 호출 무시 → 탭 후 전 효과음 + 없는 이름 + 잘못된 opts, 2초간 매 프레임 aim + 자름·판정 반복, 일시정지 중 aim, 음소거 중 play/aim, stop→start(페이드 중/완전 정지 후), startMusic/stopMusic | 페이지 오류 0, 기본 muted=false, 저장 키 정상 |
 
 **클릭 버그 발견·수정(작성 중)**: 처음 렌더에서 `cut`이 특정 시각(8.3초 등)에만 6ms 지점에 −7 dBFS 튀는 소리를 냈다. 원인은 HP 필터 노드를 만든 뒤 기본값(350Hz, 게인 1) 상태에서 시작 시각 자동화로 넘어갈 때 Chromium이 낸 과도 응답으로 보인다. `noise()`/`tone()`이 노드 생성 즉시 `frequency.value`·`gain.value`를 목표값으로 넣도록 고쳐 사라졌다(같은 시각들에서 −18.8 dB로 정상). 또 노이즈 생성기를 곱셈 LCG(double 정밀도에서 약 1.5만 샘플 = 0.3초 주기로 반복)에서 xorshift32로 바꿨다.
@@ -162,7 +174,7 @@ Sound.startMusic() / stopMusic()             공통 인터페이스 호환용 = 
 `node tests/smoke.js --lab cactus-graft`는 게임 페이지가 아직 없어 실행하지 않았다(모듈 단독 검증). Developer 연결 후 확인 필요.
 
 **청취 확인 필요(미검증)** — 헤드리스 환경이라 실제 소리는 듣지 못했다. 실기기에서
-① `cut` '싹둑'이 칼로 자르는 느낌인지(너무 날카롭거나 딱딱하지 않은지),
+① `cut` '싹둑'과 `cancel` '포롱↓'이 확실히 구별되는지, `trim` '사각'이 너무 작지 않은지(−35 dB), `cut` '싹둑'이 칼로 자르는 느낌인지(너무 날카롭거나 딱딱하지 않은지),
 ② `graft` '쏙'이 촉촉하게 들리고 30마디 동안 음이 올라가는 게 느껴지는지, 위쪽(F#6 근처)이 귀에 거슬리지 않는지,
 ③ `good`의 맥놀이가 "조금 비뚤다"로 들리는지, 완벽과 확실히 구별되는지,
 ④ 칼 스침이 손 움직임을 따라오는지, 거슬리면 `AIM_LV` 0.05→0.03, 안 들리면 0.08,
