@@ -14,19 +14,19 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
     --line: #e7e2d8; --accent: #e4572e;
-    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-cactus: #f6e8c6;
+    --tile-block: #fdebe3; --tile-snake: #e4f0d6; --tile-bunny: #dbe6e3; --tile-mole: #e3e9d9; --tile-bungeo: #e4ebf1; --tile-parrot: #e8efe6; --tile-company: #ebe7f0; --tile-cactus: #f6e8c6; --tile-graft: #f3dccb;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
       --line: #262a35; --accent: #ff7a50;
-      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513;
+      --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513; --tile-graft: #2c1e17;
     }
   }
   :root[data-theme="dark"] {
     --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae;
     --line: #262a35; --accent: #ff7a50;
-    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513;
+    --tile-block: #2a1f1b; --tile-snake: #18241c; --tile-bunny: #16242a; --tile-mole: #18201b; --tile-bungeo: #1a2129; --tile-parrot: #18211c; --tile-company: #1d1b26; --tile-cactus: #2a2513; --tile-graft: #2c1e17;
   }
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -128,6 +128,29 @@
 
   <!-- 개발진: 출시 전 게임 카드를 맨 앞에 추가. 출시되면 카드를 루트 index.html로 옮긴다 -->
   <div class="grid">
+    <a class="game" href="games/cactus-graft/" aria-label="선인장 키우기2 — 나란히 잘라 착, 하늘까지">
+      <div class="art" style="--tile: var(--tile-graft)">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M15 51 H49 L45 62 H19 Z" fill="#c8643c" stroke="#7e3a1f" stroke-width="1.4" stroke-linejoin="round"/>
+          <rect x="13" y="49" width="38" height="4.5" rx="1" fill="#d97a4e" stroke="#7e3a1f" stroke-width="1.4"/>
+          <path d="M25 49 V36.6 L39 34.4 V49 Z" fill="#7cc35a" stroke="#3f7f2c" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M25 41.5 L39 41.5" stroke="#f4fbe6" stroke-width="1.3"/>
+          <g fill="#f4fbe6"><circle cx="28.5" cy="45.5" r="1"/><circle cx="35.5" cy="45.5" r="1"/><circle cx="28.5" cy="39" r="1"/><circle cx="35.5" cy="38.2" r="1"/></g>
+          <path d="M19 37.5 L45 33.4" stroke="#fff3a0" stroke-width="4.2" stroke-linecap="round" opacity=".9"/>
+          <path d="M21 37.2 L43 33.7" stroke="#2f6f22" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3 2.2"/>
+          <path d="M25 26 V9.5 A7 7 0 0 1 39 9.5 V26 Z" fill="#7cc35a" stroke="#3f7f2c" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M25 22 H39 V27.5 L37 29 L34.5 27.6 L32 29.2 L29.5 27.6 L27 29 L25 27.5 Z" fill="#8a5a2b" stroke="#4e3016" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M26.5 28 L31 23 M30.5 28.5 L35.5 23 M34.5 28.5 L38.5 24" stroke="#5e3a1a" stroke-width="1.1"/>
+          <g fill="#f4fbe6"><circle cx="28.5" cy="12" r="1"/><circle cx="35.5" cy="12" r="1"/><circle cx="28.5" cy="17.5" r="1"/><circle cx="35.5" cy="17.5" r="1"/></g>
+          <path d="M26.5 6.5 L37.5 6.5" stroke="#8b93a1" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M15 21.6 L49 16.2" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" opacity=".85"/>
+          <path d="M15 21.6 L49 16.2" stroke="#1f2430" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M3 24.4 L15 22.5 L14.2 19.5 L4 21.1 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>선인장 키우기2</h2>
+      <p>나란히 잘라 착, 하늘까지</p>
+    </a>
     <a class="game" href="games/desert-breath/" aria-label="선인장 키우기 — 비 올 때만 펴서 쑥쑥">
       <div class="art" style="--tile: var(--tile-cactus)">
         <svg viewBox="0 0 64 64" aria-hidden="true">

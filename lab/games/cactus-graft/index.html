@@ -1,0 +1,2959 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>선인장 키우기2</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="선인장 키우기2">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e4572e">
+<style>
+  /* 숫자 전용 글꼴: Pretendard ExtraBold(SIL OFL 1.1)의 숫자·기호 서브셋. 수정본이라 내부 이름은 CactusDigits. 라이선스 fonts/OFL.txt */
+  @font-face { font-family: "CactusDigits"; src: url("fonts/cactus-digits-800.woff2") format("woff2");
+    font-weight: 800; font-style: normal; font-display: swap; unicode-range: U+002B-002F, U+0030-0039; }
+  :root {
+    --app-h: 100vh;
+    --app-h: 100dvh;
+    --num-font: "CactusDigits", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    --bg: #f4f1ea; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --grid: #e7e2d8; --well: #fbfaf7;
+    --accent: #e4572e; --gold: #f2b134; --good-ink: #3f7a4f; --danger: #d64545; --loss-ink: #b2452f;
+    --body: #7cc35a; --edge: #3f7f2c; --rot: #8a5a2b; --rot-edge: #4e3016; --rot-hatch: #5e3a1a; --dry: #b59a62;
+    --warn: #c0392b; --ok: #3f7a4f; --good: #d9b26a; --zone-ink: #6e5530; --bloom: #ef8aa6; --bloom-c: #f2b134; --mark: #2f7fc4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+      --accent: #ff7a50; --gold: #ffc94d; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+      --body: #8fd46a; --edge: #cdeeb4; --rot: #9a6634; --rot-edge: #e0b07a; --rot-hatch: #5a3416; --dry: #9c8455;
+      --warn: #ff6b6b; --ok: #8fd09d; --good: #c9a45e; --zone-ink: #d9c39a; --bloom: #f39ab3; --bloom-c: #ffc94d; --mark: #7cc0f2;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141a; --panel: #1b1e27; --ink: #eceef3; --muted: #9aa1ae; --grid: #262a35; --well: #161921;
+    --accent: #ff7a50; --gold: #ffc94d; --good-ink: #8fd09d; --danger: #ff6b6b; --loss-ink: #f39a84;
+    --body: #8fd46a; --edge: #cdeeb4; --rot: #9a6634; --rot-edge: #e0b07a; --rot-hatch: #5a3416; --dry: #9c8455;
+    --warn: #ff6b6b; --ok: #8fd09d; --good: #c9a45e; --zone-ink: #d9c39a; --bloom: #f39ab3; --bloom-c: #ffc94d; --mark: #7cc0f2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: var(--app-h); overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  body.low { padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); }
+  .num { font-family: var(--num-font); font-weight: 800; font-variant-numeric: tabular-nums; }
+  svg [hidden], svg[hidden] { display: none !important; }
+  /* .app·.stage와 조상에는 transform/filter 금지 (ov-full의 position:fixed가 깨짐) */
+  .app { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+
+  /* 상단 바 (hungry-bear와 같은 구조) */
+  .top { flex: none; height: var(--tb, 52px); width: var(--sw, 600px); display: flex; align-items: center; gap: 8px; }
+  .home {
+    flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; margin-left: -8px;
+    color: var(--muted); font-size: 14px; text-decoration: none; border-radius: 8px; white-space: nowrap;
+  }
+  .home:hover, .home:focus-visible { color: var(--ink); }
+  .home .short { display: none; }
+  .home:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .title { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .spacer { flex: 1; min-width: 0; }
+  .btns { display: flex; gap: 6px; flex: none; }
+  .hpill {
+    flex: none; height: 44px; min-width: 112px; padding: 0 14px; border-radius: 999px; background: var(--panel); border: 1px solid var(--grid);
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: border-color 400ms linear;
+  }
+  .hpill.grow { border-color: var(--good-ink); transition-duration: 0ms; }
+  .hpill svg { width: 18px; height: 18px; flex: none; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .hpill b { font-size: 22px; line-height: 1; }
+  .unit { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .segchip { flex: none; height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--grid); background: var(--panel);
+    display: inline-flex; align-items: center; gap: 5px; }
+  .segchip svg { width: 14px; height: 16px; flex: none; }
+  .segchip .ic-r { fill: var(--body); stroke: var(--edge); stroke-width: 1.4; }
+  .segchip.learn .ic-r { fill: none; stroke: var(--muted); stroke-dasharray: 2 2; }
+  .segchip b { font-size: 16px; line-height: 1; }
+  .hearts { display: flex; gap: 4px; flex: none; }
+  .hearts svg { width: 24px; height: 24px; display: block; overflow: visible; }
+  .hearts .hf { fill: var(--danger); stroke: var(--danger); stroke-width: 1.5; transition: opacity 200ms linear 200ms; }
+  .hearts .ho { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 3 2.4; opacity: 0; }
+  .hearts .lost .hf { opacity: 0; }
+  .hearts .lost .ho { opacity: 1; }
+  .hearts .hit { animation: hpop 200ms ease-out; transform-origin: center; transform-box: fill-box; }
+  @keyframes hpop { 50% { transform: scale(1.25); } }
+
+  button {
+    font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 10px; cursor: pointer; touch-action: manipulation;
+    transition: transform 80ms ease-out, background-color 80ms ease-out, opacity 200ms linear;
+  }
+  button:active { transform: scale(.94); background: var(--grid); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  button.icon svg { width: 20px; height: 20px; }
+  button.icon svg[hidden] { display: none; }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: transparent; font-weight: 700;
+    height: 48px; padding: 0 24px; font-size: 18px; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  button.primary:active { background: var(--accent); filter: brightness(.92); }
+  button.secondary, a.secondary {
+    height: 44px; padding: 0 18px; font-size: 15px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--grid); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; flex: none;
+  }
+  .kbd { display: none; font-size: 12px; color: var(--muted); border: 1px solid var(--grid); border-radius: 6px; padding: 1px 6px; background: var(--panel); }
+  @media (hover: hover) and (pointer: fine) { .kbd { display: inline-block; } }
+
+  /* 무대 */
+  .stage {
+    position: relative; flex: none; width: var(--sw, 600px); height: var(--sh, 400px); border-radius: 16px; overflow: hidden; background: var(--bg);
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .tag {
+    position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; background: var(--panel); border: 2px solid var(--danger);
+    border-radius: 999px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; opacity: 0; color: var(--loss-ink);
+  }
+  .tag[hidden] { display: none; }
+  .tag b { font-size: 18px; line-height: 1.1; }
+  .tag .u { font-size: 11px; font-weight: 700; }
+  .tag svg { width: 18px; height: 18px; flex: none; }
+  .tag.gold { border-color: var(--gold); color: var(--ink); }
+  .tag.plain { border-color: var(--muted); color: var(--muted); }
+  .floatn { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; white-space: nowrap; opacity: 0; color: var(--good-ink);
+    text-shadow: 0 0 2px var(--panel), 0 0 2px var(--panel), 0 0 4px var(--panel); display: inline-flex; align-items: baseline; gap: 3px; }
+  .floatn b { font-size: 24px; line-height: 1; }
+  .floatn .u { font-size: 14px; font-weight: 700; }
+  .floatn.dim { color: var(--ink); }
+  .floatn[hidden] { display: none; }
+  .ready { position: absolute; left: 0; top: 0; width: 56px; height: 56px; pointer-events: none; z-index: 1; display: grid; place-items: center; }
+  .ready[hidden] { display: none; }
+  .ready svg { position: absolute; inset: 0; width: 56px; height: 56px; transform: rotate(-90deg); }
+  .ready circle { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .ready b { font-size: 28px; position: relative; color: var(--ink); }
+  .keys { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 1; display: flex; gap: 6px; opacity: .85; }
+  .keys[hidden] { display: none; }
+  .keys span { min-width: 30px; height: 30px; border: 1.5px solid var(--zone-ink); border-bottom-width: 3px; border-radius: 7px; background: var(--panel);
+    color: var(--zone-ink); display: grid; place-items: center; font-size: 15px; font-weight: 800; padding: 0 6px; }
+  .keys span.wide { min-width: 64px; }
+  .keys svg { width: 18px; height: 18px; }
+
+  /* 첫 실패 해설 카드 */
+  .explain { position: absolute; inset: 0; z-index: 4; background: rgba(20,22,28,.45); display: flex; align-items: center; justify-content: center; animation: ovIn 200ms ease-out; }
+  .explain[hidden] { display: none; }
+  .excard { position: relative; background: var(--well); border: 1px solid var(--grid); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); padding: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; animation: exIn 200ms ease-out; }
+  @keyframes exIn { from { opacity: 0; transform: scale(.96); } }
+  .exwrap { position: relative; }
+  .exwrap canvas { display: block; border-radius: 10px; }
+  .exwrap .tag { opacity: 1; }
+  .exfoot { height: 40px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+  .exfoot svg { display: block; }
+  #exLock circle { fill: none; stroke: var(--muted); stroke-width: 3; stroke-linecap: round; }
+  #exTap { animation: tapPulse 1200ms ease-in-out infinite; opacity: .8; color: var(--zone-ink); }
+  @keyframes tapPulse { 50% { opacity: .35; } }
+  #exFinger { color: var(--zone-ink); }
+  #exFinger[hidden], #exTap[hidden], #exLock[hidden] { display: none; }
+
+  /* 오버레이 (hungry-bear와 같은 CSS) */
+  .overlay {
+    position: absolute; inset: 0; border-radius: 12px; padding: 16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: safe center; text-align: center;
+    background: color-mix(in srgb, var(--well) 94%, transparent); line-height: 1.4; z-index: 5;
+    animation: ovIn 200ms ease-out;
+  }
+  .overlay > * { animation: ovUp 200ms ease-out; flex: none; }
+  @keyframes ovIn { from { opacity: 0; } }
+  @keyframes ovUp { from { transform: translateY(8px); } }
+  .overlay[hidden] { display: none; }
+  body.ov-full .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 10; background: color-mix(in srgb, var(--well) 97%, transparent);
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  #ovPause, body.ov-full #ovPause { background: var(--well); }
+  .overlay .ov-home { display: none; }
+  body.ov-full .overlay .ov-home { display: inline-flex; position: absolute; margin: 0; animation: none;
+    top: max(4px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+  .overlay h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  .overlay .row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .overlay [hidden] { display: none !important; }
+  #lbSlot { min-width: 0; display: inline-flex; align-items: center; }
+  .badge { background: var(--panel); border: 2px solid var(--gold); color: var(--ink); font-size: 14px; font-weight: 800; border-radius: 999px; padding: 3px 12px; animation: pop 220ms cubic-bezier(.3,1.4,.5,1) 200ms both; }
+  @keyframes pop { from { transform: scale(.8); opacity: 0; } }
+
+  /* 시작 화면 */
+  .card { width: min(100%, 560px); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  #ovStart h2 { font-size: 26px; }
+  .demo { position: relative; width: var(--dw, 360px); height: var(--dh, 324px); border-radius: 12px; border: 1px solid var(--grid); overflow: hidden; background: var(--bg); flex: none; }
+  .demo canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .demo .play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; z-index: 2; padding: 0; }
+  .demo .play svg { width: 20px; height: 20px; fill: currentColor; }
+  .caps { display: flex; gap: 6px; justify-content: center; width: var(--dw, 360px); }
+  .caps figure { margin: 0; flex: 1 1 0; min-width: 0; height: 56px; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 12px; border: 2px solid transparent; background: var(--panel); }
+  .caps figure.on { border-color: var(--accent); }
+  .caps svg { width: 100%; max-width: 96px; height: 44px; }
+  .startrow { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  #startBtn { height: 56px; min-width: 220px; }
+  .bestline { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+  .bestline svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .bestline b { font-size: 18px; color: var(--ink); }
+
+  /* 일시정지 */
+  .pinfo { display: flex; align-items: center; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .pinfo .pk { display: inline-flex; align-items: baseline; gap: 3px; }
+  .pinfo .pk b { font-size: 20px; }
+  .pbig { font-size: 32px; font-weight: 800; color: var(--muted); line-height: 1; }
+  #pMute { display: none; }
+  body.tb-360 #pMute { display: inline-flex; }
+
+  /* 결과 */
+  .rcard { width: min(100%, 600px); display: flex; flex-direction: column; gap: 9px; align-items: stretch; text-align: left; }
+  .rcol { display: contents; }
+  .rb-a { order: 10; }
+  .rtop { display: flex; gap: 14px; align-items: center; }
+  #miniCv { width: 96px; height: 160px; border-radius: 12px; border: 1px solid var(--grid); flex: none; display: block; }
+  .rmain { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+  .rbig { display: flex; align-items: baseline; gap: 6px 10px; flex-wrap: wrap; }
+  .rbig b { font-size: 56px; line-height: 1; }
+  .rbig .unit { font-size: 20px; }
+  .rend { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; flex-wrap: wrap; }
+  .rend svg { width: 18px; height: 18px; flex: none; }
+  .rend .num { font-size: 17px; }
+  .rend .gd { color: var(--good-ink); }
+  .rend .why { font-size: 13px; color: var(--muted); font-weight: 700; }
+  #strip { width: 100%; height: 64px; display: block; cursor: default; }
+  .counts { display: flex; gap: 14px; align-items: center; }
+  .counts span { display: inline-flex; align-items: center; gap: 4px; }
+  .counts svg { width: 14px; height: 14px; }
+  .counts b { font-size: 20px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .stat .sl { font-size: 12px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .stat .sl svg { width: 16px; height: 16px; flex: none; }
+  .stat .sv { display: flex; align-items: baseline; gap: 3px; }
+  .stat .sv b { font-size: 22px; line-height: 1.1; }
+  .stat .sv span { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .worst { background: var(--panel); border: 1px solid var(--grid); border-left: 3px solid var(--danger); border-radius: 10px; padding: 6px 10px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: default; }
+  .worst canvas { width: 120px; height: 72px; flex: none; border-radius: 8px; display: block; }
+  .worst .wl { font-size: 12px; color: var(--muted); font-weight: 700; display: block; }
+  .worst .num { font-size: 14px; }
+  .recline { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .recline svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .recline b { font-size: 16px; color: var(--ink); }
+  .recline .badge { margin-left: 6px; }
+  .rbtns { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #againBtn { height: 52px; min-width: 120px; }
+  body.low #miniCv { display: none; }
+  body.low .rcard { flex-direction: row; align-items: flex-start; width: min(100%, 860px); gap: 14px; }
+  body.low .rcol { flex: 1 1 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  body.low .rbig b { font-size: 44px; }
+  body.low #strip { height: 44px; }
+  body.low .overlay { gap: 6px; padding: 8px; }
+  body.low .overlay h2, body.low #ovStart h2 { font-size: 20px; }
+  body.low .stat { padding: 6px 10px; }
+  body.low .stat .sv b { font-size: 19px; }
+  body.low #againBtn { height: 48px; }
+  body.low #startBtn { height: 52px; }
+  body.low .card { gap: 6px; }
+  body.low #ovStart .card { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; width: min(100%, 860px); gap: 16px; }
+  body.low #ovStart .demo-col, body.low #ovStart .side-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .demo-col, .side-col { display: contents; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 상단 바 너비 구간 */
+  body.tb-720 .title { display: none; }
+  body.tb-480 .home .full { display: none; }
+  body.tb-480 .home .short { display: inline; }
+  body.tb-480 .segchip svg { display: none; }
+  body.tb-480 .hpill svg { display: none; }
+  body.tb-480 .hpill { min-width: 96px; padding: 0 10px; }
+  body.tb-480 .hearts svg { width: 20px; height: 20px; }
+  body.tb-480 .top { gap: 4px; }
+  body.tb-480 .hearts { gap: 2px; }
+  body.tb-360 #muteBtn { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .overlay > *, .badge, .explain, .excard { animation: none; }
+    button:active { transform: none; }
+    .hearts .hit { animation: none; }
+    #exTap { animation: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="icRuler" viewBox="0 0 24 24"><path d="M8 3v18M8 5h5M8 9h3M8 13h5M8 17h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="icHeart" viewBox="0 0 24 24"><path d="M12 20.5 4.2 13A4.9 4.9 0 0 1 12 6.6 4.9 4.9 0 0 1 19.8 13Z" stroke-linejoin="round"/></symbol>
+    <symbol id="icHour" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9s10 4 10 9"/></g></symbol>
+    <symbol id="icRotSq" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.6"/><path d="M6 17 13 7M10 18.5 17.5 8M15 18.5 19 13" stroke="var(--rot-hatch)" stroke-width="1.6"/></symbol>
+    <symbol id="icBud" viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="5" ry="7" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6" transform="rotate(-25 12 13)"/></symbol>
+    <symbol id="icFlower" viewBox="0 0 24 24"><g fill="var(--bloom)"><ellipse cx="12" cy="6" rx="3.4" ry="4.4"/><ellipse cx="18" cy="10.5" rx="3.4" ry="4.4" transform="rotate(72 18 10.5)"/><ellipse cx="15.7" cy="17.6" rx="3.4" ry="4.4" transform="rotate(144 15.7 17.6)"/><ellipse cx="8.3" cy="17.6" rx="3.4" ry="4.4" transform="rotate(216 8.3 17.6)"/><ellipse cx="6" cy="10.5" rx="3.4" ry="4.4" transform="rotate(288 6 10.5)"/></g><circle cx="12" cy="12" r="3.2" fill="var(--bloom-c)"/></symbol>
+    <symbol id="icLevel" viewBox="0 0 24 24"><path d="M3 18a9 9 0 0 1 18 0Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 18 6.5 11" stroke="var(--warn)" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="icWedge" viewBox="0 0 24 24"><path d="M3 18 21 18 19 8Z" fill="color-mix(in srgb, var(--warn) 28%, transparent)"/><path d="M3 18H21" stroke="var(--ok)" stroke-width="2.4" stroke-linecap="round"/><path d="M3 18 20 7" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="icBound" viewBox="0 0 24 24"><rect x="3" y="2" width="11" height="10" fill="var(--body)" stroke="var(--edge)" stroke-width="1.4"/><rect x="3" y="12" width="11" height="10" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.4"/><path d="M19 4v16M16.8 6.5 19 4l2.2 2.5M16.8 17.5 19 20l2.2-2.5" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icCheck" viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" fill="none" stroke="var(--ok)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icHalf" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="var(--good)" stroke-width="2.4"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="var(--good)"/></symbol>
+    <symbol id="icCross" viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18" stroke="var(--warn)" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="icFinger" viewBox="0 0 48 48"><g fill="var(--panel)" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 40V12a3.4 3.4 0 0 1 6.8 0v12.5l7 1.4a4 4 0 0 1 3.2 4.6l-1.6 9.5"/><path d="M19 32.5l-3.6-3.2a2.8 2.8 0 0 0-4 4l5.4 6.7"/></g></symbol>
+    <symbol id="icTarget" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></g><circle cx="12" cy="12" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="icMouse" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="9" height="14" rx="4.5"/><path d="M7.5 5v4"/><path d="M14 12h7M18.5 9.5 21 12l-2.5 2.5"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <a class="home" href="../../" aria-label="게임 목록"><span class="full">← 게임 목록</span><span class="short">←</span></a>
+    <h1 class="title">선인장 키우기2</h1>
+    <div class="hpill" id="hpill" role="img" aria-label="키 0센티미터">
+      <svg aria-hidden="true"><use href="#icRuler"/></svg>
+      <b class="num" id="hNum">0.0</b><span class="unit">cm</span>
+    </div>
+    <div class="segchip learn" id="segChip" role="img" aria-label="1마디">
+      <svg viewBox="0 0 14 16" aria-hidden="true"><rect class="ic-r" x="2" y="1" width="10" height="6.5" rx="1.5"/><rect class="ic-r" x="2" y="8.5" width="10" height="6.5" rx="1.5"/></svg>
+      <b class="num" id="segNum">1/30</b>
+    </div>
+    <div class="spacer"></div>
+    <div class="hearts" id="hearts" role="img" aria-label="남은 기회 3">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><g><use class="ho" href="#icHeart"/><use class="hf" href="#icHeart"/></g></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><g><use class="ho" href="#icHeart"/><use class="hf" href="#icHeart"/></g></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><g><use class="ho" href="#icHeart"/><use class="hf" href="#icHeart"/></g></svg>
+    </div>
+    <div class="btns">
+      <button class="icon" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">
+        <svg class="icoOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg class="icoOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" type="button" aria-label="일시정지">Ⅱ</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" role="img" aria-label="선인장 키우기2 화면"></canvas>
+    <div class="ready" id="ready" hidden aria-hidden="true"><svg viewBox="0 0 56 56"><circle id="readyArc" cx="28" cy="28" r="25"/></svg><b class="num" id="readyNum">2</b></div>
+    <div class="keys" id="keys" hidden aria-hidden="true"><span>←</span><span>→</span><span class="wide"><svg viewBox="0 0 24 12"><path d="M3 3v6h18V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg><use href="#icMouse"/></svg></span></div>
+    <div class="tag" id="tag" hidden aria-hidden="true"><svg id="tagIc" hidden><use href="#icRotSq"/></svg><b class="num" id="tagNum"></b><span class="u" id="tagU"></span></div>
+    <div class="tag gold" id="budTag" hidden aria-hidden="true"><svg><use href="#icBud"/></svg><b class="num" id="budNum">+0.5</b></div>
+    <div class="floatn" id="floatn" hidden aria-hidden="true"><b class="num" id="floatNum">+7.1</b><span class="u">cm</span></div>
+
+    <div class="explain" id="explain" hidden aria-hidden="true">
+      <div class="excard" id="excard">
+        <div class="exwrap">
+          <canvas id="exCv"></canvas>
+          <div class="tag" id="exTag"><svg id="exTagIc" hidden><use href="#icRotSq"/></svg><b class="num" id="exNum"></b><span class="u" id="exU"></span></div>
+        </div>
+        <div class="exfoot">
+          <svg id="exFinger" width="96" height="40" viewBox="0 0 96 40" hidden><g id="exFingerG"><use href="#icFinger" x="0" y="0" width="40" height="40"/></g></svg>
+          <svg id="exLock" width="22" height="22" viewBox="0 0 22 22"><circle id="exLockArc" cx="11" cy="11" r="9" transform="rotate(-90 11 11)"/></svg>
+          <svg id="exTap" width="64" height="36" viewBox="0 0 64 36" hidden><use href="#icTarget" x="34" y="6" width="24" height="24"/><use href="#icFinger" x="2" y="0" width="36" height="36"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovStart">
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div class="card">
+        <div class="demo-col">
+          <h2>선인장 키우기2</h2>
+          <div class="demo" id="demo" aria-hidden="true">
+            <canvas id="demoCv"></canvas>
+            <button class="secondary play" id="demoPlay" type="button" aria-label="설명 재생" hidden><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+          </div>
+          <div class="caps" aria-hidden="true">
+            <figure id="cap1"><svg viewBox="0 0 96 44">
+              <g transform="translate(2 4) scale(.75)" style="color:var(--zone-ink)"><use href="#icFinger" width="48" height="48"/></g>
+              <path d="M30 34 L44 26" stroke="var(--zone-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M40 24 L45 25.5 L43 30" fill="none" stroke="var(--zone-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M54 30 L92 16" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".8"/><path d="M54 30 L92 16" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M56 29.3 L46 33 L44.6 29.4 L54.6 25.6 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
+            </svg></figure>
+            <figure id="cap2"><svg viewBox="0 0 96 44">
+              <g transform="translate(2 -2) scale(.75)" style="color:var(--zone-ink)" opacity=".75"><use href="#icFinger" width="48" height="48"/></g>
+              <path d="M14 40 V34" stroke="var(--zone-ink)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
+              <rect x="56" y="4" width="18" height="18" rx="4" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6"/>
+              <rect x="58" y="27" width="18" height="12" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.6" transform="rotate(14 67 33)"/>
+              <path d="M42 24 L90 24" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M44 23.3 L34 23.3 L34 19.5 L44 19.5 Z" fill="#d5dbe3" stroke="#5b6472" stroke-width="1"/>
+            </svg></figure>
+            <figure id="cap3"><svg viewBox="0 0 96 44">
+              <rect x="30" y="2" width="22" height="16" fill="var(--body)" stroke="var(--edge)" stroke-width="1.6"/>
+              <path d="M30 18 H52 V34 L49 37 L45.5 34.5 L41 38 L36.5 34.5 L33 37 L30 34 Z" fill="var(--rot)" stroke="var(--rot-edge)" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M32 33 41 20M38 35 49 21M45 35 51 27" stroke="var(--rot-hatch)" stroke-width="1.5"/>
+              <path d="M30 18 H52" stroke="var(--rot-edge)" stroke-width="2.6"/>
+              <path d="M60 16 L74 30 M74 16 L60 30" stroke="var(--warn)" stroke-width="3.4" stroke-linecap="round"/>
+            </svg></figure>
+          </div>
+        </div>
+        <div class="side-col">
+          <div class="startrow">
+            <button class="primary" id="startBtn" type="button">시작</button>
+            <span class="kbd">Enter</span>
+          </div>
+          <div class="bestline" id="bestLine" hidden><svg aria-hidden="true"><use href="#icRuler"/></svg><b class="num" id="bestNum">0.0</b><span class="unit">cm</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovPause" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div class="pbig" aria-hidden="true">Ⅱ</div>
+      <div class="pinfo">
+        <span class="pk"><b class="num" id="pH">0.0</b><span class="unit">cm</span></span>
+        <span class="pk"><b class="num" id="pSeg">1/30</b></span>
+        <span class="hearts" id="pHearts" aria-hidden="true"></span>
+      </div>
+      <button class="primary" id="resumeBtn" type="button">계속하기</button>
+      <div class="row">
+        <button class="secondary" id="restartBtn" type="button">처음부터</button>
+        <button class="secondary" id="pMute" type="button" aria-label="소리 끄기"><svg class="icoOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><svg class="icoOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg></button>
+        <a class="secondary" href="../../">← 게임 목록</a>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovResult" hidden>
+      <a class="home ov-home secondary" href="../../">← 게임 목록</a>
+      <div class="rcard">
+        <div class="rcol">
+          <div class="rtop">
+            <canvas id="miniCv" aria-hidden="true"></canvas>
+            <div class="rmain">
+              <div class="rbig"><span><b class="num" id="rH">0.0</b> <span class="unit">cm</span></span><span id="lbSlot"></span></div>
+              <div class="rend" id="rEnd"></div>
+              <div><span class="badge" id="newRec" hidden>새 기록</span></div>
+            </div>
+          </div>
+          <div class="rbtns rb-a">
+            <button class="primary" id="againBtn" type="button">다시</button>
+            <button class="secondary" id="menuBtn" type="button">처음으로</button>
+            <span class="kbd">Enter</span>
+          </div>
+        </div>
+        <div class="rcol">
+          <canvas id="strip" role="img" aria-label="마디 띠"></canvas>
+          <div class="counts" id="counts">
+            <span><svg aria-hidden="true"><use href="#icCheck"/></svg><b class="num" id="cPerf">0</b></span>
+            <span><svg aria-hidden="true"><use href="#icHalf"/></svg><b class="num" id="cGood">0</b></span>
+            <span id="cFailW"><svg aria-hidden="true"><use href="#icCross"/></svg><b class="num" id="cFail">0</b></span>
+          </div>
+          <div class="stats">
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icWedge"/></svg>각도 오차 평균</span><span class="sv"><b class="num" id="sAng">0.0</b><span>°</span></span></div>
+            <div class="stat"><span class="sl"><svg aria-hidden="true"><use href="#icBound"/></svg>갈색까지 남긴 여유 평균</span><span class="sv"><b class="num" id="sMar">0.0</b><span>mm</span></span></div>
+          </div>
+          <div class="worst" id="worst"><canvas id="worstCv" aria-hidden="true"></canvas><span><span class="wl">가장 아까운 한 칼</span><span id="worstTxt"></span></span></div>
+          <div class="recline" id="recLine"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+<script>
+/* ===== 선인장 키우기2 (cactus-graft) Sound module =====
+ * Web Audio API 실시간 합성. 외부 파일/의존성 없음.
+ * AudioContext 미지원·생성 실패 시 모든 호출은 조용히 무시된다(게임은 소리 없이 정상 진행).
+ * 시리즈 전작 「선인장 키우기」(desert-breath)와 같은 구조·음색(D 장조 5음 음계, sine 마림바·작은 종, 9kHz 로우패스, 바람 바탕).
+ *
+ * 사용법: 사용자 제스처(click/pointerup/keydown) 핸들러 맨 앞에서 Sound.unlock() →
+ *   판 시작: Sound.startAmbient()
+ *   칼을 기울이는 동안 매 프레임: Sound.aim(칼 각도°)      — 소리 크기는 "돌리는 속도"만 따른다(각도·평행 정보 없음)
+ *   순간 효과음: Sound.play('cut'), Sound.play('graft', { n: 12, streak: 3 }), Sound.play('miss') ...
+ *
+ * [공정성] 조준 중 소리는 칼을 돌리는 속도에만 반응하고 음높이·음색은 고정이다. 칼 각도나 대목 면과의 평행 여부는
+ *   소리에 전혀 실리지 않는다. 평행 신호 'align'은 게임이 화면에 "미리 빛남"을 보여 줄 때(1~3마디 배우기)만 부른다.
+ * [박자 없음] 루프 멜로디·일정한 박자 없음. 바람 바탕은 노이즈 + 서로 맞지 않는 느린 흔들림.
+ *
+ * 신호 경로: sfxBus → LP 9kHz ─────────────┐
+ *            aimBus(칼 스침) ───────────────┤
+ *            ambBus(바람) → ambDuck ────────┴→ master(음소거) → limiter → destination
+ */
+const Sound = (function () {
+  'use strict';
+  var MUTE_KEY = 'cactus-graft-muted';
+  var MASTER_VOL = 0.6;
+  var AMB_VOL = 1.0;
+  var DUCK = 0.4;           // 무너짐·꽃·새 기록 때 바람을 잠깐 낮추는 비율
+  var WIND_LV = 0.035;      // 바람 바탕(전작 0.055보다 작게 — 이번 판은 손끝 소리가 주인공)
+  var AIM_LV = 0.05;        // 칼 스침 최대 음량(돌리는 속도 AIM_FULL°/초 이상에서)
+  var AIM_FULL = 140;       // 이 속도(°/초)에서 스침 최대
+
+  var ctx = null, master = null, limiter = null, sfxBus = null, sfxTone = null;
+  var ambBus = null, ambDuck = null, noiseBuf = null;
+  var aimBus = null, aimNode = null;
+  var muted = false, offline = false;
+  var last = {};
+  var amb = { want: false, on: false, nodes: null, stopTimer: null };
+  var paused = false;
+  var aimSt = { deg: null, t: 0 };
+
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { muted = false; }
+
+  function build(c) {
+    ctx = c;
+    limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -6; limiter.knee.value = 2; limiter.ratio.value = 20;
+    limiter.attack.value = 0.002; limiter.release.value = 0.15;
+    limiter.connect(ctx.destination);
+
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER_VOL;
+    master.connect(limiter);
+
+    sfxTone = ctx.createBiquadFilter();
+    sfxTone.type = 'lowpass'; sfxTone.frequency.value = 9000; sfxTone.Q.value = 0.5;
+    sfxTone.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(sfxTone);
+
+    aimBus = ctx.createGain(); aimBus.gain.value = 0; aimBus.connect(master);
+
+    ambDuck = ctx.createGain(); ambDuck.gain.value = 1; ambDuck.connect(master);
+    ambBus = ctx.createGain(); ambBus.gain.value = 0; ambBus.connect(ambDuck);
+
+    // 노이즈 버퍼 1개(4초, 스테레오, 고정 시드). 루프 이음매 20ms 교차 페이드
+    var len = Math.floor(ctx.sampleRate * 4);
+    noiseBuf = ctx.createBuffer(2, len, ctx.sampleRate);
+    var seed = 20261128 | 0;
+    for (var ch = 0; ch < 2; ch++) {
+      var d = noiseBuf.getChannelData(ch);
+      // xorshift32(정수 연산만) — 곱셈 LCG를 double로 돌리면 정밀도가 깨져 0.3초 주기로 반복되므로 쓰지 않는다
+      for (var j = 0; j < len; j++) { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; d[j] = (seed >>> 0) / 2147483648 - 1; }
+      var xf = Math.floor(ctx.sampleRate * 0.02);
+      for (var k = 0; k < xf; k++) { var a = k / xf; d[len - xf + k] = d[len - xf + k] * (1 - a) + d[k] * a; }
+    }
+    aimNode = null;
+  }
+
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var c;
+      try { c = new AC({ latencyHint: 'interactive' }); } catch (e1) { c = new AC(); }
+      build(c);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+
+  function running() { return !!ctx && (offline || ctx.state === 'running'); }
+  function ready() { return running() && !muted; }
+
+  function throttled(key, t, gap) {
+    if (last[key] !== undefined && t - last[key] < gap && t >= last[key]) return true;
+    last[key] = t;
+    return false;
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  // ---------- 음원 기본 블록 (엔벨로프는 0.0001에서 지수 어택/감쇠 — 클릭음 방지) ----------
+  function tone(type, f0, f1, t, dur, vol, attack, dest, glide) {
+    try {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.value = f0; g.gain.value = 0;
+      o.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + (glide || dur * 0.8));
+      var a = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(dest || sfxBus);
+      o.start(t); o.stop(t + dur + 0.03);
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function noise(t, dur, vol, ftype, f0, f1, q, attack, dest) {
+    try {
+      var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf;
+      f.type = ftype; f.Q.value = q || 0.8;
+      f.frequency.value = f0; g.gain.value = 0;      // 시작 전 기본값(HP 350Hz·게인 1)이 남지 않게
+      f.frequency.setValueAtTime(f0, t);
+      if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      var a = attack || 0.004;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(dest || sfxBus);
+      s.start(t, Math.random() * 3.5); s.stop(t + dur + 0.03);
+      return s;
+    } catch (e) { return null; }
+  }
+
+  function mallet(f, t, dur, vol, dest) {
+    tone('sine', f, 0, t, dur, vol, 0.003, dest);
+    tone('sine', f * 4, 0, t, Math.min(0.03, dur * 0.3), vol * 0.08, 0.001, dest);
+  }
+  function bell(f, t, dur, vol, dest) {
+    tone('sine', f, 0, t, dur, vol, 0.002, dest);
+    tone('sine', f * 2, 0, t, dur * 0.35, vol * 0.25, 0.002, dest);
+    tone('sine', f * 3, 0, t, dur * 0.15, vol * 0.07, 0.001, dest);
+  }
+  // 촉촉한 '쏙': 아주 짧게 위로 튀는 물방울 sine + 젖은 클릭
+  function plop(f, t, vol) {
+    tone('sine', f * 0.55, f, t, 0.06, vol, 0.003, null, 0.035);
+    noise(t, 0.018, vol * 0.5, 'bandpass', 1400, 2600, 1.4, 0.001);
+  }
+  // 삐걱(탑 흔들림): 짧은 클릭을 조금씩 벌어지는 간격으로 늘어놓고 공명 밴드패스에 통과 → 나무 삐걱처럼
+  function creak(t, dur, vol, fc) {
+    try {
+      var bp = ctx.createBiquadFilter(), g = ctx.createGain();
+      bp.type = 'bandpass'; bp.frequency.value = fc; bp.frequency.setValueAtTime(fc, t); bp.frequency.linearRampToValueAtTime(fc * 0.8, t + dur); bp.Q.value = 7;
+      g.gain.value = 1; bp.connect(g); g.connect(sfxBus);
+      var x = t, gap = 0.011, i = 0;
+      while (x < t + dur && i < 60) {
+        var p = (x - t) / dur, env = Math.sin(Math.PI * p);
+        noise(x, 0.004, vol * (0.25 + 0.75 * env) * rnd(0.8, 1.1), 'highpass', 300, 0, 0.7, 0.0005, bp);
+        x += gap * rnd(0.85, 1.15); gap *= 1.035; i++;
+      }
+    } catch (e) {}
+  }
+  function thud(t, vol, f) {
+    noise(t, 0.16, vol, 'lowpass', 500, 180, 0.7, 0.003);
+    tone('sine', f || 130, (f || 130) * 0.55, t, 0.16, vol * 0.8, 0.003);
+  }
+
+  function duck(t, hold) {
+    try {
+      ambDuck.gain.cancelScheduledValues(t);
+      ambDuck.gain.setTargetAtTime(DUCK, t, 0.05);
+      ambDuck.gain.setTargetAtTime(1, t + hold, 0.5);
+    } catch (e) {}
+  }
+
+  var N = { D3: 146.83, G3: 196.0, A3: 220.0, D4: 293.66, E4: 329.63, Fs4: 369.99, G4: 392.0, A4: 440.0, B4: 493.88,
+            Cs5: 554.37, D5: 587.33, E5: 659.25, Fs5: 739.99, G5: 783.99, A5: 880.0, B5: 987.77,
+            D6: 1174.66, E6: 1318.51, Fs6: 1479.98, A6: 1760.0, B6: 1975.53, D7: 2349.32, E7: 2637.02, Fs7: 2959.96 };
+  // 접붙임 음계: D 장조 5음 음계. 마디 3개마다 한 칸 위로(1~3마디 A4 … 28~30마디 F#6) — 탑이 자랄수록 음이 올라간다
+  var SC = [N.A4, N.B4, N.D5, N.E5, N.Fs5, N.A5, N.B5, N.D6, N.E6, N.Fs6, N.A6, N.B6, N.D7, N.E7, N.Fs7];
+  function stepOf(n) { return clamp(Math.floor((Math.max(1, Math.round(+n || 1)) - 1) / 3), 0, 9); }
+
+  // ---------- 효과음 ----------
+  var sfx = {
+    // 일반 UI 버튼: 부드러운 '톡'(전작과 같음)
+    button: function (t) {
+      if (throttled('button', t, 0.05)) return;
+      tone('sine', 640, 500, t, 0.055, 0.10, 0.002);
+      noise(t, 0.02, 0.04, 'bandpass', 2400, 0, 1.2, 0.001);
+    },
+    // 면 다듬기(마디 시작 0.30초, 대목 윗면을 새로 다듬음): 작은 '사각사각' 세 번 + 부스러기 톡톡. 각도 정보 없음(음 고정)
+    trim: function (t) {
+      if (throttled('trim', t, 0.2)) return;
+      var f = [3600, 3100, 2700];
+      for (var i = 0; i < 3; i++) noise(t + i * 0.085 + rnd(0, 0.01), 0.06, 0.05 - i * 0.008, 'bandpass', f[i], f[i] * 0.8, 2.2, 0.008);
+      for (var j = 0; j < 4; j++) noise(t + 0.05 + rnd(0, 0.24), 0.004, rnd(0.03, 0.06), 'bandpass', rnd(1800, 3000), 0, 2.0, 0.0005);
+    },
+    // 취소(40px 안에서 떼기·톡 치기 = 자르지 않음): 칼이 물러나는 부드러운 두 음 '포롱↓'. 노이즈 '싹'이 없어 cut과 확실히 다름
+    cancel: function (t) {
+      if (throttled('cancel', t, 0.15)) return;
+      tone('sine', 700, 0, t, 0.06, 0.035, 0.004);
+      tone('sine', 520, 0, t + 0.055, 0.09, 0.03, 0.004);
+    },
+    // 새 접수가 집게에 물려 내려옴(마디 시작): 아주 작은 집게 '틱' + 옅은 스침
+    scion: function (t) {
+      if (throttled('scion', t, 0.2)) return;
+      tone('sine', 1250, 1050, t, 0.025, 0.03, 0.001);
+      noise(t, 0.14, 0.018, 'bandpass', 900, 1500, 0.9, 0.05);
+    },
+    // 칼이 나타남(40px 이상 끌었을 때, 키보드는 첫 ←→): 칼날 '스릉'(작게)
+    blade: function (t) {
+      if (throttled('blade', t, 0.25)) return;
+      noise(t, 0.12, 0.035, 'bandpass', 3500, 6500, 2.0, 0.03);
+      tone('sine', 2650, 0, t + 0.03, 0.10, 0.008, 0.004);
+    },
+    // [배우기 1~3마디 전용] 화면이 "평행 미리 빛남"을 켜는 순간에만. 작은 종 한 번
+    align: function (t) {
+      if (throttled('align', t, 0.3)) return;
+      bell(N.A6, t, 0.22, 0.025);
+    },
+    // 자름(손 떼기·스페이스 순간): '싹'(칼 스침 고음) + '둑'(살 끊기는 낮고 짧은 소리)
+    cut: function (t) {
+      if (throttled('cut', t, 0.12)) return;
+      noise(t, 0.06, 0.10, 'highpass', 3000, 6000, 0.8, 0.004);         // 싹
+      noise(t + 0.045, 0.035, 0.16, 'bandpass', 1700, 1100, 1.5, 0.001); // 아삭 끊김
+      for (var i = 0; i < 3; i++) noise(t + 0.05 + i * 0.009 + rnd(0, 0.003), 0.005, 0.08, 'bandpass', rnd(2400, 3400), 0, 2.0, 0.0005);
+      tone('sine', 190, 95, t + 0.045, 0.07, 0.12, 0.002);                // 둑
+    },
+    // 완벽 접붙임 '쏙' + 키 상승음. opts: n(지금 붙은 마디 번호 1~30), streak(연속 완벽 수)
+    //   음 = 마디 3개마다 5음 음계 한 칸 위. 연속 완벽 3번째부터 위에 작은 종이 한 칸씩 더 높게(최대 +5칸)
+    graft: function (t, o) {
+      if (throttled('graft', t, 0.1)) return;
+      var s = stepOf(o.n), f = SC[s], k = Math.round(+o.streak || 0);
+      plop(N.D5, t, 0.10);
+      tone('sine', f * 0.84, f, t + 0.03, 0.42, 0.13, 0.008, null, 0.05);   // 쓱 올라 앉는 맑은 음
+      tone('sine', f * 2, 0, t + 0.06, 0.14, 0.014, 0.003);                // 반짝 배음
+      if (k >= 3) {
+        bell(SC[s + Math.min(k - 2, 5)], t + 0.1, 0.4, 0.03);   // 본음보다 1~5칸 위(연속일수록 높게, 항상 단조 상승)
+      }
+    },
+    // 좋음(비뚤게 붙음): 둔한 '쏙' + 같은 음계의 4도 아래 음을 살짝 어긋난 두 sine으로(맥놀이 = 조금 비뚤다)
+    good: function (t, o) {
+      if (throttled('graft', t, 0.1)) return;
+      var f = SC[stepOf(o.n)] * 0.75;
+      plop(N.A4, t, 0.08);
+      tone('sine', f, 0, t + 0.03, 0.34, 0.06, 0.01);
+      tone('sine', f * 1.012, 0, t + 0.03, 0.30, 0.04, 0.01);
+    },
+    // 어긋남: 틈이 벌어지며 '스르륵' 미끄러지고(0~0.35초) 0.38초에 아래로 '툭'
+    miss: function (t) {
+      if (throttled('fail', t, 0.3)) return;
+      noise(t, 0.36, 0.07, 'bandpass', 1300, 450, 1.2, 0.04);
+      tone('sine', 520, 300, t, 0.3, 0.025, 0.03);
+      thud(t + 0.38, 0.13, 120);
+    },
+    // 무름(갈색 밑동을 자름): '물컹' — 낮은 sine이 출렁이며 내려가고 젖은 노이즈가 와와(필터가 오르내림)
+    rot: function (t) {
+      if (throttled('fail', t, 0.3)) return;
+      try {
+        var o = ctx.createOscillator(), g = ctx.createGain(), w = ctx.createOscillator(), wg = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.4);
+        w.type = 'sine'; w.frequency.value = 11; wg.gain.value = 18; w.connect(wg); wg.connect(o.frequency);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14, t + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.05, t + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+        o.connect(g); g.connect(sfxBus);
+        o.start(t); w.start(t); o.stop(t + 0.48); w.stop(t + 0.48);
+        var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), ng = ctx.createGain();
+        s.buffer = noiseBuf; f.type = 'bandpass'; f.Q.value = 3;
+        f.frequency.setValueAtTime(350, t); f.frequency.exponentialRampToValueAtTime(950, t + 0.12); f.frequency.exponentialRampToValueAtTime(260, t + 0.38);
+        ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.10, t + 0.02); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+        s.connect(f); f.connect(ng); ng.connect(sfxBus); s.start(t, Math.random() * 3.5); s.stop(t + 0.42);
+      } catch (e) {}
+    },
+    // 말라 버림 직전(남은 1초, 접수가 고개 숙일 때) — 화면과 같은 시점에 한 번, 아주 작게
+    droop: function (t) {
+      if (throttled('droop', t, 0.5)) return;
+      tone('sine', 560, 430, t, 0.22, 0.03, 0.02);
+    },
+    // 말라 버림(제한 시간 초과): 마른 잎 '바스락' + 힘 빠지는 하강 + 작은 '톡' 떨어짐
+    wither: function (t) {
+      if (throttled('fail', t, 0.3)) return;
+      for (var i = 0; i < 6; i++) noise(t + rnd(0, 0.3), 0.012, rnd(0.04, 0.08), 'highpass', 2500, 0, 0.8, 0.001);
+      noise(t, 0.32, 0.03, 'bandpass', 4000, 2200, 1.0, 0.03);
+      tone('sine', 392, 220, t + 0.05, 0.45, 0.06, 0.03);
+      thud(t + 0.42, 0.06, 160);
+    },
+    // 탑 기울기 경고. opts.deg = 지금 기울기(°). 기울기가 5°·7°·9°를 처음 넘을 때 게임이 1번씩 부른다(화면 경고와 같은 시점)
+    //   삐걱 + 낮은 흔들림 '우웅'. 기울수록 크고 길고 낮다
+    tilt: function (t, o) {
+      if (throttled('tilt', t, 0.4)) return;
+      var d = clamp(+o.deg || 5, 5, 10), k = (d - 5) / 5;   // 0(5°) ~ 1(10°)
+      creak(t, 0.28 + 0.22 * k, 0.9 + 0.9 * k, 760 - 200 * k);
+      noise(t, 0.55 + 0.2 * k, 0.10 + 0.08 * k, 'lowpass', 260, 160, 0.8, 0.18);
+    },
+    // 무너짐(실패 3번 또는 기울기 10°): 길게 삐걱 → '휘익' 기울어짐 → 마디들이 툭·투둑·툭 → 모래 '사르르'
+    collapse: function (t) {
+      if (throttled('collapse', t, 1)) return;
+      duck(t, 2.2);
+      creak(t, 0.55, 1.8, 620);
+      noise(t + 0.35, 0.6, 0.06, 'bandpass', 900, 300, 0.9, 0.3);
+      var hits = [0.95, 1.08, 1.17, 1.33, 1.5], f = [140, 120, 165, 105, 130];
+      for (var i = 0; i < hits.length; i++) thud(t + hits[i] + rnd(0, 0.02), 0.16 - i * 0.02, f[i]);
+      noise(t + 1.0, 0.9, 0.025, 'bandpass', 3500, 2000, 0.9, 0.2);
+      tone('sine', N.D4, N.A3, t + 0.9, 1.0, 0.035, 0.1);
+    },
+    // 30마디 완주, 꽃이 핌: 꽃봉오리 '퐁' → 마림바 상승 → D 장조 add9 화음이 피어나고 꽃잎처럼 작은 종이 흩날림
+    bloom: function (t) {
+      if (throttled('bloom', t, 1)) return;
+      duck(t, 2.6);
+      plop(N.A5, t, 0.12);
+      var run = [N.A4, N.B4, N.D5, N.E5, N.Fs5, N.A5], i;
+      for (i = 0; i < run.length; i++) mallet(run[i], t + 0.12 + i * 0.07, 0.22, 0.09);
+      var ch = [N.D4, N.Fs4, N.A4, N.E5, N.A5];
+      for (i = 0; i < ch.length; i++) tone('sine', ch[i], 0, t + 0.55 + i * 0.05, 2.0, 0.045, 0.25);
+      tone('triangle', N.D3, 0, t + 0.55, 1.8, 0.10, 0.2);
+      bell(N.D6, t + 0.6, 1.0, 0.07);
+      var pet = [N.Fs6, N.A6, N.E6, N.B6, N.D6], pt = [0.85, 1.05, 1.3, 1.5, 1.8];
+      for (i = 0; i < pet.length; i++) bell(pet[i], t + pt[i] + rnd(0, 0.04), 0.5, 0.022);
+    },
+    // 결과 화면(새 기록 아님): 작은 마림바 2음(전작과 같음)
+    result: function (t) {
+      if (throttled('result', t, 0.5)) return;
+      mallet(N.A5, t, 0.25, 0.08);
+      mallet(N.D6, t + 0.09, 0.35, 0.08);
+    },
+    // 새 기록: 마림바 F#5-A5-B5-D6-E6-F#6 상승 + 종 + Bm → D 두 화음(전작 G → D와 다른 오리지널 진행)
+    record: function (t) {
+      if (throttled('record', t, 0.8)) return;
+      duck(t, 2.0);
+      var run = [N.Fs5, N.A5, N.B5, N.D6, N.E6, N.Fs6], i;
+      for (i = 0; i < run.length; i++) mallet(run[i], t + i * 0.055, 0.2, 0.09);
+      bell(N.Fs6, t + 0.36, 0.6, 0.08);
+      var c1 = [N.Fs4, N.B4, N.D5], c2 = [N.Fs4, N.A4, N.D5, N.E5];
+      for (i = 0; i < c1.length; i++) tone('sine', c1[i], 0, t + 0.36, 0.45, 0.05, 0.02);
+      tone('triangle', N.B4 / 2, 0, t + 0.36, 0.4, 0.10, 0.02);
+      for (i = 0; i < c2.length; i++) tone('sine', c2[i], 0, t + 0.78, 1.1, 0.045, 0.02);
+      tone('triangle', N.D3, 0, t + 0.78, 1.0, 0.11, 0.02);
+      bell(N.A6, t + 0.78, 0.5, 0.035);
+    }
+  };
+
+  // ---------- 칼 스침(조준 중 연속음) ----------
+  // 노이즈 → BP 2.4kHz(고정) → aimBus. 음량 = 칼을 돌리는 속도(°/초)만. 음높이·필터는 각도와 무관하게 고정.
+  // aim()이 끊기면(손 뗌·자름) 0.1초 안에 저절로 사라진다(매 호출마다 "잠시 뒤 0" 예약을 다시 걸기 때문).
+  function aimEnsure(t) {
+    if (aimNode) return;
+    var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), f2 = ctx.createBiquadFilter();
+    s.buffer = noiseBuf; s.loop = true; s.loopStart = 1.1; s.loopEnd = 3.3;
+    f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 1.3;
+    f2.type = 'highpass'; f2.frequency.value = 900; f2.Q.value = 0.5;
+    s.connect(f); f.connect(f2); f2.connect(aimBus); s.start(t, 1.4);
+    aimNode = s;
+  }
+  function aimAt(deg, t) {
+    deg = +deg;
+    if (!isFinite(deg)) return;
+    if (aimSt.deg === null || t - aimSt.t > 0.25 || t < aimSt.t) { aimSt.deg = deg; aimSt.t = t; return; }
+    var dt = Math.max(1 / 120, t - aimSt.t), spd = Math.abs(deg - aimSt.deg) / dt;
+    aimSt.deg = deg; aimSt.t = t;
+    var v = AIM_LV * clamp(spd / AIM_FULL, 0, 1);
+    aimEnsure(t);
+    try {
+      aimBus.gain.cancelScheduledValues(t);
+      aimBus.gain.setTargetAtTime(v, t, 0.03);
+      aimBus.gain.setTargetAtTime(0, t + 0.06, 0.03);
+    } catch (e) {}
+  }
+  function aimStop(t) {
+    aimSt.deg = null;
+    try { aimBus.gain.cancelScheduledValues(t); aimBus.gain.setTargetAtTime(0, t, 0.015); } catch (e) {}
+  }
+
+  // ---------- 바람 바탕(연속, 박자 없음) ----------
+  function lfo(freq, depth, param, t) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq; g.gain.value = depth;
+    o.connect(g); g.connect(param); o.start(t);
+    return o;
+  }
+  function buildAmbient(t) {
+    var n = { src: [], osc: [] };
+    var A = ctx.createBufferSource(); A.buffer = noiseBuf; A.loop = true;
+    n.src.push(A);
+    var lvl = ctx.createGain(); lvl.gain.value = WIND_LV; lvl.connect(ambBus);
+    var mod = ctx.createGain(); mod.gain.value = 1; mod.connect(lvl);
+    var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 0.6;
+    A.connect(lp); lp.connect(mod);
+    n.osc.push(lfo(0.061, 0.25, mod.gain, t), lfo(0.107, 0.18, mod.gain, t), lfo(0.043, 130, lp.frequency, t));
+    A.start(t, 0);
+    return n;
+  }
+  function target(param, v, t, tc) {
+    try { param.cancelScheduledValues(t); param.setTargetAtTime(v, t, tc); } catch (e) {}
+  }
+  function ambStart(t) {
+    paused = false;
+    if (amb.stopTimer) { clearTimeout(amb.stopTimer); amb.stopTimer = null; }
+    if (!amb.on) {
+      try { amb.nodes = buildAmbient(t); amb.on = true; } catch (e) { amb.on = false; amb.nodes = null; return; }
+    }
+    target(ambBus.gain, AMB_VOL, t, 0.4);
+  }
+  function killAmb(at) {
+    var n = amb.nodes; amb.nodes = null; amb.on = false;
+    if (!n) return;
+    var all = n.src.concat(n.osc);
+    for (var k = 0; k < all.length; k++) { try { all[k].stop(at); } catch (e) {} }
+  }
+  function ambPause(on, t) {
+    paused = !!on;
+    if (paused) aimStop(t);
+    if (!amb.on) return;
+    target(ambBus.gain, paused ? 0 : AMB_VOL, t, paused ? 0.06 : 0.12);
+  }
+  function ambStop(t) {
+    aimStop(t);
+    if (!amb.on) return;
+    target(ambBus.gain, 0, t, 0.45);
+    if (offline) return;
+    if (amb.stopTimer) clearTimeout(amb.stopTimer);
+    amb.stopTimer = setTimeout(function () {
+      amb.stopTimer = null;
+      try { killAmb(ctx.currentTime + 0.02); } catch (e) {}
+    }, 2500);
+  }
+
+  try {
+    document.addEventListener('visibilitychange', function () {
+      if (!ctx || offline) return;
+      try {
+        if (document.hidden) { var p1 = ctx.suspend(); if (p1 && p1.catch) p1.catch(function () {}); }
+        else { var p2 = ctx.resume(); if (p2 && p2.catch) p2.catch(function () {}); }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  return {
+    // 반드시 사용자 제스처 핸들러 안에서 호출(시작 버튼 click 필수). 여러 번 호출해도 안전.
+    unlock: function () {
+      if (!ensureCtx() || offline) return;
+      try {
+        if (ctx.state !== 'running') { var p = ctx.resume(); if (p && p.catch) p.catch(function () {}); }
+        var b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+        s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+      if (amb.want && !amb.on) { try { ambStart(ctx.currentTime + 0.02); } catch (e) {} }
+    },
+    // name: button|trim|scion|blade|align|cut|cancel|graft|good|miss|rot|droop|wither|tilt|collapse|bloom|result|record
+    // opts: graft {n, streak} / good {n} / tilt {deg}
+    play: function (name, opts) {
+      try {
+        if (!ready() || !sfx.hasOwnProperty(name)) return;
+        sfx[name](ctx.currentTime + 0.01, opts || {});
+      } catch (e) {}
+    },
+    // 칼이 보이는 동안 매 프레임(또는 각도가 바뀔 때마다) 현재 칼 각도(°). 크기는 돌리는 속도만 따른다
+    aim: function (deg) {
+      try { if (ready() && !paused) aimAt(deg, ctx.currentTime + 0.01); } catch (e) {}
+    },
+    // 자름·칼 사라짐·일시정지 때(안 불러도 0.1초 안에 저절로 조용해짐)
+    aimEnd: function () { try { if (ctx) aimStop(ctx.currentTime); } catch (e) {} },
+    startAmbient: function () {
+      amb.want = true;
+      try { if (running()) ambStart(ctx.currentTime + 0.02); } catch (e) {}
+    },
+    stopAmbient: function () {
+      amb.want = false;
+      try { if (ctx) ambStop(ctx.currentTime); } catch (e) {}
+    },
+    setPaused: function (on) {
+      try { if (ctx) ambPause(on, ctx.currentTime); else paused = !!on; } catch (e) {}
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+      try {
+        if (master) {
+          var t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, t, 0.02);
+        }
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    // 공통 인터페이스 호환: 배경음악 없음 → 바람 바탕으로 대신
+    startMusic: function () { this.startAmbient(); },
+    stopMusic: function () { this.stopAmbient(); },
+    // 테스트 전용: OfflineAudioContext에 그래프를 붙여 렌더 검사
+    _test: {
+      attach: function (c) {
+        offline = true; paused = false; last = {}; aimSt = { deg: null, t: 0 };
+        amb = { want: false, on: false, nodes: null, stopTimer: null }; build(c);
+      },
+      playAt: function (name, t, opts) { if (sfx.hasOwnProperty(name)) sfx[name](t, opts || {}); },
+      aimAt: function (deg, t) { aimAt(deg, t); },
+      aimEndAt: function (t) { aimStop(t); },
+      ambientAt: function (t) { ambStart(t); },
+      stopAmbientAt: function (t) { ambStop(t); },
+      pauseAt: function (on, t) { ambPause(on, t); },
+      sfxNames: function () { return Object.keys(sfx); },
+      notes: function () { var r = []; for (var n = 1; n <= 30; n++) r.push(Math.round(SC[stepOf(n)])); return r; }
+    }
+  };
+})();
+</script>
+<script>
+/* ===== 선인장 키우기2 엔진: 규칙·판정·시간 진행 (DOM 없음, 게임·데모·봇이 같이 씀) ===== */
+var Engine = (function () {
+  'use strict';
+  // 마디별 수치표 (design.md 정본, 2026-11-28 봇 측정 후 조정본). [P, G, D(크기), T, A, L, B, uMid, uAmp]
+  var TABLE = [
+    [6, 14, 0, 1.8, 0, 5, 8, 36, 22], [6, 14, 10, 1.8, 0, 5, 8, 36, 22], [6, 14, 10, 1.8, 0, 5, 8, 36, 22],
+    [5.5, 11.5, 5, 1.7, 0, 4.6, 30, 21, 29], [5.25, 11, 5, 1.68, 0.5, 4.48, 30, 21, 29], [5, 10.5, 5, 1.65, 1, 4.37, 30, 21, 29],
+    [4.75, 10, 5, 1.63, 1.5, 4.25, 30, 21, 29], [4.5, 9.5, 5, 1.6, 2, 4.13, 30, 21, 29], [4.25, 9, 5, 1.58, 2.5, 4.02, 30, 21, 29],
+    [4, 8.5, 5, 1.55, 3, 3.9, 30, 21, 29], [4, 8.5, 12, 1.5, 3, 3.8, 34, 19, 31], [3.89, 8.17, 12, 1.49, 3.44, 3.74, 34, 19, 31],
+    [3.78, 7.83, 12, 1.48, 3.89, 3.69, 34, 19, 31], [3.67, 7.5, 12, 1.47, 4.33, 3.63, 34, 19, 31], [3.56, 7.17, 12, 1.46, 4.78, 3.58, 34, 19, 31],
+    [3.44, 6.83, 12, 1.44, 5.22, 3.52, 34, 19, 31], [3.33, 6.5, 12, 1.43, 5.67, 3.47, 34, 19, 31], [3.22, 6.17, 12, 1.42, 6.11, 3.41, 34, 19, 31],
+    [3.11, 5.83, 12, 1.41, 6.56, 3.36, 34, 19, 31], [3, 5.5, 12, 1.4, 7, 3.3, 34, 19, 31], [2.7, 5, 20, 1.35, 7, 3.2, 38, 19, 31],
+    [2.62, 4.83, 20, 1.33, 7.56, 3.16, 38, 19, 31], [2.54, 4.67, 20, 1.32, 8.11, 3.11, 38, 19, 31], [2.47, 4.5, 20, 1.3, 8.67, 3.07, 38, 19, 31],
+    [2.39, 4.33, 20, 1.28, 9.22, 3.02, 38, 19, 31], [2.31, 4.17, 20, 1.27, 9.78, 2.98, 38, 19, 31], [2.23, 4, 20, 1.25, 10.33, 2.93, 38, 19, 31],
+    [2.16, 3.83, 20, 1.23, 10.89, 2.89, 38, 19, 31], [2.08, 3.67, 20, 1.22, 11.44, 2.84, 38, 19, 31], [2, 3.5, 20, 1.2, 12, 2.8, 38, 19, 31]
+  ];
+  var FIXED_D = [0, 10, -10];          // 1~3마디 면 기울기(모든 판 같음)
+  var GOOD_MUL = 0.6, TILT_K = 0.7, MISS_CLAMP = 6, FALL_TILT = 10, MAX_FAILS = 3, N_SEG = 30;
+  var BONUS = 5, FLOWER = 100, KNIFE_MAX = 35, HALF_W = 18, GREEN = 80;
+  var DUR = { pre: 0.45, trim: 0.30, fall: 0.25, judge: 0.45, grow: 0.35, prep: 1.0, ready: 1.5, endFall: 1.2, endBloom: 1.5 };
+
+  function params(seg) {
+    var r = TABLE[Math.max(1, Math.min(N_SEG, seg | 0)) - 1];
+    return { P: r[0], G: r[1], D: r[2], T: r[3], A: r[4], L: r[5], B: r[6], uMid: r[7], uAmp: r[8] };
+  }
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function r1(x) { var s = x < 0 ? -1 : 1; return s * Math.round(Math.abs(x) * 10 + 1e-9) / 10; }      // 0.1 단위, 0.5는 0에서 먼 쪽
+  function rInt(x) { var s = x < 0 ? -1 : 1; return s * Math.floor(Math.abs(x) + 0.5 + 1e-9); }        // 정수, 0.5는 0에서 먼 쪽
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function sgn(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; }
+
+  // 판마다 면 기울기 방향·흔들림 방향 (호출 순서 고정: 마디 4..30 각각 ① d 부호 ② 흔들림 부호)
+  function faces(seed) {
+    var rng = mulberry32(seed >>> 0), out = [];
+    for (var k = 1; k <= N_SEG; k++) {
+      if (k <= 3) { out.push({ d: FIXED_D[k - 1], sway: 1 }); continue; }
+      var sd = rng() < 0.5 ? 1 : -1;
+      var a = sgn(out[k - 2].d), b = sgn(out[k - 3].d), c = sgn(out[k - 4].d);
+      if (a !== 0 && a === b && b === c) sd = -a;                   // 같은 부호 4연속 금지(난수 호출 수는 그대로)
+      var sw = rng() < 0.5 ? 1 : -1;
+      out.push({ d: sd * TABLE[k - 1][2], sway: sw });
+    }
+    return out;
+  }
+  // 접수 오르내림·흔들림 (해석식)
+  function scion(row, sway, tau) {
+    return { u: row.uMid + row.uAmp * Math.cos(2 * Math.PI * tau / row.T), alpha: sway * row.A * Math.sin(2 * Math.PI * tau / (1.6 * row.T)) };
+  }
+  function sOf(phi, alpha) { return HALF_W * Math.abs(Math.tan((phi - alpha) * Math.PI / 180)); }
+  // 순수 판정 (탑 변화 제외). row = 그 마디 수치(P, G)
+  function judgeRow(row, phi, theta, u, alpha) {
+    var s = sOf(phi, alpha), margin = u - s, h = GREEN - u;
+    var e = Math.round(Math.abs(phi - theta) * 10 + 1e-7) / 10;
+    var kind, added = 0;
+    if (margin <= 1e-9) kind = 'rot';
+    else if (e <= row.P + 1e-9) { kind = 'perfect'; added = r1(h); }
+    else if (e <= row.G + 1e-9) { kind = 'good'; added = r1(r1(h) * GOOD_MUL); }
+    else kind = 'miss';
+    return { kind: kind, e: e, s: s, margin: margin, h: h, added: added };
+  }
+  // 칼선 위 갈색 구간 (art-ref knifeInfo와 같은 기하): 칼선 위치 x(mm, K 기준) 중 갈색 경계 아래인 구간
+  function brownSeg(u, alpha, phi) {
+    var d = (phi - alpha) * Math.PI / 180, sn = Math.sin(d), cs = Math.cos(d), s = HALF_W * Math.abs(Math.tan(d));
+    var xm = HALF_W / cs, lo = -xm, hi = xm, seg = null;
+    if (u - s <= 1e-9) {                                         // 판정이 무름이면 반드시 구간이 있다(경계 0 포함)
+      if (Math.abs(sn) < 1e-9) seg = [lo, hi];
+      else { var xb = -u / sn; if (sn > 0) seg = [lo, Math.max(lo, Math.min(hi, xb))]; else seg = [Math.min(hi, Math.max(lo, xb)), hi]; }
+    }
+    return { s: s, margin: u - s, seg: seg };
+  }
+
+  /* ---------- 한 판 진행 ---------- */
+  // o: { seed, faces?, rows?(마디별 수치 덮어쓰기, 데모), nSeg?, readyDur?, demo?(완주 꽃 없음), hooks?, explain?(kind,rec)→bool }
+  function Run(o) {
+    o = o || {};
+    this.seed = (o.seed >>> 0) || 0;
+    this.faces = o.faces || faces(this.seed);
+    this.rows = o.rows || null;
+    this.nSeg = o.nSeg || N_SEG;
+    this.readyDur = o.readyDur != null ? o.readyDur : DUR.ready;
+    this.demo = !!o.demo;
+    this.hooks = o.hooks || {};
+    this.explainFn = o.explain || null;
+    this.seg = 0; this.fails = 0; this.tilt = 0; this.combo = 0; this.Ht = 0; this.bonusMm = 0; this.flowerMm = 0;
+    this.results = []; this.phase = 'ready'; this.pt = 0; this.t = 0; this.over = false; this.end = null;
+    this.theta = 0; this.d = 0; this.sway = 1; this.row = this.rowOf(1); this.aimStart = 0; this.cur = null; this.endDur = 0;
+    this.tiltLog = [0]; this.endT = 0;
+  }
+  Run.prototype.rowOf = function (k) { return this.rows ? this.rows[k - 1] : params(k); };
+  Run.prototype.H = function () { return this.Ht / 10; };
+  Run.prototype.mm = function () { return Math.floor(this.Ht / 10 + 1e-9); };
+  Run.prototype._hook = function (n, a, b) { var f = this.hooks[n]; if (f) f(this, a, b); };
+  Run.prototype.startSeg = function (k, t) {
+    this.seg = k; this.row = this.rowOf(k); this.d = this.faces[k - 1].d; this.sway = this.faces[k - 1].sway;
+    this.theta = r1(this.tilt + this.d);
+    this.phase = 'pre'; this.pt = t; this.aimStart = t + DUR.pre; this.cur = null;
+    this._hook('segStart', t);
+  };
+  Run.prototype.nextTime = function () {
+    switch (this.phase) {
+      case 'ready': return this.pt + this.readyDur;
+      case 'pre': return this.aimStart;
+      case 'aim': return this.aimStart + this.row.L;
+      case 'fall': return this.pt + DUR.fall;
+      case 'judge': return this.pt + DUR.judge;
+      case 'prep': return this.pt + DUR.prep;
+      case 'grow': return this.pt + DUR.grow;
+      case 'ending': return this.pt + this.endDur;
+      default: return Infinity;   // explain(멈춤), result
+    }
+  };
+  Run.prototype.advanceTo = function (t) {
+    for (var guard = 0; guard < 400; guard++) {
+      var nt = this.nextTime();
+      if (!(t >= nt - 1e-12)) break;
+      var p = this.phase;
+      if (p === 'ready') this.startSeg(1, nt);
+      else if (p === 'pre') { this.phase = 'aim'; this.pt = nt; this._hook('aim', nt); }
+      else if (p === 'aim') this._wither(nt);
+      else if (p === 'fall') { this.phase = 'judge'; this.pt = nt; this._hook('judge', this.cur, nt); }
+      else if (p === 'judge') this._afterJudge(nt);
+      else if (p === 'prep') { this.phase = 'grow'; this.pt = nt; this._hook('grow', this.cur, nt); }
+      else if (p === 'grow') {
+        if (this.demo && this.seg >= this.nSeg) { this.phase = 'result'; this.pt = nt; this.over = true; this.endT = nt; this._hook('result', nt); }
+        else this.startSeg(this.seg + 1, nt);
+      }
+      else if (p === 'ending') { this.phase = 'result'; this.pt = nt; this.over = true; this.endT = nt; this._hook('result', nt); }
+      else break;
+    }
+    if (t > this.t) this.t = t;
+  };
+  Run.prototype._afterJudge = function (t) {
+    var c = this.cur;
+    if (this.end) {
+      this.phase = 'ending'; this.pt = t; this.endDur = this.end === 'finish' ? DUR.endBloom : DUR.endFall;
+      if (this.end === 'finish') { this.flowerMm = FLOWER; this.Ht += FLOWER * 10; }
+      this._hook('ending', this.end, t);
+    } else if (c && (c.kind === 'miss' || c.kind === 'rot' || c.kind === 'wither') && this.explainFn && this.explainFn(c.kind, c)) {
+      this.phase = 'explain'; this.pt = t; this._hook('explain', c, t);
+    } else { this.phase = 'grow'; this.pt = t; this._hook('grow', c, t); }
+  };
+  Run.prototype.closeExplain = function (t) { if (this.phase !== 'explain') return; this.phase = 'prep'; this.pt = t; this.t = t; };
+  Run.prototype.scionAt = function (tau) { return scion(this.row, this.sway, tau); };
+  // 자르기 (입력 경로가 부름). t = 게임 시각(s). 겨누기가 아니면 null
+  Run.prototype.cut = function (t, phi) {
+    if (this.phase !== 'aim') return null;
+    if (t < this.aimStart) t = this.aimStart;
+    var tau = t - this.aimStart;
+    if (tau >= this.row.L) return null;
+    phi = clamp(rInt(phi), -KNIFE_MAX, KNIFE_MAX);
+    var sc = this.scionAt(tau), j = judgeRow(this.row, phi, this.theta, sc.u, sc.alpha);
+    var rec = { seg: this.seg, kind: j.kind, phi: phi, theta: this.theta, d: this.d, e: j.e, u: sc.u, alpha: sc.alpha, s: j.s, margin: j.margin, h: j.h, added: j.added, bonus: 0, tau: tau, B: this.row.B, t: t };
+    this._apply(rec);
+    this.phase = 'fall'; this.pt = t; if (t > this.t) this.t = t;
+    this._hook('cut', rec, t);
+    return rec;
+  };
+  Run.prototype._wither = function (t) {
+    var tau = this.row.L, sc = this.scionAt(tau);
+    var rec = { seg: this.seg, kind: 'wither', phi: null, theta: this.theta, d: this.d, e: null, u: sc.u, alpha: sc.alpha, s: null, margin: null, h: 0, added: 0, bonus: 0, tau: tau, B: this.row.B, t: t };
+    this._apply(rec);
+    this.phase = 'fall'; this.pt = t;
+    this._hook('wither', rec, t);
+  };
+  Run.prototype._apply = function (rec) {
+    var learn = rec.seg <= 3, tb = this.tilt;
+    rec.tiltBefore = tb;
+    if (rec.kind === 'perfect') {
+      this.combo++; if (this.combo >= 3) rec.bonus = BONUS;
+      if (!learn) this.tilt = Math.abs(this.tilt) < 1 ? 0 : this.tilt - sgn(this.tilt);
+    } else if (rec.kind === 'good') {
+      this.combo = 0; if (!learn) this.tilt = this.tilt + TILT_K * (rec.phi - rec.theta);
+    } else if (rec.kind === 'miss') {
+      this.combo = 0; this.fails++; if (!learn) this.tilt = this.tilt + TILT_K * clamp(rec.phi - rec.theta, -MISS_CLAMP, MISS_CLAMP);
+    } else { this.combo = 0; this.fails++; }
+    this.tilt = r1(this.tilt);
+    rec.tiltAfter = this.tilt; rec.combo = this.combo;
+    this.Ht += Math.round(rec.added * 10) + rec.bonus * 10;
+    this.bonusMm += rec.bonus;
+    rec.Hafter = this.Ht / 10;
+    this.results.push(rec); this.cur = rec; this.tiltLog.push(this.tilt);
+    if (Math.abs(this.tilt) >= FALL_TILT - 1e-9) this.end = 'tilt';
+    else if (this.fails >= MAX_FAILS) this.end = 'fails';
+    else if (rec.seg >= this.nSeg && !this.demo) this.end = 'finish';
+  };
+  // 결과 요약 (lastResult 형식)
+  Run.prototype.result = function () {
+    var R = this.results, perf = 0, good = 0, f = { miss: 0, rot: 0, wither: 0 }, eSum = 0, eN = 0, mSum = 0, mN = 0, tmax = 0;
+    R.forEach(function (r) {
+      if (r.kind === 'perfect') perf++; else if (r.kind === 'good') good++; else f[r.kind]++;
+      if (r.kind !== 'wither') { eSum += r.e; eN++; }
+      if (r.kind === 'perfect' || r.kind === 'good') { mSum += r.margin; mN++; }
+      if (Math.abs(r.tiltAfter) > Math.abs(tmax)) tmax = r.tiltAfter;
+    });
+    var last = R[R.length - 1] || null, w = null, end = this.end;
+    if (end === 'fails' || end === 'tilt') w = last;
+    else if (end === 'finish') R.forEach(function (r) { if ((r.kind === 'perfect' || r.kind === 'good') && (!w || r.added < w.added)) w = r; });
+    var worst = w ? { seg: w.seg, kind: w.kind, e: w.e, depth: w.kind === 'rot' ? Math.max(0, w.s - w.u) : null, h: w.added, margin: w.margin,
+      tiltAfter: w.tiltAfter, phi: w.phi, theta: w.theta, u: w.u, alpha: w.alpha, B: w.B } : null;
+    var strip = [];
+    var bySeg = {}; R.forEach(function (x) { bySeg[x.seg] = x; });
+    for (var k = 1; k <= this.nSeg; k++) { var r = bySeg[k]; strip.push(r ? { kind: r.kind, added: r.added, bonus: r.bonus } : null); }
+    return {
+      mm: this.mm(), end: end, segReached: last ? last.seg : 0, perfect: perf, good: good, fails: f,
+      avgAngleErr: eN ? eSum / eN : null, avgMargin: mN ? mSum / mN : null, tiltMax: tmax, tiltFinal: this.tilt,
+      bonusMm: this.bonusMm, flowerMm: this.flowerMm, worst: worst, strip: strip, tiltLog: this.tiltLog.slice(), seed: this.seed, lengthSec: this.endT
+    };
+  };
+
+  /* ---------- 입력 해석: 끌기(50ms 전 기준점, 40px) + 키보드 ---------- */
+  var DRAG_MIN = 40, LAG = 0.05, KEY_DELAY = 0.25, KEY_RATE = 60, KEY_DIR = 1;   // KEY_DIR: ← = +1(시계 반대). 반대로 바꾸려면 -1
+  function foldDeg(dx, dy) {
+    var deg = Math.atan2(-dy, dx) * 180 / Math.PI;
+    if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
+    return clamp(rInt(deg), -KNIFE_MAX, KNIFE_MAX);
+  }
+  // run: Run, hooks: { blade, cancel(reason), cut(rec), ignored, down }
+  function Ctl(run, hooks) {
+    this.run = run; this.hooks = hooks || {};
+    this.dragging = false; this.pid = null; this.S = null; this.samples = []; this.knife = 0; this.raw = 0; this.hold = null; this.armedPrev = false;
+    this.bladeShown = false; this.lastInputT = -1e9;
+  }
+  Ctl.prototype._h = function (n, a) { var f = this.hooks[n]; if (f) return f(a); };
+  Ctl.prototype.segReset = function (t) {
+    this.knife = 0; this.raw = 0; this.bladeShown = false;
+    if (this.hold) { this.hold.base = 0; this.hold.t0 = t - KEY_DELAY; }
+  };
+  Ctl.prototype.refAt = function (t) {
+    var smp = this.samples, best = null;
+    for (var i = 0; i < smp.length; i++) { if (smp[i].t <= t - LAG + 1e-9) best = smp[i]; else break; }
+    return best || this.S;
+  };
+  Ctl.prototype.angleAt = function (t) {
+    if (!this.dragging) return null;
+    var E = this.refAt(t), dx = E.x - this.S.x, dy = E.y - this.S.y;
+    if (Math.sqrt(dx * dx + dy * dy) < DRAG_MIN) return null;
+    return foldDeg(dx, dy);
+  };
+  Ctl.prototype.refPoint = function (t) { return this.dragging ? this.refAt(t) : null; };
+  Ctl.prototype.keyRawAt = function (t) {
+    var h = this.hold; if (!h) return this.raw;
+    var dt = t - h.t0, v = h.base + (dt > KEY_DELAY ? h.dir * KEY_RATE * (dt - KEY_DELAY) : 0);
+    return clamp(v, -KNIFE_MAX, KNIFE_MAX);
+  };
+  Ctl.prototype.knifeAt = function (t) {
+    if (this.dragging) { var a = this.angleAt(t); return a != null ? a : this.knife; }
+    if (this.hold) return clamp(rInt(this.keyRawAt(t)), -KNIFE_MAX, KNIFE_MAX);
+    return this.knife;
+  };
+  Ctl.prototype.armedAt = function (t) { return this.dragging ? this.angleAt(t) != null : true; };
+  Ctl.prototype.update = function (t) {
+    if (this.dragging) {
+      var a = this.angleAt(t);
+      if (a != null) { if (!this.armedPrev) { this.armedPrev = true; this._h('blade'); } this.knife = a; this.raw = a; }
+      else this.armedPrev = false;
+      var cut = t - 2; while (this.samples.length > 2 && this.samples[1].t < cut) this.samples.shift();
+    } else if (this.hold) { this.raw = this.keyRawAt(t); this.knife = clamp(rInt(this.raw), -KNIFE_MAX, KNIFE_MAX); }
+  };
+  Ctl.prototype.down = function (x, y, t, pid) {
+    if (this.dragging) return false;
+    if (this.hold) this.keyUp(this.hold.key, t);
+    this.dragging = true; this.pid = pid; this.S = { x: x, y: y, t: t }; this.samples = [this.S]; this.armedPrev = false; this.lastInputT = t;
+    this._h('down');
+    return true;
+  };
+  Ctl.prototype.move = function (x, y, t, pid) {
+    if (!this.dragging || pid !== this.pid) return;
+    var last = this.samples[this.samples.length - 1];
+    if (t < last.t) t = last.t;
+    this.samples.push({ x: x, y: y, t: t });
+  };
+  Ctl.prototype.up = function (x, y, t, pid) {
+    if (!this.dragging || pid !== this.pid) return null;
+    var a = this.angleAt(t);
+    this.dragging = false; this.pid = null; this.armedPrev = false; this.lastInputT = t;
+    if (a == null) { this._h('cancel', 'tap'); return null; }
+    this.knife = a; this.raw = a;
+    if (this.run.phase === 'aim') { var rec = this.run.cut(t, a); if (rec) { this._h('cut', rec); return rec; } }
+    this._h('ignored');
+    return null;
+  };
+  Ctl.prototype.cancel = function () {
+    var was = this.dragging || !!this.hold;
+    this.dragging = false; this.pid = null; this.armedPrev = false;
+    if (this.hold) { this.hold = null; }
+    if (was) this._h('cancel', 'forced');
+  };
+  Ctl.prototype.keyDown = function (key, t) {   // key: +1 = ←, -1 = →. 회전 방향 = key × KEY_DIR (+ = 시계 반대)
+    if (this.dragging) return;
+    if (this.hold && this.hold.key === key) return;
+    if (this.hold) this.keyUp(this.hold.key, t);
+    var dir = key * KEY_DIR, base = clamp(Math.round(this.raw) + dir, -KNIFE_MAX, KNIFE_MAX);
+    this.hold = { dir: dir, key: key, t0: t, base: base }; this.raw = base; this.knife = clamp(rInt(base), -KNIFE_MAX, KNIFE_MAX); this.lastInputT = t;
+    if (!this.bladeShown) { this.bladeShown = true; this._h('blade'); }
+  };
+  Ctl.prototype.keyUp = function (key, t) {
+    if (!this.hold || this.hold.key !== key) return;
+    this.raw = this.keyRawAt(t); this.knife = clamp(rInt(this.raw), -KNIFE_MAX, KNIFE_MAX); this.hold = null;
+  };
+  Ctl.prototype.space = function (t) {
+    if (this.dragging) return null;
+    this.lastInputT = t;
+    if (this.run.phase !== 'aim') { this._h('ignored'); return null; }
+    var phi = this.knifeAt(t);
+    var rec = this.run.cut(t, phi);
+    if (rec) this._h('cut', rec);
+    return rec;
+  };
+
+  /* ---------- 화면 없는 한 판 (QA·데모·봇) ---------- */
+  function gauss(rng) { var u = 1 - rng(), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  var BOTS = {
+    novice: { sa: 5.5, st: 0.13, g: 20 }, normal: { sa: 3.2, st: 0.08, g: 12 }, skilled: { sa: 1.7, st: 0.045, g: 8 },
+    greedy: { sa: 1.7, st: 0.045, g: 2 }, keyboard: { sa: 2.0, st: 0.05, g: 10, kb: true }
+  };
+  function botDecide(run, bot, rng) {
+    var row = run.row, th = run.theta;
+    var phi = clamp(rInt(th + gauss(rng) * bot.sa), -KNIFE_MAX, KNIFE_MAX);
+    var nt = gauss(rng) * bot.st;
+    var r = bot.kb ? Math.abs(phi) / 60 + 0.25 : 0.35, end = row.L - 0.1, tStar = null, best = null, bestM = Infinity;
+    for (var tau = r; tau <= end + 1e-9; tau += 0.002) {
+      var sc = run.scionAt(tau), m = sc.u - sOf(phi, sc.alpha);
+      if (m > 0 && m < bestM) { bestM = m; best = tau; }
+      if (m > 0 && m <= bot.g && Math.sin(2 * Math.PI * tau / row.T) > 0) { tStar = tau; break; }
+    }
+    var rel = (tStar != null ? tStar : best != null ? best : r) + nt;
+    return { phi: phi, tau: Math.max(0, rel) };
+  }
+  function playBot(run, botName, botSeed) {
+    var bot = BOTS[botName] || BOTS.normal, rng = mulberry32(((run.seed ^ 0x9E3779B9) + Math.imul(botSeed | 0, 0x85EBCA6B)) >>> 0);
+    for (var guard = 0; guard < 1000 && !run.over; guard++) {
+      if (run.phase === 'aim') {
+        var dc = botDecide(run, bot, rng);
+        if (dc.tau < run.row.L) run.cut(run.aimStart + dc.tau, dc.phi);
+        else run.advanceTo(run.aimStart + run.row.L);
+      } else run.advanceTo(run.nextTime());
+    }
+  }
+  function simulate(o) {
+    o = o || {};
+    var run = new Run({ seed: o.seed != null ? o.seed : 1, faces: o.faces, rows: o.rows, nSeg: o.nSeg, readyDur: o.readyDur, demo: o.demo });
+    if (o.bot) { playBot(run, o.bot.name || o.bot, o.bot.botSeed || 0); return run.result(); }
+    var ctl = new Ctl(run, {});
+    run.hooks.segStart = function (r, t) { ctl.segReset(t); };
+    var ins = (o.inputs || []).slice().sort(function (a, b) { return a.t - b.t; });
+    ins.forEach(function (ev) {
+      if (run.over) return;
+      run.advanceTo(ev.t); ctl.update(ev.t);
+      var pid = ev.id != null ? ev.id : 1;
+      if (ev.type === 'down') ctl.down(ev.x, ev.y, ev.t, pid);
+      else if (ev.type === 'move') ctl.move(ev.x, ev.y, ev.t, pid);
+      else if (ev.type === 'up') ctl.up(ev.x, ev.y, ev.t, pid);
+      else if (ev.type === 'cancel') ctl.cancel();
+      else if (ev.type === 'key') {
+        var dir = ev.key === 'ArrowLeft' ? 1 : ev.key === 'ArrowRight' ? -1 : 0;
+        if (ev.key === 'Space') { if (ev.dir !== 'up') ctl.space(ev.t); }
+        else if (dir) { if (ev.dir === 'up') ctl.keyUp(dir, ev.t); else ctl.keyDown(dir, ev.t); }
+      }
+    });
+    run.advanceTo(o.until != null ? o.until : 1e6);
+    var res = run.result(); res.results = run.results.map(function (r) { return Object.assign({}, r); });
+    return res;
+  }
+  function quant(a, q) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }); var i = (s.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return s[lo] + (s[hi] - s[lo]) * (i - lo); }
+  function runBots(o) {
+    var seeds = o.seeds || [], bs = o.botSeeds || [0], mms = [], lens = [], fin = 0, causes = { miss: 0, rot: 0, wither: 0, tilt: 0 }, ends = { fails: 0, tilt: 0, finish: 0 }, perSeed = [];
+    seeds.forEach(function (sd) {
+      var mine = [];
+      bs.forEach(function (b) {
+        var run = new Run({ seed: sd }); playBot(run, o.bot, b); var r = run.result();
+        mms.push(r.mm); mine.push(r.mm); lens.push(r.lengthSec); if (r.end === 'finish') fin++; ends[r.end]++;
+        causes.miss += r.fails.miss; causes.rot += r.fails.rot; causes.wither += r.fails.wither; if (r.end === 'tilt') causes.tilt++;
+      });
+      perSeed.push(quant(mine, 0.5));
+    });
+    var out = { n: mms.length, median: quant(mms, 0.5), p10: quant(mms, 0.1), p90: quant(mms, 0.9), mean: mms.reduce(function (a, b) { return a + b; }, 0) / (mms.length || 1),
+      finishRate: fin / (mms.length || 1), lengthMedianSec: quant(lens, 0.5), failCauses: causes, endCauses: ends };
+    if (bs.length > 1) out.luck = { p10: quant(perSeed, 0.1), p90: quant(perSeed, 0.9), width: quant(perSeed, 0.9) - quant(perSeed, 0.1) };
+    return out;
+  }
+
+  /* ---------- 시작 화면 데모 (고정 입력, 엔진 재생) ---------- */
+  var DEMO_SEED = 0x00C0FFEE;
+  function demoRows() {
+    var learn = { P: 6, G: 14, D: 0, T: 1.80, A: 0, L: 5.00, B: 8, uMid: 36, uAmp: 22 };
+    var brown = { P: 5.5, G: 13, D: 0, T: 1.70, A: 0, L: 4.60, B: 30, uMid: 20, uAmp: 30 };
+    return [learn, learn, learn, brown, brown];
+  }
+  var DEMO_FACES = [{ d: 0, sway: 1 }, { d: 10, sway: 1 }, { d: -8, sway: 1 }, { d: 0, sway: 1 }, { d: 0, sway: 1 }];
+  // 박자별: 누를 때 τ, 끌기 시작점·끝점(가상 데모 화면 360×324 px), 끌기 끝 τ, 뗄 때 τ
+  var DEMO_BEATS = [
+    { down: 0.10, x0: 112, y0: 278, x1: 232, y1: 278, moveEnd: 0.50, up: 0.90 },
+    { down: 0.10, x0: 112, y0: 290, x1: 112 + 120 * Math.cos(10 * Math.PI / 180), y1: 290 - 120 * Math.sin(10 * Math.PI / 180), moveEnd: 0.50, up: 0.90 },
+    { down: 0.08, x0: 112, y0: 250, x1: 112 + 120 * Math.cos(30 * Math.PI / 180), y1: 250 + 120 * Math.sin(30 * Math.PI / 180), moveEnd: 0.42, up: 0.62 },
+    { down: 0.05, x0: 112, y0: 278, x1: 232, y1: 278, moveEnd: 0.32, up: 0.577 },
+    { down: 0.05, x0: 112, y0: 278, x1: 232, y1: 278, moveEnd: 0.32, up: 0.75 }
+  ];
+  var DEMO_READY = 0.6;
+  function demoScript() {
+    var rows = demoRows(), inputs = [], t = DEMO_READY;
+    for (var i = 0; i < DEMO_BEATS.length; i++) {
+      var b = DEMO_BEATS[i], aim = t + DUR.pre;
+      inputs.push({ t: r3(aim + b.down), type: 'down', x: b.x0, y: b.y0 });
+      var n = Math.max(2, Math.round((b.moveEnd - b.down) / 0.016));
+      for (var j = 1; j <= n; j++) { var k = j / n, e = k * k * (3 - 2 * k); inputs.push({ t: r3(aim + b.down + (b.moveEnd - b.down) * k), type: 'move', x: r3(b.x0 + (b.x1 - b.x0) * e), y: r3(b.y0 + (b.y1 - b.y0) * e) }); }
+      inputs.push({ t: r3(aim + b.up), type: 'up', x: r3(b.x1), y: r3(b.y1) });
+      t = aim + b.up + DUR.fall + DUR.judge + DUR.grow;
+    }
+    return { seed: DEMO_SEED, segs: rows.map(function (r, i) { return Object.assign({ d: DEMO_FACES[i].d, sway: DEMO_FACES[i].sway }, r); }), faces: DEMO_FACES, rows: rows,
+      readyDur: DEMO_READY, nSeg: 5, demo: true, inputs: inputs, expected: ['perfect', 'perfect', 'miss', 'perfect', 'rot'], length: t };
+  }
+  function r3(x) { return Math.round(x * 1000) / 1000; }
+
+  return {
+    TABLE: TABLE, DUR: DUR, N_SEG: N_SEG, KNIFE_MAX: KNIFE_MAX, GREEN: GREEN, HALF_W: HALF_W, DRAG_MIN: DRAG_MIN, LAG: LAG, BOTS: BOTS,
+    params: params, faces: faces, scion: scion, sOf: sOf, judgeRow: judgeRow, brownSeg: brownSeg, mulberry32: mulberry32, r1: r1, rInt: rInt, clamp: clamp,
+    Run: Run, Ctl: Ctl, simulate: simulate, runBots: runBots, demoScript: demoScript, foldDeg: foldDeg,
+    tune: { GOOD_MUL: GOOD_MUL, TILT_K: TILT_K }
+  };
+})();
+</script>
+<script>
+/* ===== 그리기 (art-ref.js를 옮김). 각도: design.md 부호(+ = 오른쪽 끝 위). Canvas에는 cv()로만 변환 ===== */
+var Draw = (function () {
+  'use strict';
+  var PAL = {
+    light: {
+      sky: { noon: ['#e9d3a6', '#f6ebd3'], dusk: ['#a994c6', '#ecd3d8'], night: ['#4a5585', '#9a94bd'] }, star: '#fff6d8',
+      sand: '#e4cc9c', dune: '#c4a46a', zoneLine: '#b89559', zoneInk: '#6e5530', zoneDot: 'rgba(110,85,48,.16)',
+      pot: '#c8643c', potEdge: '#7e3a1f', potRim: '#d97a4e', soil: '#5a3d26',
+      body: '#7cc35a', edge: '#3f7f2c', rib: '#3f7f2c', spine: '#fbf6e6', bud: '#a6dd7c',
+      flesh: '#eef6cf', core: '#c4df8c', seam: '#f4fbe6', crumb: '#c4df8c',
+      rot: '#8a5a2b', rotEdge: '#4e3016', rotHatch: '#5e3a1a', rotSpot: '#3a2410', mush: '#6b4a2a',
+      dry: '#b59a62', dryEdge: '#7d6538',
+      clamp: '#8b93a1', clampEdge: '#4b5260', rod: '#6b7280',
+      knife: '#1f2430', knifeHalo: '#ffffff', blade: '#d5dbe3', bladeEdge: '#5b6472', handle: '#6b4a2e',
+      guide: '#2f6f22', guideGlow: 'rgba(255,246,160,.85)', answer: '#1f2430',
+      perfect: '#f2b134', perfectCore: '#fffbe6', good: '#d9b26a',
+      warn: '#c0392b', warnFill: 'rgba(192,57,43,.28)', ok: '#3f7a4f',
+      ruler: '#6b5a3e', rulerTxt: '#5c4a2e', mark: '#2f7fc4', ink: '#1f2430', muted: '#6b7280',
+      level: '#fbfaf7', levelEdge: '#6b5a3e',
+      bloom: '#ef8aa6', bloomC: '#f2b134', finger: '#6e5530', fingerFill: '#fbe3c8', card: '#fbfaf7', well: '#fbfaf7', grid: '#e7e2d8'
+    },
+    dark: {
+      sky: { noon: ['#2b2518', '#3d3424'], dusk: ['#1f1a32', '#3b2a40'], night: ['#0c1020', '#1c2140'] }, star: '#fff2c4',
+      sand: '#3a3125', dune: '#55462f', zoneLine: '#7a6544', zoneInk: '#d9c39a', zoneDot: 'rgba(217,195,154,.14)',
+      pot: '#9c4a2c', potEdge: '#e09a72', potRim: '#b65a36', soil: '#2a1d12',
+      body: '#8fd46a', edge: '#cdeeb4', rib: '#2f6a20', spine: '#e8e0c8', bud: '#b8eb8c',
+      flesh: '#e3f0b8', core: '#a9c873', seam: '#f4fbe6', crumb: '#a9c873',
+      rot: '#9a6634', rotEdge: '#e0b07a', rotHatch: '#5a3416', rotSpot: '#2e1a0a', mush: '#7a5432',
+      dry: '#9c8455', dryEdge: '#d2bb8a',
+      clamp: '#9aa3b2', clampEdge: '#d0d6df', rod: '#9aa1ae',
+      knife: '#eceef3', knifeHalo: '#12141a', blade: '#c9d1db', bladeEdge: '#eceef3', handle: '#a47a52',
+      guide: '#d4f59a', guideGlow: 'rgba(212,245,154,.30)', answer: '#eceef3',
+      perfect: '#ffc94d', perfectCore: '#fffbe6', good: '#c9a45e',
+      warn: '#ff6b6b', warnFill: 'rgba(255,107,107,.28)', ok: '#8fd09d',
+      ruler: '#b9a77f', rulerTxt: '#cbb98f', mark: '#7cc0f2', ink: '#eceef3', muted: '#9aa1ae',
+      level: '#1b1e27', levelEdge: '#b9a77f',
+      bloom: '#f39ab3', bloomC: '#ffc94d', finger: '#d9c39a', fingerFill: '#e8d2b6', card: '#161921', well: '#161921', grid: '#262a35'
+    }
+  };
+  var D = Math.PI / 180, SCION_W = 36, GREEN = 80, K_TO_STOCK = 105, BASE_MM = 30;
+  function cv(deg) { return -deg * D; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  var hexCache = {};
+  function hex(h) { var c = hexCache[h]; if (c) return c; c = [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); hexCache[h] = c; return c; }
+  function mixHex(a, b, t) { var x = hex(a), y = hex(b); return '#' + [0, 1, 2].map(function (i) { return ('0' + Math.round(lerp(x[i], y[i], t)).toString(16)).slice(-2); }).join(''); }
+  function hash(i, k) { var s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return s - Math.floor(s); }
+  function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  var EASE = {
+    inOut: function (k) { k = clamp(k, 0, 1); return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; },
+    out: function (k) { k = clamp(k, 0, 1); return 1 - Math.pow(1 - k, 3); },
+    inn: function (k) { k = clamp(k, 0, 1); return k * k; },
+    pop: function (k) { k = clamp(k, 0, 1); var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); },
+    acc: function (k) { k = clamp(k, 0, 1); return k * k * k; }
+  };
+
+  /* ---------- 배치 ---------- */
+  function layout(SW, SH) {
+    var land = SW > SH * 1.15, L = { SW: SW, SH: SH, land: land };
+    if (land) { var zw = Math.round(SW / 3); L.scene = { x: 0, y: 0, w: SW - zw, h: SH }; L.zone = { x: SW - zw + 6, y: 10, w: zw - 16, h: SH - 20 }; }
+    else { var zh = Math.round(SH * 0.30); L.scene = { x: 0, y: 0, w: SW, h: SH - zh }; L.zone = { x: 10, y: SH - zh + 6, w: SW - 20, h: zh - 16 }; }
+    var low = SH < 420;
+    L.Ky = Math.round(SH * (low ? 0.31 : 0.34));
+    L.Sy = Math.round(SH * (low ? 0.62 : 0.55));
+    L.mm = (L.Sy - L.Ky) / K_TO_STOCK;
+    L.Kx = Math.round(L.scene.x + L.scene.w * 0.5);
+    L.r = SCION_W / 2 * L.mm;
+    L.rulerX = Math.round(L.scene.x + L.scene.w - (L.scene.w < 500 ? 34 : 50));
+    L.guideExt = Math.round(Math.min(L.rulerX - L.Kx - 34, L.r * 5));
+    L.levelR = Math.round(clamp(L.r * 0.9, 20, 34));
+    L.levelX = Math.round(L.scene.x + L.levelR + 16);
+    return L;
+  }
+
+  /* ---------- 하늘 ---------- */
+  function skyFor(P, cm) {
+    var a, b, k;
+    if (cm < 100) { a = P.sky.noon; b = P.sky.dusk; k = clamp(cm / 100, 0, 1); } else { a = P.sky.dusk; b = P.sky.night; k = clamp((cm - 100) / 100, 0, 1); }
+    k = k * k * (3 - 2 * k);
+    return [mixHex(a[0], b[0], k), mixHex(a[1], b[1], k), clamp((cm - 160) / 40, 0, 1)];
+  }
+  function drawSky(ctx, P, L, cm, w, h) {
+    var s = skyFor(P, cm), g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, s[0]); g.addColorStop(1, s[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    if (s[2] > 0) { ctx.fillStyle = P.star; for (var i = 0; i < 40; i++) { ctx.globalAlpha = s[2] * (0.4 + 0.6 * hash(i, 9)); ctx.beginPath(); ctx.arc(hash(i, 1) * w, hash(i, 2) * L.Ky * 1.6, 1 + hash(i, 3) * 1.2, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
+  }
+
+  /* ---------- 선인장 마디 ---------- */
+  function segPath(ctx, r, len, b, t, dome) {
+    var tb = Math.tan(b), tt = Math.tan(t);
+    ctx.beginPath();
+    ctx.moveTo(-r, -r * tb);
+    if (dome) { ctx.lineTo(-r, -len + r * 0.55); ctx.quadraticCurveTo(-r, -len, 0, -len); ctx.quadraticCurveTo(r, -len, r, -len + r * 0.55); }
+    else { ctx.lineTo(-r, -len - r * tt); ctx.lineTo(r, -len + r * tt); }
+    ctx.lineTo(r, r * tb);
+    ctx.closePath();
+  }
+  function drawSeg(ctx, P, r, len, b, t, opt) {
+    opt = opt || {};
+    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    segPath(ctx, r, len, b, t, opt.dome);
+    ctx.fillStyle = opt.color || P.body; ctx.fill();
+    ctx.save(); ctx.clip();
+    ctx.strokeStyle = P.rib; ctx.globalAlpha = 0.32; ctx.lineWidth = Math.max(1.5, r * 0.07);
+    [-0.5, 0, 0.5].forEach(function (k) { ctx.beginPath(); ctx.moveTo(k * r, r + 4); ctx.lineTo(k * r * 0.96, -len - r); ctx.stroke(); });
+    ctx.globalAlpha = 1; ctx.fillStyle = P.spine;
+    for (var y = -8; y > -len + 4; y -= 13) [-0.75, -0.25, 0.25, 0.75].forEach(function (k, i) { ctx.beginPath(); ctx.arc(k * r, y - (i % 2) * 6, Math.max(1.1, r * 0.05), 0, 7); ctx.fill(); });
+    if (opt.dryTip) { ctx.fillStyle = P.dry; ctx.globalAlpha = opt.dryTip === true ? 1 : opt.dryTip; ctx.fillRect(-r - 2, -len - r - 4, r * 2 + 4, r + 4 + Math.max(6, len * 0.12)); ctx.globalAlpha = 1; }
+    ctx.restore();
+    segPath(ctx, r, len, b, t, opt.dome);
+    ctx.strokeStyle = opt.edge || P.edge; ctx.lineWidth = Math.max(1.8, r * 0.08); ctx.stroke();
+    ctx.strokeStyle = P.spine; ctx.lineWidth = 1.4;
+    for (var sy = -7; sy > -len + 5; sy -= 12) [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(sd * r, sy); ctx.lineTo(sd * (r + 3.5), sy - 2.5); ctx.stroke(); });
+    if (opt.bud) { var bs = opt.bud === true ? 1 : opt.bud; ctx.fillStyle = P.bud; ctx.strokeStyle = P.edge; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(r + 2, -len * 0.5, r * 0.24 * bs + 0.01, r * 0.32 * bs + 0.01, -0.5, 0, 7); ctx.fill(); ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawSeam(ctx, P, r, b, kind, glow, half) {
+    var tb = Math.tan(b);
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.strokeStyle = P.seam; ctx.lineWidth = 2.2; ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.moveTo(-r + 2, (-r + 2) * tb); ctx.lineTo(r - 2, (r - 2) * tb); ctx.stroke();
+    ctx.globalAlpha = 1;
+    if (kind === 'perfect') { ctx.fillStyle = P.perfect; [-1, 1].forEach(function (s) { ctx.beginPath(); ctx.arc(s * (r + Math.min(4, r * 0.2)), s * (r + Math.min(4, r * 0.2)) * tb, Math.min(2.8, Math.max(0.8, r * 0.14)), 0, 7); ctx.fill(); }); }
+    if (glow) {
+      var x0 = kind === 'perfect' ? -r * 2 : (half || -1) < 0 ? -r : 0, x1 = kind === 'perfect' ? r * 2 : (half || -1) < 0 ? 0 : r;
+      ctx.globalAlpha = glow; ctx.strokeStyle = P.perfect; ctx.lineWidth = 9; ctx.shadowColor = P.perfect; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.moveTo(x0, x0 * tb); ctx.lineTo(x1, x1 * tb); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = P.perfectCore; ctx.lineWidth = 3; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  /* ---------- 화분 ---------- */
+  function drawPot(ctx, P, x, y, r) {
+    var w = r * 4.2, h = r * 2.3;
+    ctx.save(); ctx.lineJoin = 'round';
+    ctx.fillStyle = P.pot; ctx.strokeStyle = P.potEdge; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(x - w / 2, y); ctx.lineTo(x + w / 2, y); ctx.lineTo(x + w * 0.38, y + h); ctx.lineTo(x - w * 0.38, y + h); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = P.potRim; ctx.beginPath(); ctx.rect(x - w / 2 - 5, y - 4, w + 10, h * 0.24); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = P.soil; ctx.fillRect(x - w / 2 + 2, y - 6, w - 4, 3);
+    ctx.restore();
+    return y + h;
+  }
+
+  /* ---------- 탑 ---------- */
+  // tower = { tilt, baseRel, baseDome, segs:[{len, rel, kind, bud, dome, dryTip, glow, half}] }
+  // opt = { scale, topX, topY, camShift, bx, by(흙 기준점 직접 지정), clipH }
+  function drawTower(ctx, P, L, tower, opt) {
+    opt = opt || {};
+    var sc = opt.scale || 1, mm = L.mm * sc, r = L.r * sc, tl = cv(tower.tilt);
+    var total = BASE_MM; tower.segs.forEach(function (s) { total += s.len; });
+    var H = total * mm, bx, by;
+    if (opt.bx != null) { bx = opt.bx; by = opt.by; }
+    else { var topX = opt.topX != null ? opt.topX : L.Kx, topY = (opt.topY != null ? opt.topY : L.Sy) + (opt.camShift || 0); bx = topX - Math.sin(tl) * H; by = topY + Math.cos(tl) * H; }
+    var clipH = opt.clipH || L.SH;
+    ctx.save(); ctx.translate(bx, by); ctx.rotate(tl);
+    var y = 0, prevRel = 0;
+    var all = [{ len: BASE_MM, rel: tower.baseRel || 0, kind: 'base', dome: tower.baseDome }].concat(tower.segs);
+    for (var i = 0; i < all.length; i++) {
+      var s = all[i], len = s.len * mm, bRel = i === 0 ? 0 : cv(prevRel), tRel = cv(s.rel || 0);
+      if (sc < 1 || opt.bx != null || (by - (y + len) * Math.cos(tl) < clipH + 40 && by - y * Math.cos(tl) > -40 - r * 3)) {
+        ctx.save(); ctx.translate(0, -y);
+        drawSeg(ctx, P, r, len, bRel, tRel, { dryTip: s.kind === 'good' ? (s.dryTip != null ? s.dryTip : true) : false, bud: s.bud, dome: s.dome });
+        if (i > 0) drawSeam(ctx, P, r, bRel, s.kind, s.glow || 0, s.half);
+        ctx.restore();
+      }
+      y += len; prevRel = s.rel || 0;
+    }
+    ctx.restore();
+    var potBottom = drawPot(ctx, P, bx, by, r);
+    return { bx: bx, by: by, potBottom: potBottom, H: H, topX: bx + Math.sin(tl) * H, topY: by - Math.cos(tl) * H, r: r };
+  }
+
+  /* ---------- 대목 윗면 ---------- */
+  function drawFace(ctx, P, L, x, y, theta, opt) {
+    opt = opt || {};
+    var a = cv(theta), c = Math.cos(a), s = Math.sin(a), r = L.r, ext = L.guideExt;
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.strokeStyle = P.flesh; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x - c * r, y - s * r); ctx.lineTo(x + c * r, y + s * r); ctx.stroke();
+    ctx.strokeStyle = P.core; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - c * r * 0.45, y - s * r * 0.45); ctx.lineTo(x + c * r * 0.45, y + s * r * 0.45); ctx.stroke();
+    var pulse = opt.pulse != null ? opt.pulse : 0.7;
+    ctx.globalAlpha = pulse; ctx.strokeStyle = opt.parallel ? P.perfect : P.guideGlow; ctx.lineWidth = 11; if (opt.parallel) { ctx.shadowColor = P.perfect; ctx.shadowBlur = opt.blur || 12; }
+    ctx.beginPath(); ctx.moveTo(x - c * r * 1.15, y - s * r * 1.15); ctx.lineTo(x + c * r * 1.15, y + s * r * 1.15); ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 5; ctx.globalAlpha = 0.55;
+    [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(x + sd * c * (r + 8), y + sd * s * (r + 8)); ctx.lineTo(x + sd * c * ext, y + sd * s * ext); ctx.stroke(); });
+    ctx.strokeStyle = opt.parallel ? P.perfect : P.guide; ctx.lineWidth = 2.5; ctx.setLineDash([10, 7]); ctx.globalAlpha = opt.parallel ? Math.max(0.85, pulse) : 0.85;
+    [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(x + sd * c * (r + 8), y + sd * s * (r + 8)); ctx.lineTo(x + sd * c * ext, y + sd * s * ext); ctx.stroke(); });
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    [-1, 1].forEach(function (sd) { var px = x + sd * c * ext, py = y + sd * s * ext; ctx.beginPath(); ctx.moveTo(px + s * 7, py - c * 7); ctx.lineTo(px - s * 7, py + c * 7); ctx.stroke(); });
+    ctx.restore();
+  }
+  function drawAnswer(ctx, P, L, theta) {
+    var a = cv(theta), c = Math.cos(a), s = Math.sin(a), e = L.r * 3.2;
+    ctx.save(); ctx.strokeStyle = P.answer; ctx.globalAlpha = 0.4; ctx.lineWidth = 2; ctx.setLineDash([3, 6]); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(L.Kx - c * e, L.Ky - s * e); ctx.lineTo(L.Kx + c * e, L.Ky + s * e); ctx.stroke(); ctx.restore();
+  }
+
+  /* ---------- 접수 + 집게 ---------- */
+  // sc = { u, alpha, B, fade, droop, pulse }, opt = { noClamp, stub, yOff(px, 화면 위로 −), open(집게 벌림 0..1), alpha(전체 투명도) }
+  function drawScion(ctx, P, L, sc, opt) {
+    opt = opt || {};
+    var m = L.mm, r = L.r, u = sc.u * m, G0 = opt.stub ? 0 : (sc.u - GREEN) * m, Bp = sc.B * m, dome = opt.stub ? 0 : r * 0.6;
+    if (opt.stub) opt.noClamp = true;
+    var f = sc.fade || 0, body = mixHex(P.body, P.dry, f * 0.85), edge = mixHex(P.edge, P.dryEdge, f * 0.85);
+    ctx.save(); ctx.translate(L.Kx + (opt.xOff || 0), L.Ky + (opt.yOff || 0)); ctx.rotate(cv(sc.alpha || 0) + (opt.rot || 0)); ctx.lineJoin = 'round';
+    var A0 = opt.alpha != null ? opt.alpha : 1; ctx.globalAlpha = A0;
+    if (!opt.noClamp && !opt.noRod) { ctx.strokeStyle = P.rod; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, G0 - 14 + (opt.rodOff || 0)); ctx.lineTo(0, G0 - 2400 + (opt.rodOff || 0)); ctx.stroke(); }
+    var dq = sc.droop || 0; dome = dome * (1 - 0.6 * dq);
+    if (u - G0 > 0.5) {
+      ctx.beginPath(); ctx.moveTo(-r, u);
+      ctx.lineTo(-r, G0 + dome); ctx.quadraticCurveTo(-r, G0, 0, G0); ctx.quadraticCurveTo(r, G0, r, G0 + dome);
+      ctx.lineTo(r, u); ctx.closePath();
+      ctx.fillStyle = body; ctx.fill();
+      ctx.save(); ctx.clip();
+      ctx.strokeStyle = P.rib; ctx.globalAlpha = A0 * 0.32; ctx.lineWidth = Math.max(1.5, r * 0.07);
+      [-0.5, 0, 0.5].forEach(function (k) { ctx.beginPath(); ctx.moveTo(k * r, G0); ctx.lineTo(k * r, u + 2); ctx.stroke(); });
+      ctx.globalAlpha = A0; ctx.fillStyle = P.spine;
+      for (var y = G0 + 8; y < u - 3; y += 13) [-0.75, -0.25, 0.25, 0.75].forEach(function (k, i) { ctx.beginPath(); ctx.arc(k * r, y + (i % 2) * 6, Math.max(1.1, r * 0.05), 0, 7); ctx.fill(); });
+      ctx.restore();
+      ctx.strokeStyle = edge; ctx.lineWidth = Math.max(1.8, r * 0.08); ctx.stroke();
+      ctx.strokeStyle = P.spine; ctx.lineWidth = 1.4;
+      for (var sy = G0 + dome; sy < u - 3; sy += 12) [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(sd * r, sy); ctx.lineTo(sd * (r + 3.5), sy - 2.5 + 6 * dq); ctx.stroke(); });
+      if (dq) { ctx.strokeStyle = edge; ctx.globalAlpha = A0 * dq; ctx.lineWidth = 1.6; [10, 17].forEach(function (o) { ctx.beginPath(); ctx.moveTo(-r * 0.7, G0 + dome + o); ctx.quadraticCurveTo(0, G0 + dome + o + 4, r * 0.7, G0 + dome + o); ctx.stroke(); }); ctx.globalAlpha = A0; }
+    }
+    if (Bp > 0.5) {
+      ctx.beginPath(); ctx.moveTo(-r, u); ctx.lineTo(r, u); ctx.lineTo(r * 0.92, u + Bp * 0.85);
+      for (var i = 0; i <= 6; i++) ctx.lineTo(r * 0.92 - i * (r * 1.84 / 6), u + Bp * (i % 2 ? 1.0 : 0.86));
+      ctx.closePath(); ctx.fillStyle = P.rot; ctx.fill();
+      ctx.save(); ctx.clip();
+      ctx.strokeStyle = P.rotHatch; ctx.lineWidth = 2.2;
+      for (var hx = -r - Bp - 10; hx < r + 10; hx += 7) { ctx.beginPath(); ctx.moveTo(hx, u + Bp + 2); ctx.lineTo(hx + Bp + 4, u - 2); ctx.stroke(); }
+      ctx.fillStyle = P.rotSpot;
+      for (var j = 0; j < Math.max(2, Math.round(sc.B / 7)); j++) { ctx.beginPath(); ctx.ellipse((hash(j, 5) - 0.5) * r * 1.5, u + Bp * (0.2 + 0.65 * hash(j, 6)), 2.4, 1.9, 0, 0, 7); ctx.fill(); }
+      ctx.restore();
+      ctx.strokeStyle = P.rotEdge; ctx.lineWidth = Math.max(1.8, r * 0.08); ctx.stroke();
+      if (!opt.stubNoLine) { ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-r - 1, u); ctx.lineTo(r + 1, u); ctx.stroke(); }
+      if (sc.pulse) { ctx.strokeStyle = P.warn; ctx.globalAlpha = A0 * sc.pulse; ctx.lineWidth = 3; ctx.beginPath(); ctx.rect(-r - 6, u - 3, r * 2 + 12, Bp + 9); ctx.stroke(); ctx.globalAlpha = A0; }
+    }
+    if (opt.stub) { ctx.strokeStyle = P.flesh; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-r + 2, 1); ctx.lineTo(r - 2, 1); ctx.stroke(); }
+    if (!opt.noClamp) {
+      var op = (opt.open || 0) * 20 * D;
+      ctx.fillStyle = P.clamp; ctx.strokeStyle = P.clampEdge; ctx.lineWidth = 2;
+      [-1, 1].forEach(function (sd) {
+        ctx.save(); ctx.translate(0, G0 - 12); ctx.rotate(sd * op); ctx.translate(0, -(G0 - 12));
+        ctx.beginPath(); ctx.moveTo(sd * r * 0.3, G0 - 12); ctx.lineTo(sd * (r + 7), G0 + dome * 0.2 - 4); ctx.lineTo(sd * (r + 7), G0 + dome * 1.3); ctx.lineTo(sd * (r + 1), G0 + dome * 1.3); ctx.lineTo(sd * (r + 1), G0 + dome * 0.5); ctx.lineTo(sd * r * 0.2, G0 - 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
+      });
+      ctx.beginPath(); ctx.arc(0, G0 - 12, 5.5, 0, 7); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 집게만(말라 버림 뒤 빈 집게)
+  function drawClampOnly(ctx, P, L, gy, open) {
+    var r = L.r, op = open * 20 * D;
+    ctx.save(); ctx.translate(L.Kx, L.Ky + gy);
+    ctx.strokeStyle = P.rod; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(0, -2400); ctx.stroke();
+    ctx.fillStyle = P.clamp; ctx.strokeStyle = P.clampEdge; ctx.lineWidth = 2;
+    [-1, 1].forEach(function (sd) { ctx.save(); ctx.translate(0, -12); ctx.rotate(sd * op); ctx.translate(0, 12); ctx.beginPath(); ctx.moveTo(sd * r * 0.3, -12); ctx.lineTo(sd * (r + 7), -4); ctx.lineTo(sd * (r + 7), r * 0.78); ctx.lineTo(sd * (r + 1), r * 0.78); ctx.lineTo(sd * (r + 1), r * 0.3); ctx.lineTo(sd * r * 0.2, -4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); });
+    ctx.beginPath(); ctx.arc(0, -12, 5.5, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- 칼선 ---------- */
+  // kn = { phi, armed, parallel, pulse, dim, brown([x0,x1] mm | null) }
+  function drawKnife(ctx, P, L, kn) {
+    var m = L.mm, a = cv(kn.phi), c = Math.cos(a), s = Math.sin(a), half = 36 * m;
+    var col = kn.parallel ? P.perfect : P.knife;
+    ctx.save(); ctx.lineCap = 'round';
+    var A0 = (kn.armed ? 1 : 0.55) * (kn.dim ? 0.55 : 1) * (kn.alpha == null ? 1 : kn.alpha);
+    var P0 = [L.Kx - c * half, L.Ky - s * half], P1 = [L.Kx + c * half, L.Ky + s * half];
+    ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 7; ctx.globalAlpha = A0 * 0.7; ctx.beginPath(); ctx.moveTo(P0[0], P0[1]); ctx.lineTo(P1[0], P1[1]); ctx.stroke();
+    ctx.globalAlpha = A0;
+    ctx.strokeStyle = col; ctx.lineWidth = kn.parallel ? 4.5 : 3.5;
+    if (kn.parallel) { ctx.shadowColor = P.perfect; ctx.shadowBlur = 10 * (kn.pulse == null ? 1 : kn.pulse); }
+    if (!kn.armed) ctx.setLineDash([7, 7]);
+    ctx.beginPath(); ctx.moveTo(P0[0], P0[1]); ctx.lineTo(P1[0], P1[1]); ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+    if (kn.brown) {
+      var q0 = [L.Kx + c * kn.brown[0] * m, L.Ky + s * kn.brown[0] * m], q1 = [L.Kx + c * kn.brown[1] * m, L.Ky + s * kn.brown[1] * m];
+      if (Math.abs(kn.brown[1] - kn.brown[0]) < 0.6) { var mx = (q0[0] + q1[0]) / 2, my = (q0[1] + q1[1]) / 2; q0 = [mx - c * 2, my - s * 2]; q1 = [mx + c * 2, my + s * 2]; }
+      ctx.strokeStyle = P.flesh; ctx.lineWidth = 13; ctx.beginPath(); ctx.moveTo(q0[0], q0[1]); ctx.lineTo(q1[0], q1[1]); ctx.stroke();
+      ctx.strokeStyle = P.rot; ctx.lineWidth = 8; ctx.stroke();
+      ctx.strokeStyle = P.rotSpot; ctx.lineWidth = 2.2; ctx.setLineDash([2, 4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    var bx = kn.bladeAt != null ? lerp(P0[0], P1[0], kn.bladeAt) : P0[0], by = kn.bladeAt != null ? lerp(P0[1], P1[1], kn.bladeAt) : P0[1];
+    ctx.save(); ctx.translate(bx, by); ctx.rotate(a);
+    var bl = Math.max(26, 22 * m), bh = Math.max(8, 5 * m);
+    ctx.fillStyle = P.blade; ctx.strokeStyle = P.bladeEdge; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-bl, 0); ctx.lineTo(-bl, -bh); ctx.lineTo(6 - bh, -bh); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = P.handle; ctx.beginPath(); ctx.rect(-bl - bl * 0.7, -bh - 1, bl * 0.7, bh + 3); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(L.Kx, L.Ky, 3.2, 0, 7); ctx.fill();
+    ctx.restore();
+    return { P0: P0, P1: P1 };
+  }
+  function drawGainBracket(ctx, P, L, sc, warn) {
+    var m = L.mm, x = -L.r - 10;
+    ctx.save(); ctx.translate(L.Kx, L.Ky); ctx.rotate(cv(sc.alpha || 0));
+    ctx.strokeStyle = warn ? P.warn : P.ok; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x + 5, (sc.u - GREEN) * m + 2); ctx.lineTo(x, (sc.u - GREEN) * m + 2); ctx.lineTo(x, 0); ctx.lineTo(x + 5, 0); ctx.stroke();
+    ctx.restore();
+  }
+  function drawKTicks(ctx, P, L, w) {
+    ctx.save(); ctx.fillStyle = P.ink; ctx.globalAlpha = 0.5;
+    [[L.scene.x + 4, 1], [L.scene.x + (w || L.scene.w) - 4, -1]].forEach(function (a) { ctx.beginPath(); ctx.moveTo(a[0], L.Ky - 7); ctx.lineTo(a[0] + a[1] * 10, L.Ky); ctx.lineTo(a[0], L.Ky + 7); ctx.fill(); });
+    ctx.restore();
+  }
+
+  /* ---------- 수평계 ---------- */
+  function drawLevel(ctx, P, x, y, R, tilt) {
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.fillStyle = P.level; ctx.strokeStyle = P.levelEdge; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, R, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = P.warnFill; [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(x, y); if (sd > 0) ctx.arc(x, y, R * 0.96, -Math.PI / 2 + 40 * D, 0); else ctx.arc(x, y, R * 0.96, -Math.PI, -Math.PI / 2 - 40 * D); ctx.closePath(); ctx.fill(); });
+    [[0, 2.5, P.levelEdge, 0.42], [5, 1.5, P.levelEdge, 0.3], [-5, 1.5, P.levelEdge, 0.3], [10, 3.5, P.warn, 0.5], [-10, 3.5, P.warn, 0.5]].forEach(function (t) {
+      var a = -Math.PI / 2 + cv(t[0]) * 4; ctx.strokeStyle = t[2]; ctx.lineWidth = t[1];
+      ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * R * (1 - t[3]), y + Math.sin(a) * R * (1 - t[3])); ctx.lineTo(x + Math.cos(a) * R * 0.96, y + Math.sin(a) * R * 0.96); ctx.stroke();
+    });
+    var a = cv(clamp(tilt, -12, 12)) * 4, danger = Math.abs(tilt) >= 7;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.fillStyle = P.body; ctx.strokeStyle = danger ? P.warn : P.edge; ctx.lineWidth = danger ? 2.6 : 1.8;
+    ctx.beginPath(); ctx.rect(-R * 0.13, -R * 0.82, R * 0.26, R * 0.82); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = P.levelEdge; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- 눈금자 ---------- */
+  function drawRuler(ctx, P, L, zeroY, cm, pxPerCm) {
+    var x = L.rulerX, bot = L.scene.h, top = Math.max(0, zeroY - (cm + 10) * pxPerCm);
+    ctx.save(); ctx.strokeStyle = P.ruler; ctx.fillStyle = P.rulerTxt; ctx.lineWidth = 2; ctx.font = '700 11px system-ui, sans-serif'; ctx.textAlign = 'left';
+    ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, Math.min(bot, zeroY)); ctx.stroke();
+    var step = pxPerCm < 3 ? 10 : 1, lab = pxPerCm < 0.8 ? 50 : 10;
+    var c0 = Math.max(0, Math.floor((zeroY - bot) / pxPerCm / step) * step);
+    for (var c = c0; ; c += step) {
+      var y = zeroY - c * pxPerCm; if (y < top) break; if (y > bot) continue;
+      var big = c % 10 === 0, mid = c % 5 === 0;
+      ctx.globalAlpha = big ? 1 : mid ? 0.8 : 0.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - (big ? 10 : mid ? 7 : 4), y); ctx.stroke();
+      if (c % lab === 0) { ctx.globalAlpha = 1; ctx.save(); ctx.strokeStyle = P.knifeHalo; ctx.globalAlpha = 0.8; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeText(String(c), x + 5, y + 4); ctx.restore(); ctx.fillText(String(c), x + 5, y + 4); }
+    }
+    ctx.globalAlpha = 1;
+    var my = zeroY - cm * pxPerCm;
+    ctx.fillStyle = P.mark; ctx.beginPath(); ctx.moveTo(x - 14, my); ctx.lineTo(x - 26, my - 6); ctx.lineTo(x - 26, my + 6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- 끄는 곳 ---------- */
+  function drawZone(ctx, P, L, drag, alpha) {
+    var z = L.zone;
+    ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.fillStyle = P.sand; rr(ctx, z.x, z.y, z.w, z.h, 16); ctx.fill();
+    ctx.save(); ctx.clip(); ctx.fillStyle = P.zoneDot;
+    for (var row = 0, yy = z.y + 9; yy < z.y + z.h; yy += 18, row++) for (var xx = z.x + 9 + (row % 2) * 9; xx < z.x + z.w; xx += 18) { ctx.beginPath(); ctx.arc(xx, yy, 1.6, 0, 7); ctx.fill(); }
+    ctx.restore();
+    rr(ctx, z.x, z.y, z.w, z.h, 16);
+    ctx.strokeStyle = P.zoneLine; ctx.setLineDash([8, 7]); ctx.lineWidth = 2; ctx.globalAlpha *= 0.7; ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    if (drag) drawDrag(ctx, P, drag);
+  }
+  function drawDrag(ctx, P, drag) {
+    ctx.save();
+    ctx.strokeStyle = P.zoneInk; ctx.globalAlpha = drag.armed ? 0.3 : 0.7; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.arc(drag.x0, drag.y0, 40, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.strokeStyle = P.zoneInk; ctx.lineWidth = 3; ctx.lineCap = 'round'; if (!drag.armed) ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.moveTo(drag.x0, drag.y0); ctx.lineTo(drag.x1, drag.y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = P.zoneInk; ctx.beginPath(); ctx.arc(drag.x0, drag.y0, 6, 0, 7); ctx.fill();
+    ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(drag.x1, drag.y1, 13, 0, 7); ctx.stroke();
+    ctx.restore();
+  }
+  function drawFinger(ctx, P, x, y, a, pressed, sc) {
+    ctx.save(); ctx.translate(x, y); if (sc) ctx.scale(sc, sc); ctx.globalAlpha = a == null ? 1 : a; ctx.fillStyle = P.fingerFill; ctx.strokeStyle = P.finger; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    if (pressed) { ctx.save(); ctx.globalAlpha *= 0.5; ctx.beginPath(); ctx.arc(0, 0, 14, 0, 7); ctx.stroke(); ctx.restore(); }
+    ctx.beginPath(); ctx.moveTo(-6, 4); ctx.lineTo(-6, 30); ctx.quadraticCurveTo(-18, 26, -16, 38); ctx.lineTo(-6, 56); ctx.lineTo(18, 56); ctx.quadraticCurveTo(24, 44, 22, 30); ctx.lineTo(22, 24); ctx.quadraticCurveTo(16, 18, 12, 24); ctx.quadraticCurveTo(8, 16, 4, 22); ctx.lineTo(4, 4); ctx.quadraticCurveTo(-1, -3, -6, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+  function drawFlower(ctx, P, x, y, R, b) {
+    if (b <= 0) return;
+    ctx.save(); ctx.translate(x, y);
+    for (var i = 0; i < 8; i++) { var a = i * Math.PI / 4; ctx.fillStyle = P.bloom; ctx.beginPath(); ctx.ellipse(Math.cos(a) * R * 0.62 * b, -R * 0.4 + Math.sin(a) * R * 0.45 * b, Math.max(0.1, R * 0.5 * b), Math.max(0.1, R * 0.24 * b), a, 0, 7); ctx.fill(); }
+    ctx.fillStyle = P.bloomC; ctx.beginPath(); ctx.arc(0, -R * 0.4, Math.max(0.1, R * 0.28 * b), 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- 실패 연출·해설 그림 ---------- */
+  function drawWedge(ctx, P, x, y, theta, phi, len, dir) {
+    var a1 = cv(theta), a2 = cv(phi); if (dir < 0) { a1 += Math.PI; a2 += Math.PI; }
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.fillStyle = P.warnFill; ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, len, Math.min(a1, a2), Math.max(a1, a2)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = P.warn; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, len * 0.8, Math.min(a1, a2), Math.max(a1, a2)); ctx.stroke();
+    ctx.strokeStyle = P.guide; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a1) * len, y + Math.sin(a1) * len); ctx.stroke();
+    ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a2) * len, y + Math.sin(a2) * len); ctx.stroke();
+    ctx.strokeStyle = P.knife; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    var am = (a1 + a2) / 2; return [x + Math.cos(am) * len * 1.05, y + Math.sin(am) * len * 1.05];
+  }
+  function drawRing(ctx, P, x, y, R) { ctx.save(); ctx.strokeStyle = P.warn; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke(); ctx.globalAlpha *= 0.35; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(x, y, R + 6, 0, 7); ctx.stroke(); ctx.restore(); }
+  function drawCheck(ctx, P, x, y, s) { ctx.save(); ctx.strokeStyle = P.ok; ctx.lineWidth = Math.max(3, s * 0.18); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(x - s * 0.4, y); ctx.lineTo(x - s * 0.1, y + s * 0.3); ctx.lineTo(x + s * 0.45, y - s * 0.35); ctx.stroke(); ctx.restore(); }
+  function drawCross(ctx, P, x, y, s) { ctx.save(); ctx.strokeStyle = P.warn; ctx.lineWidth = Math.max(3, s * 0.18); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - s / 2, y - s / 2); ctx.lineTo(x + s / 2, y + s / 2); ctx.moveTo(x + s / 2, y - s / 2); ctx.lineTo(x - s / 2, y + s / 2); ctx.stroke(); ctx.restore(); }
+  function drawClockRing(ctx, P, x, y, R) {
+    ctx.save(); ctx.strokeStyle = P.muted; ctx.lineWidth = Math.max(3, R * 0.3); ctx.globalAlpha *= 0.35; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke();
+    ctx.globalAlpha /= 0.35; ctx.strokeStyle = P.warn; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - R * 0.7); ctx.stroke(); ctx.restore();
+  }
+  function drawPiece(ctx, P, x, y, rot, r, len, bRel, opt) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); if (opt && opt.sy) ctx.scale(1, opt.sy);
+    opt = opt || {}; if (opt.dome == null) opt.dome = true; drawSeg(ctx, P, r, len, bRel, 0, opt);
+    ctx.restore();
+  }
+  function drawMushPiece(ctx, P, x, y, rot, r, len, k, bRel) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(1 + 0.1 * k, 1 - 0.14 * k);
+    drawSeg(ctx, P, r, len, bRel || 0, 0, { dome: true, color: mixHex(P.body, P.mush, 0.25 * k) });
+    segPath(ctx, r, len, bRel || 0, 0, true); ctx.save(); ctx.clip();
+    var g = ctx.createLinearGradient(0, 0, 0, -len); g.addColorStop(0, P.rot); g.addColorStop(clamp(k * 0.7, 0.05, 1), P.rot); g.addColorStop(clamp(k * 0.7 + 0.15, 0.1, 1), 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(-r - 4, -len - r, r * 2 + 8, len + r * 2 + 4);
+    ctx.strokeStyle = P.rotHatch; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+    for (var hx = -r * 2; hx < r * 2; hx += 7) { ctx.beginPath(); ctx.moveTo(hx, 2); ctx.lineTo(hx + len * k * 0.6, -len * k * 0.6); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle = P.rotSpot; [-0.4, 0.3].forEach(function (u, i) { ctx.beginPath(); ctx.ellipse(u * r, 7 + i * 6 * k, 3, 4.5, 0, 0, 7); ctx.fill(); });
+    ctx.restore();
+  }
+  // 어긋남 해설: 두 선을 같은 중심에 겹쳐 확대. t 0..1 = 정답 쪽으로 회전. 반환 = 쐐기 안 숫자 자리
+  function drawExplainMiss(ctx, P, W, H, theta, phi, t, still) {
+    var cx = W / 2, cy = H * 0.5, len = Math.min(W * 0.42, H * 0.8);
+    var cur = lerp(phi, theta, t || 0);
+    ctx.save(); ctx.lineCap = 'round';
+    var a1 = cv(theta), a2 = cv(cur), aP = cv(phi), lo = Math.min(a1, aP), hi = Math.max(a1, aP), lo2 = Math.min(a1, a2), hi2 = Math.max(a1, a2);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(a1); ctx.fillStyle = P.body; ctx.strokeStyle = P.edge; ctx.lineWidth = 2; ctx.beginPath(); ctx.rect(-len * 0.3, 0, len * 0.6, H * 0.45); ctx.fill(); ctx.stroke(); ctx.restore();
+    [0, Math.PI].forEach(function (o) { ctx.fillStyle = P.warnFill; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, len, lo2 + o, hi2 + o); ctx.closePath(); ctx.fill(); });
+    ctx.strokeStyle = P.guideGlow; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(cx - Math.cos(a1) * len, cy - Math.sin(a1) * len); ctx.lineTo(cx + Math.cos(a1) * len, cy + Math.sin(a1) * len); ctx.stroke();
+    ctx.strokeStyle = P.guide; ctx.lineWidth = 3.5; ctx.stroke();
+    if (still) { ctx.strokeStyle = P.ok; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.moveTo(cx - Math.cos(a1) * len * 0.9, cy - Math.sin(a1) * len * 0.9 - 10); ctx.lineTo(cx + Math.cos(a1) * len * 0.9, cy + Math.sin(a1) * len * 0.9 - 10); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(cx - Math.cos(a2) * len, cy - Math.sin(a2) * len); ctx.lineTo(cx + Math.cos(a2) * len, cy + Math.sin(a2) * len); ctx.stroke();
+    ctx.strokeStyle = t >= 1 ? P.perfect : P.knife; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.save(); ctx.translate(cx - Math.cos(a2) * len, cy - Math.sin(a2) * len); ctx.rotate(a2); ctx.fillStyle = P.blade; ctx.strokeStyle = P.bladeEdge; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-26, 0); ctx.lineTo(-26, -9); ctx.lineTo(-4, -9); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = P.handle; ctx.fillRect(-44, -10, 18, 12); ctx.restore();
+    ctx.fillStyle = P.knife; ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 7); ctx.fill();
+    if (t >= 1 || still) drawCheck(ctx, P, cx + len * 0.75, cy - H * 0.3, 26);
+    ctx.restore();
+    var am = (lo + hi) / 2, side = Math.cos(am) < 0 ? Math.PI : 0;
+    return [cx + Math.cos(am + side) * len * 0.72, cy + Math.sin(am + side) * len * 0.72];
+  }
+  // 무름 해설: 접수 아랫부분 확대. 반환 = { deep:[x,y](깊이 숫자 자리), ghostY }
+  function drawExplainRot(ctx, P, W, H, u, alpha, phi, B, brownSegFn) {
+    var m = H / 64, cx = W / 2, ky = H * 0.45;
+    var L2 = { Kx: cx, Ky: ky, mm: m, r: 18 * m };
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+    drawScion(ctx, P, L2, { u: u, alpha: alpha, B: B }, { noClamp: true });
+    var info = brownSegFn(u, alpha, phi), a = cv(phi), c = Math.cos(a), s = Math.sin(a), half = 30 * m;
+    ctx.lineCap = 'round';
+    if (u > 0 && info.s >= u) {
+      var pa = cv(alpha); ctx.strokeStyle = P.muted; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(cx - Math.cos(pa) * half, ky - Math.sin(pa) * half); ctx.lineTo(cx + Math.cos(pa) * half, ky + Math.sin(pa) * half); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      var dir = info.seg && info.seg[0] < 0 && Math.abs(info.seg[0]) > Math.abs(info.seg[1]) ? -1 : 1, a1 = pa + (dir < 0 ? Math.PI : 0), a2 = a + (dir < 0 ? Math.PI : 0);
+      ctx.fillStyle = P.warnFill; ctx.beginPath(); ctx.moveTo(cx, ky); ctx.arc(cx, ky, half * 0.75, Math.min(a1, a2), Math.max(a1, a2)); ctx.closePath(); ctx.fill();
+    }
+    // 유령 칼선: 축을 따라 (s − u) + 2mm 위로 = 갈색에서 벗어나는 자리
+    var lift = (Math.max(0, info.s - u) + 2) * m, pa2 = cv(alpha);
+    var gx = cx + Math.sin(pa2) * lift, gy = ky - Math.cos(pa2) * lift;
+    ctx.strokeStyle = P.ok; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.moveTo(gx - c * half, gy - s * half); ctx.lineTo(gx + c * half, gy + s * half); ctx.stroke(); ctx.setLineDash([]);
+    drawCheck(ctx, P, gx + c * half + 14, gy + s * half - 6, 18);
+    ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(cx - c * half, ky - s * half); ctx.lineTo(cx + c * half, ky + s * half); ctx.stroke();
+    ctx.strokeStyle = P.knife; ctx.lineWidth = 3; ctx.stroke();
+    var deep = [cx, ky];
+    if (info.seg) {
+      var b0 = info.seg[0], b1 = info.seg[1]; if (Math.abs(b1 - b0) < 0.8) { b0 -= 0.4; b1 += 0.4; }
+      ctx.strokeStyle = P.warn; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(cx + c * b0 * m, ky + s * b0 * m); ctx.lineTo(cx + c * b1 * m, ky + s * b1 * m); ctx.stroke();
+      var dx = Math.abs(info.seg[0]) > Math.abs(info.seg[1]) ? info.seg[0] : info.seg[1]; deep = [cx + c * dx * m, ky + s * dx * m];
+    }
+    ctx.restore();
+    return { deep: deep, ghost: [gx, gy], lift: lift / m };
+  }
+  function drawExplainWither(ctx, P, W, H, cutK) {
+    var L2 = { Kx: W * 0.62, Ky: H * 0.62, mm: H / 120, r: 18 * H / 120 };
+    drawScion(ctx, P, L2, { u: 30, alpha: 0, B: 30, fade: 1, droop: 1 }, { noRod: true });
+    var cx = W * 0.2, cy = H * 0.45, R = Math.min(W, H) * 0.14;
+    drawClockRing(ctx, P, cx, cy, R);
+    if (cutK > 0) {   // 떼는 순간 칼선 + 흰 베임선 번쩍
+      ctx.save(); ctx.globalAlpha = cutK; ctx.lineCap = 'round';
+      ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(L2.Kx - L2.r * 2, L2.Ky); ctx.lineTo(L2.Kx + L2.r * 2, L2.Ky); ctx.stroke();
+      ctx.strokeStyle = P.knife; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = P.perfectCore; ctx.lineWidth = 3; ctx.globalAlpha = cutK * 0.9; ctx.beginPath(); ctx.moveTo(L2.Kx - L2.r, L2.Ky - 2); ctx.lineTo(L2.Kx + L2.r, L2.Ky - 2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  function drawCrumbs(ctx, P, list, now) {
+    ctx.save(); ctx.fillStyle = P.crumb;
+    list.forEach(function (c) { var k = (now - c.at) / 0.3; if (k < 0 || k > 1) return; var t = now - c.at; ctx.globalAlpha = 1 - k; ctx.beginPath(); ctx.arc(c.x + c.vx * t, c.y + c.vy * t + 800 * t * t, c.r, 0, 7); ctx.fill(); });
+    ctx.restore();
+  }
+
+  return {
+    PAL: PAL, layout: layout, cv: cv, clamp: clamp, lerp: lerp, mixHex: mixHex, hash: hash, rr: rr, EASE: EASE, BASE_MM: BASE_MM, GREEN: GREEN,
+    skyFor: skyFor, drawSky: drawSky, drawSeg: drawSeg, drawSeam: drawSeam, drawPot: drawPot, drawTower: drawTower, drawFace: drawFace, drawAnswer: drawAnswer,
+    drawScion: drawScion, drawClampOnly: drawClampOnly, drawKnife: drawKnife, drawGainBracket: drawGainBracket, drawKTicks: drawKTicks, drawLevel: drawLevel,
+    drawRuler: drawRuler, drawZone: drawZone, drawDrag: drawDrag, drawFinger: drawFinger, drawFlower: drawFlower, drawWedge: drawWedge, drawRing: drawRing,
+    drawCheck: drawCheck, drawCross: drawCross, drawClockRing: drawClockRing, drawPiece: drawPiece, drawMushPiece: drawMushPiece,
+    drawExplainMiss: drawExplainMiss, drawExplainRot: drawExplainRot, drawExplainWither: drawExplainWither, drawCrumbs: drawCrumbs
+  };
+})();
+</script>
+<script>
+/* ===== 장면: 엔진 상태(run, ctl, 게임 시각) → 한 프레임. 게임과 시작 화면 데모가 같이 씀 ===== */
+var Scene = (function () {
+  'use strict';
+  var Dr = Draw, E = Engine, cv = Dr.cv, clamp = Dr.clamp, lerp = Dr.lerp, EZ = Dr.EASE;
+  function isSucc(r) { return r && (r.kind === 'perfect' || r.kind === 'good'); }
+
+  // 탑 모델: 붙은 마디 + 각 윗면 각도(축 기준) + 둥근 머리 여부
+  function towerModel(run, tg, vis) {
+    var ph = run.phase, cur = run.cur, seg = run.seg;
+    var hideCur = cur && (ph === 'fall' || ph === 'judge');
+    var trimmed = !(ph === 'pre' && tg - run.pt < 0.18) || (seg === 1 && vis.skipTrim1);
+    if (seg === 0) trimmed = tg - run.pt >= 0.18;
+    var att = [];
+    run.results.forEach(function (r) { if (isSucc(r) && !(hideCur && r === cur)) att.push(r); });
+    var segs = [], Hvis = 0;
+    for (var i = 0; i < att.length; i++) {
+      var r = att[i], nx = att[i + 1], rel = 0, dome = false;
+      if (nx) rel = run.faces[nx.seg - 1].d;
+      else if (seg > r.seg && trimmed) rel = run.d;
+      else dome = true;
+      var len = r.added + r.bonus, bud = r.bonus > 0;
+      if (bud && cur === r && ph === 'grow') bud = Math.max(0.01, EZ.pop((tg - run.pt) / 0.26));
+      segs.push({ len: len, rel: rel, kind: r.kind, bud: bud, dome: dome, rec: r });
+      Hvis += len;
+    }
+    var baseRel = 0, baseDome = false;
+    if (att.length) baseRel = run.faces[att[0].seg - 1].d;
+    else if (seg >= 1) { if (trimmed) baseRel = run.d; else baseDome = run.results.length === 0; if (!trimmed && run.results.length) baseRel = run.faces[Math.max(0, seg - 2)].d; }
+    else { baseRel = run.faces[0].d; baseDome = !trimmed; }
+    var topRel = segs.length ? segs[segs.length - 1].rel : baseRel, topDome = segs.length ? segs[segs.length - 1].dome : baseDome;
+    return { segs: segs, baseRel: baseRel, baseDome: baseDome, Hvis: Hvis, topRel: topRel, topDome: topDome };
+  }
+
+  // o: { reduced, real(초), hints:{ghost, parallel, pulseA, brownPulse, brownX, brownX2}, finger:{...}|null, demoFinger, zoneOff }
+  function draw(ctx, P, L, run, ctl, tg, vis, o) {
+    var rm = !!o.reduced, real = o.real || 0, ph = run.phase, cur = run.cur, seg = run.seg, m = L.mm, r = L.r;
+    var out = { tag: null, float: null, bud: null };
+    var ending = ph === 'ending' || ph === 'result';
+    var endK = ph === 'ending' ? tg - run.pt : ph === 'result' ? 99 : -1;
+    var zoneA = ending ? (rm ? 0 : clamp(1 - endK / 0.3, 0, 1)) : 1;
+    ctx.clearRect(0, 0, L.SW, L.SH);
+    // 하늘 (무대 전체)
+    Dr.drawSky(ctx, P, L, vis.skyCm || 0, L.SW, L.SH);
+    var full = zoneA < 1, sw = full ? L.SW : L.scene.w, sh = full ? L.SH : L.scene.h;
+    ctx.save(); ctx.beginPath(); ctx.rect(L.scene.x, L.scene.y, sw, sh); ctx.clip();
+
+    var tm = towerModel(run, tg, vis);
+    var tiltD = run.tilt, camShift = 0, k;
+    if (cur && (ph === 'fall' || ph === 'judge' || ph === 'explain' || ph === 'prep')) tiltD = cur.tiltBefore;
+    else if (cur && ph === 'grow') {
+      k = (tg - run.pt) / (rm ? 0.15 : 0.35); var e = rm ? clamp(k, 0, 1) : EZ.inOut(k);
+      tiltD = lerp(cur.tiltBefore, cur.tiltAfter, e);
+      if (isSucc(cur)) camShift = -(cur.added + cur.bonus) * m * (1 - e);
+    }
+    var tower = { tilt: tiltD, segs: tm.segs, baseRel: tm.baseRel, baseDome: tm.baseDome };
+    var topt = { camShift: camShift, clipH: sh };
+    var tilt0 = run.tilt, Hpx = (Dr.BASE_MM + tm.Hvis) * m, potH = r * 2.3, flowerB = 0, endInfo = null;
+    if (ending) {
+      var fin = run.end === 'finish', sign = tilt0 >= 0 ? 1 : -1, scF, bxF, byF;
+      if (fin) { scF = Math.min(1, 0.88 * L.SH / (Hpx + potH + r * 3.6)); bxF = L.SW / 2; }
+      else { scF = Math.min(1, 0.88 * L.SH / (Hpx + potH), 0.78 * L.SW / Hpx); bxF = sign > 0 ? L.SW * 0.84 : L.SW * 0.16; }
+      byF = L.SH - 14 - potH * scF;
+      var t0r = cv(tilt0), bx0 = L.Kx - Math.sin(t0r) * Hpx, by0 = L.Sy + Math.cos(t0r) * Hpx;
+      var zk = rm ? 1 : fin ? EZ.inOut((endK - 0.3) / 1.2) : EZ.inOut(endK / 0.6);
+      var tA = tilt0;
+      if (!fin) {
+        if (rm) tA = endK >= 0.3 ? sign * 75 : tilt0;
+        else if (run.end === 'fails') { if (endK < 0.4) tA = tilt0 + Math.sin(endK / 0.2 * 2 * Math.PI) * 2; else tA = lerp(tilt0, sign * 75, EZ.acc((endK - 0.4) / 0.8)); }
+        else tA = lerp(tilt0, sign * 75, Math.pow(clamp(endK / 1.2, 0, 1), 2.2));
+      }
+      tower.tilt = tA;
+      topt = { bx: lerp(bx0, bxF, zk), by: lerp(by0, byF, zk), scale: lerp(1, scF, zk) };
+      flowerB = fin ? (rm ? (endK > 0 ? 1 : 0) : EZ.pop(endK / 0.7)) : 0;
+      endInfo = { fin: fin, sc: topt.scale };
+    }
+    // 모래 땅
+    var potBottomGuess = ending ? topt.by + potH * topt.scale : (L.Sy + camShift + (Dr.BASE_MM + tm.Hvis) * m + potH);
+    if (potBottomGuess < L.SH + 20) { ctx.fillStyle = P.sand; ctx.fillRect(0, potBottomGuess - r * 0.5 * (topt.scale || 1), L.SW, L.SH); ctx.fillStyle = P.dune; ctx.globalAlpha = 0.5; ctx.fillRect(0, potBottomGuess - r * 0.5 * (topt.scale || 1), L.SW, 2); ctx.globalAlpha = 1; }
+    var T = Dr.drawTower(ctx, P, L, tower, topt);
+    if (ending) {
+      if (flowerB > 0) {
+        var fr = r * T.r / r * 1.8;
+        if (!rm && endK < 0.9) { var gk = clamp(endK / 0.6, 0, 1); ctx.save(); ctx.strokeStyle = P.perfect; ctx.globalAlpha = 0.5 * (1 - gk); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(T.topX, T.topY - fr * 0.4, fr * 2 * gk + 1, 0, 7); ctx.stroke(); ctx.restore(); }
+        Dr.drawFlower(ctx, P, T.topX, T.topY, fr, flowerB);
+      }
+      if (!endInfo.fin && !rm && endK > 0.9 && endK < 1.25) {
+        var dk = (endK - 0.9) / 0.35; ctx.save(); ctx.fillStyle = P.dune; ctx.globalAlpha = 0.5 * (1 - dk);
+        for (var q = 0; q < 3; q++) { ctx.beginPath(); ctx.arc(T.topX + (q - 1) * T.r * 1.6, T.topY, T.r * (0.6 + dk * 1.2), 0, 7); ctx.fill(); }
+        ctx.restore();
+      }
+      ctx.restore();
+      if (zoneA > 0) Dr.drawZone(ctx, P, L, null, zoneA);
+      return out;
+    }
+    // 수평계 (화분 앞, 화분이 사라지면 왼쪽 아래 구석)
+    var lvY = T.by + r * 1.9;
+    if (lvY < L.scene.h - 4) Dr.drawLevel(ctx, P, T.bx, lvY, L.levelR, tiltD);
+    else Dr.drawLevel(ctx, P, L.levelX, L.scene.h - 12, L.levelR, tiltD);
+    // 눈금자 (0 = 시작 대목 윗면)
+    var topY = L.Sy + camShift, zeroY = topY + tm.Hvis * m;
+    Dr.drawRuler(ctx, P, L, zeroY, tm.Hvis / 10, m * 10);
+    // 대목 면
+    var faceTheta = tiltD + tm.topRel;
+    var showFace = !tm.topDome && !(ph === 'ready' && tg - run.pt < 0.18);
+    if (showFace) {
+      var pulse = 0.7, tTrim = (ph === 'pre' || (ph === 'ready')) ? tg - run.pt : 9;
+      if (seg === 1 && vis.skipTrim1 && ph === 'pre') tTrim = 9;
+      if (tTrim < 0.3) pulse = 0; else if (tTrim < 0.42) pulse = (tTrim - 0.3) / 0.12; else if (tTrim < 0.72) pulse = 1 - 0.3 * (tTrim - 0.42) / 0.3;
+      var par = !!(o.hints && o.hints.parallel);
+      if (par) pulse = rm ? 1 : 0.85 + 0.15 * Math.sin(real * 2 * Math.PI / 0.6);
+      Dr.drawFace(ctx, P, L, T.topX, T.topY, faceTheta, { pulse: pulse, parallel: par, blur: 12 + 2 * Math.sin(real * 2 * Math.PI / 0.6) });
+    }
+    // 면 다듬기: 정원 칼이 스치고 부스러기
+    if ((ph === 'pre' || ph === 'ready') && !(seg === 1 && vis.skipTrim1 && ph === 'pre')) {
+      var tk = (tg - run.pt) / 0.2;
+      if (tk >= 0 && tk <= 1.05) {
+        var th0 = ph === 'ready' ? run.faces[0].d : run.theta, a0 = cv(th0), cs0 = Math.cos(a0), sn0 = Math.sin(a0), ex = EZ.inOut(tk);
+        var gx = T.topX + cs0 * r * lerp(-1.6, 1.6, ex), gy = T.topY + sn0 * r * lerp(-1.6, 1.6, ex);
+        ctx.save(); ctx.translate(gx, gy); ctx.rotate(a0); ctx.fillStyle = P.blade; ctx.strokeStyle = P.bladeEdge; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(-r, 0); ctx.lineTo(-r, -r * 0.3); ctx.lineTo(r - r * 0.3, -r * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+      }
+    }
+    if (vis.crumbs && vis.crumbs.length && !rm) Dr.drawCrumbs(ctx, P, vis.crumbs, tg);
+    // 정답 점선
+    if (o.hints && o.hints.ghost && (ph === 'pre' || ph === 'aim')) Dr.drawAnswer(ctx, P, L, run.theta);
+    // 접수 + 칼
+    var sc = null, kn = null, brown = null;
+    if (ph === 'pre') {
+      var ek = (tg - run.pt) / 0.45, ee = 1 - Math.pow(1 - clamp(ek, 0, 1), 3);
+      sc = { u: run.row.uMid + run.row.uAmp, alpha: 0, B: run.row.B, pulse: o.hints && o.hints.brownPulse || 0 };
+      Dr.drawScion(ctx, P, L, sc, { yOff: -(1 - ee) * (L.Ky + 100 * m) });
+    } else if (ph === 'aim') {
+      var tau = tg - run.aimStart, s0 = run.scionAt(tau);
+      sc = { u: s0.u, alpha: s0.alpha, B: run.row.B, fade: clamp(tau / run.row.L, 0, 1), droop: clamp(tau - (run.row.L - 1), 0, 1), pulse: o.hints && o.hints.brownPulse || 0 };
+      Dr.drawScion(ctx, P, L, sc, {});
+    }
+    if (sc && o.hints && o.hints.brownX) {   // 4마디: 갈색 위 ✕
+      var bc = sc.u + sc.B / 2, aa = cv(sc.alpha), yOffX = ph === 'pre' ? -(1 - (1 - Math.pow(1 - clamp((tg - run.pt) / 0.45, 0, 1), 3))) * (L.Ky + 100 * m) : 0;
+      ctx.save(); ctx.globalAlpha = o.hints.brownX; Dr.drawCross(ctx, P, L.Kx - Math.sin(aa) * bc * m, L.Ky + yOffX + Math.cos(aa) * bc * m, 20); ctx.restore();
+    }
+    var showKnife = ph === 'pre' || ph === 'aim' || ph === 'judge' || ph === 'grow' || ph === 'prep' || ph === 'ready' || (ph === 'fall' && cur && cur.kind === 'wither');
+    if (showKnife) {
+      var phi = ctl.knifeAt(tg), armed = ctl.armedAt(tg);
+      if (ph === 'aim' && sc) { var bs = E.brownSeg(sc.u, sc.alpha, phi); brown = bs.seg; Dr.drawGainBracket(ctx, P, L, sc, !!brown); }
+      kn = Dr.drawKnife(ctx, P, L, { phi: phi, armed: armed, dim: ph !== 'aim', parallel: !!(o.hints && o.hints.parallel), pulse: rm ? 1 : 0.7 + 0.3 * Math.sin(real * 2 * Math.PI / 0.6), brown: brown });
+      if (brown && o.hints && o.hints.brownX2) {
+        var bx = Math.abs(brown[0]) > Math.abs(brown[1]) ? brown[0] : brown[1], ka = cv(phi);
+        ctx.save(); ctx.globalAlpha = o.hints.brownX2; Dr.drawCross(ctx, P, L.Kx + Math.cos(ka) * bx * m, L.Ky + Math.sin(ka) * bx * m + 14, 14); ctx.restore();
+      }
+    }
+    Dr.drawKTicks(ctx, P, L);
+    // 자른 뒤 연출
+    if (cur && (ph === 'fall' || ph === 'judge' || ph === 'grow' || ph === 'explain' || ph === 'prep')) drawAfter(ctx, P, L, run, cur, tg, T, tiltD, rm, out);
+    ctx.restore();
+    // 끄는 곳
+    Dr.drawZone(ctx, P, L, null, zoneA);
+    if (o.readyZone) { ctx.save(); ctx.fillStyle = P.sand; ctx.globalAlpha = 0.45; Dr.rr(ctx, L.zone.x, L.zone.y, L.zone.w, L.zone.h, 16); ctx.fill(); ctx.restore(); }
+    // 누른 물결
+    if (vis.ripple && !rm) { var rk = (real - vis.ripple.at) / 0.24; if (rk >= 0 && rk < 1) { ctx.save(); ctx.strokeStyle = P.zoneInk; ctx.globalAlpha = 0.35 * (1 - rk); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(vis.ripple.x, vis.ripple.y, 48 * EZ.out(rk), 0, 7); ctx.stroke(); ctx.restore(); } }
+    if (ctl.dragging) {
+      var Ep = ctl.refPoint(tg) || ctl.S;
+      Dr.drawDrag(ctx, P, { x0: ctl.S.x, y0: ctl.S.y, x1: Ep.x, y1: Ep.y, armed: ctl.armedAt(tg) });
+    }
+    if (o.finger) drawFingerHint(ctx, P, L, o.finger, real, rm);
+    if (o.demoFinger && o.demoFinger.a > 0) Dr.drawFinger(ctx, P, o.demoFinger.x, o.demoFinger.y, o.demoFinger.a, o.demoFinger.pressed, o.demoFinger.sc || 0.75);
+    return out;
+  }
+
+  function drawAfter(ctx, P, L, run, cur, tg, T, tiltD, rm, out) {
+    var m = L.mm, r = L.r, tc = tg - cur.t, tj = tc - 0.25, kind = cur.kind;
+    var Kx = L.Kx, Ky = L.Ky, topX = T.topX, topY = T.topY;
+    if (kind === 'wither') {
+      var tw = tc;
+      if (tw < 0.62) {
+        var op = clamp(tw / 0.12, 0, 1), fy = tw > 0.12 ? 0.5 * 1800 * (tw - 0.12) * (tw - 0.12) : 0;
+        Dr.drawScion(ctx, P, L, { u: cur.u, alpha: cur.alpha, B: cur.B, fade: 1, droop: 1 }, { noClamp: tw > 0.12, yOff: fy, rot: tw > 0.12 ? 0.6 * (tw - 0.12) : 0, alpha: rm ? 1 - clamp((tw - 0.12) / 0.3, 0, 1) : 1, open: op });
+        if (tw > 0.12) Dr.drawClampOnly(ctx, P, L, (cur.u - 80) * m, 1);
+      } else if (tw < 1.2) Dr.drawClampOnly(ctx, P, L, (cur.u - 80) * m - (tw - 0.62) * 900, 1 - (tw - 0.62) * 2);
+      if (tw < 1.1) { out.tag = { x: Kx + r * 1.4, y: Ky - 30, kind: 'wither', a: clamp(tw / 0.12, 0, 1) * (tw > 0.9 ? (1.1 - tw) / 0.2 : 1) }; Dr.drawClockRing(ctx, P, Kx, Ky, 16); }
+      return;
+    }
+    var h = (Dr.GREEN - cur.u) * m;
+    // 아래 토막 (오른쪽 아래로 회전하며 떨어짐)
+    if (tc < 0.45) {
+      var ts = tc, sx = rm ? 0 : 160 * ts, sy = rm ? 0 : 0.5 * 1600 * ts * ts, srt = rm ? 0 : 50 * Math.PI / 180 * clamp(ts / 0.4, 0, 1);
+      Dr.drawScion(ctx, P, L, { u: Math.max(0, cur.u), alpha: cur.alpha, B: cur.B + Math.min(0, cur.u) }, { stub: true, xOff: sx, yOff: sy, rot: srt, alpha: rm ? 1 - clamp(ts / 0.15, 0, 1) : 1 });
+    }
+    // 싹둑: 칼날이 미끄러지고 흰 베임선
+    if (tc < 0.32) {
+      var a = cv(cur.phi), c = Math.cos(a), s = Math.sin(a), half = 36 * m;
+      Dr.drawKnife(ctx, P, L, { phi: cur.phi, armed: true, bladeAt: clamp(tc / 0.12, 0, 1), alpha: tc < 0.12 ? 1 : 1 - (tc - 0.12) / 0.2 });
+      if (tc > 0.05) { ctx.save(); ctx.strokeStyle = P.perfectCore; ctx.lineWidth = 3; ctx.globalAlpha = clamp(1 - (tc - 0.12) / 0.2, 0, 1); ctx.beginPath(); ctx.moveTo(Kx - c * half, Ky - s * half); ctx.lineTo(Kx + c * half, Ky + s * half); ctx.stroke(); ctx.restore(); }
+    }
+    var dTh = cur.phi - cur.theta, b1 = cv(cur.theta - tiltD), tilted = kind === 'perfect' ? 0 : cv(dTh);
+    if (tj < 0) {   // 떨어지는 중 (K → 대목 면)
+      var fk = rm ? 1 : EZ.inn(tc / 0.25);
+      var px = lerp(Kx, topX, fk), py = lerp(Ky, topY, fk), rot = lerp(cv(cur.alpha), cv(tiltD) + tilted, fk), bb = lerp(cv(cur.phi - cur.alpha), b1, fk);
+      if (kind === 'rot') Dr.drawMushPiece(ctx, P, px, py, rot, r, h, 0, bb);
+      else Dr.drawPiece(ctx, P, px, py, rot, r, h, bb, { alpha: rm ? fk : 1 });
+      return;
+    }
+    if (kind === 'perfect') {
+      if (run.phase === 'judge' || run.phase === 'fall') {
+        var sq = rm ? 1 : 0.96 + 0.04 * EZ.pop(tj / 0.12);
+        ctx.save(); ctx.translate(topX, topY); ctx.rotate(cv(tiltD)); ctx.scale(1, sq);
+        Dr.drawSeg(ctx, P, r, h, b1, 0, { dome: true });
+        Dr.drawSeam(ctx, P, r, b1, 'perfect', rm ? (tj < 0.45 ? 1 : 0) : 1 - EZ.out(tj / 0.45));
+        ctx.restore();
+        out.float = { x: topX + r + 6, y: topY - h * 0.6 - 24 * EZ.out(tj / 1.1), a: tj < 0.9 ? 1 : 1 - (tj - 0.9) / 0.2, mm: cur.added, dim: false };
+        if (cur.bonus) out.bud = { x: topX + r + 6, y: topY - h * 0.6 + 8, a: 1, sc: rm ? 1 : EZ.pop(tj / 0.26) };
+      } else if (tj < 1.1) {
+        out.float = { x: topX + r + 6, y: topY - h * 0.6 - 24 * EZ.out(tj / 1.1), a: tj < 0.9 ? 1 : 1 - (tj - 0.9) / 0.2, mm: cur.added, dim: false };
+        if (cur.bonus) out.bud = { x: topX + r + 6, y: topY - h * 0.6 + 8, a: tj < 0.9 ? 1 : 1 - (tj - 0.9) / 0.2, sc: 1 };
+      }
+      return;
+    }
+    if (kind === 'good') {
+      if (run.phase === 'judge' || run.phase === 'fall') {
+        var lk = tj < 0.12 ? 0 : rm ? 1 : EZ.inOut((tj - 0.12) / 0.2), rotg = cv(tiltD) + tilted * (1 - lk);
+        var dk = clamp((tj - 0.15) / 0.25, 0, 1), len = lerp(h, cur.added * m, rm ? 1 : EZ.inOut((tj - 0.15) / 0.3));
+        ctx.save(); ctx.translate(topX, topY); ctx.rotate(rotg);
+        Dr.drawSeg(ctx, P, r, len, b1, 0, { dome: true, dryTip: dk });
+        Dr.drawSeam(ctx, P, r, b1, 'good', rm ? 0 : 1 - EZ.out(tj / 0.45), dTh > 0 ? -1 : 1);
+        ctx.restore();
+      }
+      if (tj < 1.1) out.float = { x: topX + r + 6, y: topY - cur.added * m * 0.6 - 24 * EZ.out(tj / 1.1), a: tj < 0.9 ? 1 : 1 - (tj - 0.9) / 0.2, mm: cur.added, dim: true };
+      return;
+    }
+    if (kind === 'miss') {
+      var dir = dTh > 0 ? -1 : 1;
+      if (tj < 0.8 && !rm) {
+        var sl = Math.max(0, tj - 0.15), mx = topX + dir * 260 * sl * sl * 4, my = topY + 0.5 * 1600 * Math.max(0, sl - 0.1) * Math.max(0, sl - 0.1);
+        Dr.drawPiece(ctx, P, mx, my, cv(tiltD) + tilted + dir * 2.4 * sl * sl * 3, r, h, b1, {});
+      } else if (rm && tj < 0.3) { ctx.save(); ctx.globalAlpha = 1 - tj / 0.3; Dr.drawPiece(ctx, P, topX, topY, cv(tiltD) + tilted, r, h, b1, {}); ctx.restore(); }
+      if (tj < 0.8) {
+        ctx.save(); ctx.globalAlpha = clamp(tj / 0.12, 0, 1);
+        var at = Dr.drawWedge(ctx, P, topX, topY, cur.theta, cur.phi, r * 4.2, 1);
+        ctx.restore();
+        out.tag = { x: at[0], y: at[1], kind: 'miss', a: clamp(tj / 0.12, 0, 1), e: cur.e };
+      }
+      return;
+    }
+    if (kind === 'rot') {
+      var mk = rm ? 1 : clamp(tj / 0.4, 0, 1), sl2 = Math.max(0, tj - 0.4);
+      if (tj < 0.85) { ctx.save(); if (rm && tj > 0.4) ctx.globalAlpha = Math.max(0, 1 - (tj - 0.4) / 0.3); Dr.drawMushPiece(ctx, P, topX + (rm ? 0 : 180 * sl2 * sl2 * 4), topY + (rm ? 0 : 0.5 * 1600 * sl2 * sl2), cv(tiltD) + (rm ? 0 : 1.5 * sl2), r, h, mk, b1); ctx.restore(); }
+      if (tj < 0.8) {
+        var info = E.brownSeg(cur.u, cur.alpha, cur.phi), ka = cv(cur.phi), kc = Math.cos(ka), ks = Math.sin(ka);
+        var ap = clamp(tj / 0.12, 0, 1);
+        ctx.save(); ctx.globalAlpha = ap * 0.85; ctx.lineCap = 'round';
+        ctx.strokeStyle = P.knifeHalo; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(Kx - kc * 36 * m, Ky - ks * 36 * m); ctx.lineTo(Kx + kc * 36 * m, Ky + ks * 36 * m); ctx.stroke();
+        ctx.strokeStyle = P.knife; ctx.lineWidth = 2.5; ctx.stroke();
+        var dx = 0;
+        if (info.seg) {
+          var s0 = info.seg[0], s1 = info.seg[1]; if (Math.abs(s1 - s0) < 0.8) { s0 -= 0.4; s1 += 0.4; }
+          ctx.strokeStyle = P.warn; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(Kx + kc * s0 * m, Ky + ks * s0 * m); ctx.lineTo(Kx + kc * s1 * m, Ky + ks * s1 * m); ctx.stroke();
+          dx = Math.abs(info.seg[0]) > Math.abs(info.seg[1]) ? info.seg[0] : info.seg[1];
+          if (Math.abs(info.seg[1] - info.seg[0]) > 30) dx = 0;
+        }
+        ctx.restore();
+        var rx = Kx + kc * dx * m, ry = Ky + ks * dx * m;
+        ctx.save(); ctx.globalAlpha = ap; Dr.drawRing(ctx, P, rx, ry, 13); ctx.restore();
+        out.tag = { x: rx + 22, y: ry + 14, kind: 'rot', a: ap, depth: Math.max(0, cur.s - cur.u) };
+      }
+    }
+  }
+
+  // 손가락 힌트: 누름 150 → 끌기 600(150px, dir 방향) → 뗌 150 → 쉼 500 (1.4초 반복). once면 한 번만
+  function fingerAt(L, f, real) {
+    var tt = real - f.at; if (tt < 0) return null;
+    if (f.once && tt > 1.4) return null;
+    var c = tt % 1.4, z = L.zone, x0 = z.x + z.w * 0.32, y0 = z.y + z.h * 0.55, a = f.dir * Math.PI / 180, len = Math.min(150, z.w * 0.55);
+    if (L.land) { x0 = z.x + z.w * 0.18; }
+    var dx = Math.cos(a) * len, dy = -Math.sin(a) * len, p = 0, pressed = false, alpha = 0.9, lift = 0;
+    if (c < 0.15) { p = 0; pressed = true; }
+    else if (c < 0.75) { p = Dr.EASE.inOut((c - 0.15) / 0.6); pressed = true; }
+    else if (c < 0.9) { p = 1; lift = 12 * (c - 0.75) / 0.15; alpha = 0.9 - 0.6 * (c - 0.75) / 0.15; }
+    else { p = 1; alpha = 0; }
+    return { x0: x0, y0: y0, x: x0 + dx * p, y: y0 + dy * p - lift, pressed: pressed, alpha: alpha, p: p, dx: dx, dy: dy };
+  }
+  function drawFingerHint(ctx, P, L, f, real, rm) {
+    var st = rm ? (function () { var z = L.zone, x0 = z.x + z.w * (L.land ? 0.18 : 0.32), y0 = z.y + z.h * 0.55, a = f.dir * Math.PI / 180, len = Math.min(150, z.w * 0.55); return { x0: x0, y0: y0, x: x0 + Math.cos(a) * len, y: y0 - Math.sin(a) * len, pressed: true, alpha: 0.9, p: 1 }; })() : fingerAt(L, f, real);
+    if (!st || st.alpha <= 0) return;
+    ctx.save(); ctx.globalAlpha = st.alpha * (f.fade == null ? 1 : f.fade);
+    if (st.p > 0.02) {
+      ctx.strokeStyle = P.zoneInk; ctx.globalAlpha *= 0.55; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(st.x0, st.y0); ctx.lineTo(st.x, st.y); ctx.stroke(); ctx.setLineDash([]);
+      var an = Math.atan2(st.y - st.y0, st.x - st.x0);
+      ctx.beginPath(); ctx.moveTo(st.x + Math.cos(an) * 6, st.y + Math.sin(an) * 6); ctx.lineTo(st.x + Math.cos(an + 2.5) * 8, st.y + Math.sin(an + 2.5) * 8); ctx.moveTo(st.x + Math.cos(an) * 6, st.y + Math.sin(an) * 6); ctx.lineTo(st.x + Math.cos(an - 2.5) * 8, st.y + Math.sin(an - 2.5) * 8); ctx.stroke();
+    }
+    ctx.restore();
+    Dr.drawFinger(ctx, P, st.x, st.y, st.alpha * (f.fade == null ? 1 : f.fade), st.pressed, 0.85);
+  }
+
+  return { draw: draw, towerModel: towerModel, fingerAt: fingerAt };
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var Dr = Draw, E = Engine, DUR = E.DUR;
+  var RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  var DARKQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
+  var FINE = window.matchMedia ? matchMedia('(hover: hover) and (pointer: fine)') : { matches: false };
+  function reduced() { return RM.matches; }
+  function now() { return performance.now(); }
+  var KEY = { best: 'cactus-graft-best', seen: 'cactus-graft-seen', explained: 'cactus-graft-explained', muted: 'cactus-graft-muted' };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function readBest() { var v = lsGet(KEY.best); if (v == null || !/^\d+$/.test(v)) return null; var n = parseInt(v, 10); return isFinite(n) ? n : null; }
+  function readExplained() { try { var v = JSON.parse(lsGet(KEY.explained)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; } }
+
+  // ---------- 팔레트 ----------
+  var P = Dr.PAL.light;
+  function isDark() { var a = document.documentElement.getAttribute('data-theme'); if (a === 'dark') return true; if (a === 'light') return false; return DARKQ.matches; }
+  function syncPalette() { P = isDark() ? Dr.PAL.dark : Dr.PAL.light; if (G.mode === 'result' && G.lastResult) paintResult(G.lastResult); }
+  if (DARKQ.addEventListener) DARKQ.addEventListener('change', syncPalette);
+
+  // ---------- 형식 ----------
+  function cmStr(mm) { return (Math.floor(mm + 1e-9) / 10).toFixed(1); }
+  function fmtAng(e) { return e < 1 ? (Math.round(e * 10) / 10).toFixed(1) : String(Math.round(e)); }
+  function fmtDepth(d) { return d <= 0.1 ? '0' : String(Math.round(d)); }
+  function fmt1(x) { return (Math.round(x * 10) / 10).toFixed(1); }
+  var KIND_KO = { perfect: '완벽', good: '좋음', miss: '어긋남', rot: '무름', wither: '말라 버림' };
+
+  // ---------- 상태 ----------
+  var G = {
+    mode: 'menu', run: null, ctl: null, vis: null, seed: 0,
+    clockOn: false, origin: 0, frozenT: 0, lastFrame: now(), stall: null, resumeAt: 0,
+    seen: lsGet(KEY.seen) === '1', lastResult: null, resultLockUntil: 0,
+    hint: { finger: null, segT: 0, idleShown: false, parallel: false, brownX2Until: -1, brownChecked: false },
+    explain: null, lastHText: '', droopSeg: 0, tiltBand: 0, segStartT: 0, prevPar: false
+  };
+  var L = null, dpr = 1, stage = $('stage'), cv = $('cv'), ctx = cv.getContext('2d');
+
+  // ---------- 레이아웃 ----------
+  function px(v) { return parseFloat(v) || 0; }
+  function layout() {
+    var vw = window.innerWidth, vh = window.innerHeight, root = document.documentElement.style, body = document.body;
+    root.setProperty('--app-h', vh + 'px');
+    body.classList.toggle('low', vh <= 520);
+    body.classList.add('ov-full');
+    var bs = getComputedStyle(body);
+    var W = vw - px(bs.paddingLeft) - px(bs.paddingRight), H = vh - px(bs.paddingTop) - px(bs.paddingBottom);
+    var TB = vh <= 520 ? 44 : 52, SW = Math.floor(Math.min(W, 1400)), SH = Math.max(160, Math.floor(H - TB - 8));
+    root.setProperty('--tb', TB + 'px'); root.setProperty('--sw', SW + 'px'); root.setProperty('--sh', SH + 'px');
+    body.classList.toggle('tb-720', SW < 720); body.classList.toggle('tb-480', SW < 480); body.classList.toggle('tb-360', SW < 360);
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(SW * dpr); cv.height = Math.round(SH * dpr);
+    L = Dr.layout(SW, SH);
+    var lowH = vh <= 520, dw;
+    if (lowH) dw = Math.max(180, Math.min(300, Math.floor((vh - 120) / 0.9), Math.floor((vw - 60) * 0.5)));
+    else dw = Math.max(200, Math.min(vw - 40, 520, Math.floor((vh - 270) / 0.9)));
+    root.setProperty('--dw', dw + 'px'); root.setProperty('--dh', Math.round(dw * 0.9) + 'px');
+    Demo.resize(dw);
+    if (G.mode === 'result' && G.lastResult) paintResult(G.lastResult);
+    draw();
+  }
+
+  // ---------- 시계 (게임 시각, 초) ----------
+  function gameNow() { return G.clockOn ? (now() - G.origin) / 1000 : G.frozenT; }
+  function freeze(t) { G.frozenT = t != null ? t : gameNow(); G.clockOn = false; }
+  function unfreeze() { G.origin = now() - G.frozenT * 1000; G.clockOn = true; G.lastFrame = now(); G.stall = null; }
+  function syncClock(tn) {
+    var gap = tn - G.lastFrame;
+    if (G.clockOn && gap > 250) { G.stall = { from: G.lastFrame, to: tn, o0: G.origin, k: 250 / gap }; G.origin += gap - 250; }
+    G.lastFrame = tn;
+  }
+  // 이벤트 timeStamp(ms) → 게임 시각(초). 긴 끊김 구간은 같은 비율로 옮기고, 현재보다 늦을 수 없음
+  function gameT(ts) {
+    if (!G.clockOn) return G.frozenT;
+    var tn = now(); if (tn - G.lastFrame > 250) syncClock(tn);
+    var t = (ts != null && ts > 0 ? ts : tn), tg, st = G.stall;
+    if (st && t < st.to) tg = t <= st.from ? t - st.o0 : (st.from - st.o0) + (t - st.from) * st.k; else tg = t - G.origin;
+    var cap = tn - G.origin; if (tg > cap) tg = cap;
+    return tg / 1000;
+  }
+
+  // ---------- 판 ----------
+  function randSeed() { try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0]; } catch (e) { return (Math.random() * 4294967296) >>> 0; } }
+  function newVis() { return { crumbs: [], skyCm: 0, skyFrom: 0, skyTo: 0, skyAt: -1e9, ripple: null, skipTrim1: true }; }
+  function startGame(opt) {
+    opt = opt || {};
+    G.seed = opt.seed != null ? opt.seed >>> 0 : randSeed();
+    var run = new E.Run({ seed: G.seed, hooks: runHooks(), explain: explainWanted });
+    var ctl = new E.Ctl(run, ctlHooks());
+    G.run = run; G.ctl = ctl; G.vis = newVis(); G.lastResult = null; G.explain = null;
+    G.hint = { finger: null, segT: 0, idleShown: false, parallel: false, brownX2Until: -1, brownChecked: false };
+    G.droopSeg = 0; G.tiltBand = 0; G.prevPar = false; G.lastHText = '';
+    ['ovStart', 'ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
+    $('explain').hidden = true; hideTags();
+    Demo.stop();
+    G.mode = 'run'; G.frozenT = 0; unfreeze();
+    makeCrumbs(0, run.faces[0].d);
+    Sound.play('trim');
+    updateTop(true);
+    live('시작');
+  }
+  function beginFromButton() { Sound.unlock(); Sound.play('button'); Sound.startAmbient(); startGame(); }
+  function makeCrumbs(t, theta) {
+    if (!L) return; var a = Dr.cv(theta), list = [];
+    for (var i = 0; i < 6; i++) { var sd = i % 2 ? 1 : -1; list.push({ at: t + 0.12 + i * 0.02, x: L.Kx + sd * L.r * (0.6 + 0.5 * Math.random()), y: L.Sy + Math.sin(a) * sd * L.r - 3, vx: sd * (60 + 90 * Math.random()), vy: -(80 + 120 * Math.random()), r: 1.5 + Math.random() }); }
+    G.vis.crumbs = list;
+  }
+  function explainWanted(kind) {
+    if (G.auto) return false;
+    var ex = readExplained(); if (ex[kind]) return false;
+    ex[kind] = 1; lsSet(KEY.explained, JSON.stringify(ex));
+    return true;
+  }
+  function runHooks() {
+    return {
+      segStart: function (run, t) {
+        G.ctl && G.ctl.segReset(t);
+        G.segStartT = t; G.hint.segT = t; G.hint.idleShown = false; G.hint.brownX2Until = -1; G.hint.brownChecked = false; G.droopSeg = 0;
+        var k = run.seg;
+        if (!G.seen && k <= 3 && !G.auto) G.hint.finger = { at: now() / 1000, dir: Math.round(run.theta), once: false, fade: 1 };
+        else G.hint.finger = null;
+        if (!(k === 1 && G.vis.skipTrim1)) { Sound.play('trim'); makeCrumbs(t, run.theta); }
+        Sound.play('scion');
+        updateTop(false);
+        cv.setAttribute('aria-label', k + '마디, 키 ' + Math.floor(run.mm() / 10) + '센티미터, 기울기 ' + Math.round(Math.abs(run.tilt)) + '도');
+      },
+      wither: function (run, rec) { rec.wasDragging = !!(G.ctl && G.ctl.dragging); rec.hadInput = G.ctl ? G.ctl.lastInputT >= G.segStartT - 1e-6 : false; Sound.aimEnd(); Sound.play('wither'); G.hint.finger = null; },
+      judge: function (run, rec) { onJudge(rec); },
+      grow: function (run, rec, t) {
+        if (rec && (rec.kind === 'perfect' || rec.kind === 'good')) { G.vis.skyFrom = G.vis.skyCm; G.vis.skyTo = run.H() / 10; G.vis.skyAt = t; pillGrow(); }
+        updateTop(false);
+      },
+      explain: function (run, rec, t) { openExplain(rec, t); },
+      ending: function (run, end) { onEnding(end); },
+      result: function () { showResult(); }
+    };
+  }
+  function ctlHooks() {
+    return {
+      blade: function () { Sound.play('blade'); },
+      cut: function () { Sound.aimEnd(); Sound.play('cut'); },
+      cancel: function (why) { Sound.aimEnd(); if (why === 'tap') { Sound.play('cancel'); onTapCancel(); } },
+      ignored: function () { Sound.aimEnd(); },
+      down: function () {}
+    };
+  }
+  function onJudge(rec) {
+    var k = rec.kind, run = G.run;
+    if (k === 'perfect') Sound.play('graft', { n: rec.seg, streak: rec.combo });
+    else if (k === 'good') Sound.play('good', { n: rec.seg });
+    else if (k === 'miss') Sound.play('miss');
+    else if (k === 'rot') Sound.play('rot');
+    if (k === 'miss' || k === 'rot' || k === 'wither') heartsLost();
+    var band = Math.abs(rec.tiltAfter) >= 9 ? 9 : Math.abs(rec.tiltAfter) >= 7 ? 7 : Math.abs(rec.tiltAfter) >= 5 ? 5 : 0;
+    if (band > G.tiltBand && rec.seg > 3 && !run.end) Sound.play('tilt', { deg: Math.abs(rec.tiltAfter) });
+    G.tiltBand = band;
+    live(k === 'perfect' ? '완벽, ' + fmt1(rec.added / 10) + '센티미터' : k === 'good' ? '좋음, ' + fmt1(rec.added / 10) + '센티미터'
+      : k === 'miss' ? '어긋남, ' + fmtAng(rec.e) + '도' : k === 'rot' ? '무름, 갈색에 ' + fmtDepth(rec.s - rec.u) + '밀리미터' : '말라 버림');
+  }
+  function onEnding(end) {
+    G.ctl.cancel(); G.hint.finger = null;
+    var lastFail = G.run.cur && G.run.cur.kind !== 'perfect' && G.run.cur.kind !== 'good';
+    setTimeout(function () { if (G.mode !== 'run') return; if (end === 'finish') Sound.play('bloom'); else Sound.play('collapse'); }, end === 'finish' ? 400 : lastFail ? 300 : 0);
+    Sound.stopAmbient();
+    if (end === 'finish') { pillGrow(); updateTop(false); }
+  }
+
+  // ---------- 상단 바 ----------
+  function updateTop(force) {
+    var run = G.run, mm = run ? run.mm() : 0, s = cmStr(mm);
+    var shownMm = run && run.phase !== 'ending' && run.phase !== 'result' ? shownHeight() : mm;
+    s = cmStr(shownMm);
+    if (s !== G.lastHText || force) { $('hNum').textContent = s; G.lastHText = s; $('hpill').setAttribute('aria-label', '키 ' + Math.floor(shownMm / 10) + '센티미터'); }
+    var seg = run ? Math.max(1, run.seg) : 1;
+    $('segNum').textContent = seg + '/30';
+    $('segChip').classList.toggle('learn', seg <= 3);
+    $('segChip').setAttribute('aria-label', seg + '마디');
+    var fails = run ? run.fails : 0;
+    if (force) Array.prototype.forEach.call($('hearts').children, function (h, i) { h.classList.toggle('lost', i >= 3 - fails); });
+    $('hearts').setAttribute('aria-label', '남은 기회 ' + Math.max(0, 3 - fails));
+  }
+  // 알약에 보이는 키: 판정 순간이 아니라 "자람" 시작에 바뀐다
+  function shownHeight() {
+    var run = G.run, cur = run.cur;
+    if (cur && (run.phase === 'fall' || run.phase === 'judge' || run.phase === 'explain' || run.phase === 'prep')) return Math.floor((run.Ht - Math.round(cur.added * 10) - cur.bonus * 10) / 10 + 1e-9);
+    return run.mm();
+  }
+  function pillGrow() { var p = $('hpill'); p.classList.add('grow'); clearTimeout(G.pillT); G.pillT = setTimeout(function () { p.classList.remove('grow'); }, 30); }
+  function heartsLost() {
+    var fails = G.run.fails, hs = $('hearts').children;
+    Array.prototype.forEach.call(hs, function (h, i) { var lost = i >= 3 - fails, was = h.classList.contains('lost'); h.classList.toggle('lost', lost); if (lost && !was && !reduced()) { h.classList.remove('hit'); void h.getBoundingClientRect(); h.classList.add('hit'); } });
+    $('hearts').setAttribute('aria-label', '남은 기회 ' + Math.max(0, 3 - fails));
+  }
+
+  // ---------- 입력 ----------
+  function canInput() {
+    var r = G.run; if (G.mode !== 'run' || !r) return false;
+    var p = r.phase; return p === 'pre' || p === 'aim' || p === 'fall' || p === 'judge' || p === 'grow';
+  }
+  function stageXY(cx, cy) { var b = stage.getBoundingClientRect(); return { x: cx - b.left, y: cy - b.top }; }
+  function dismissFinger() { var f = G.hint.finger; if (f && !f.once) G.hint.finger = null; }
+  function ptrDown(x, y, ts, pid) {
+    if (!canInput() || G.ctl.dragging) return false;
+    var t = gameT(ts);
+    G.run.advanceTo(t);
+    if (!canInput()) return false;
+    if (!G.ctl.down(x, y, t, pid)) return false;
+    dismissFinger();
+    G.vis.ripple = { x: x, y: y, at: now() / 1000 };
+    return true;
+  }
+  function ptrMove(x, y, ts, pid) { if (G.ctl && G.ctl.dragging) G.ctl.move(x, y, gameT(ts), pid); }
+  function ptrUp(x, y, ts, pid) {
+    if (!G.ctl || !G.ctl.dragging || G.ctl.pid !== pid) return null;
+    var t = gameT(ts), r = G.run;
+    if (r.phase === 'aim' && t < r.aimStart) t = r.aimStart;
+    G.ctl.update(Math.min(t, gameNow()));
+    return G.ctl.up(x, y, t, pid);
+  }
+  function ptrCancel(pid) { if (G.ctl && G.ctl.dragging && (pid == null || G.ctl.pid === pid)) G.ctl.cancel(); }
+  stage.addEventListener('pointerdown', function (e) {
+    if (e.target.closest && e.target.closest('button, a, .overlay, .explain')) return;
+    if (e.button != null && e.button > 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    Sound.unlock();
+    if (!canInput() || G.ctl.dragging) return;
+    var p = stageXY(e.clientX, e.clientY);
+    if (ptrDown(p.x, p.y, e.timeStamp, e.pointerId)) { try { stage.setPointerCapture(e.pointerId); } catch (err) {} }
+  }, { passive: false });
+  stage.addEventListener('pointermove', function (e) {
+    if (!G.ctl || !G.ctl.dragging || G.ctl.pid !== e.pointerId) return;
+    var list = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+    if (!list || !list.length) list = [e];
+    for (var i = 0; i < list.length; i++) { var p = stageXY(list[i].clientX, list[i].clientY); ptrMove(p.x, p.y, list[i].timeStamp || e.timeStamp, e.pointerId); }
+  });
+  stage.addEventListener('pointerup', function (e) {
+    Sound.unlock();
+    if (!G.ctl || !G.ctl.dragging || G.ctl.pid !== e.pointerId) return;
+    var p = stageXY(e.clientX, e.clientY); ptrUp(p.x, p.y, e.timeStamp, e.pointerId);
+  });
+  stage.addEventListener('pointercancel', function (e) { ptrCancel(e.pointerId); });
+  stage.addEventListener('lostpointercapture', function (e) { ptrCancel(e.pointerId); });
+  ['contextmenu', 'selectstart', 'dblclick', 'gesturestart', 'dragstart'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (!(e.target.closest && e.target.closest('a'))) e.preventDefault(); }, { passive: false });
+  });
+  stage.addEventListener('touchstart', function (e) { if (!(e.target.closest && e.target.closest('button, a, .overlay, .explain'))) e.preventDefault(); }, { passive: false });
+  window.addEventListener('pointerup', function () { Sound.unlock(); }, { passive: true });
+
+  function onTapCancel() {
+    if (G.seen || G.auto || !G.run || G.run.seg > 10) return;
+    G.hint.finger = { at: now() / 1000, dir: Math.round(G.run.theta), once: true, fade: 1 };
+  }
+  function keyDir(k) { return k === 'ArrowLeft' ? 1 : k === 'ArrowRight' ? -1 : 0; }
+  function keyInput(code, kind, ts) {
+    var t = gameT(ts);
+    if (code === 'Space') {
+      if (kind !== 'down' || !canInput()) return null;
+      G.run.advanceTo(t); if (!canInput()) return null;
+      dismissFinger();
+      var rec = G.ctl.space(t);
+      return rec;
+    }
+    var d = keyDir(code); if (!d) return null;
+    if (kind === 'down') { if (!canInput()) return null; G.run.advanceTo(t); dismissFinger(); G.ctl.keyDown(d, t); }
+    else if (G.ctl) G.ctl.keyUp(d, t);
+    return null;
+  }
+  function overlayOpen() { return !$('ovStart').hidden || !$('ovPause').hidden || !$('ovResult').hidden; }
+  document.addEventListener('keydown', function (e) {
+    if (window.Leaderboard && Leaderboard.isOpen && Leaderboard.isOpen()) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    Sound.unlock();
+    var k = e.key, isSpace = k === ' ' || e.code === 'Space', onBtn = e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A');
+    if ((k === 'm' || k === 'M') && !e.repeat) { toggleMute(); return; }
+    if (G.mode === 'explain') { if ((isSpace || k === 'Enter') && !e.repeat) { e.preventDefault(); closeExplain(); } else if (isSpace) e.preventDefault(); return; }
+    if (!$('ovPause').hidden) {
+      if ((k === 'Escape' || k === 'p' || k === 'P') && !e.repeat) { e.preventDefault(); Sound.play('button'); resumeGame(); }
+      else if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); Sound.play('button'); resumeGame(); }
+      return;
+    }
+    if (!$('ovStart').hidden) { if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); beginFromButton(); } return; }
+    if (!$('ovResult').hidden) {
+      if (k === 'Enter' && !onBtn && !e.repeat) { e.preventDefault(); again(); }
+      if (isSpace && now() < G.resultLockUntil) e.preventDefault();
+      return;
+    }
+    if (isSpace) { e.preventDefault(); if (!e.repeat) keyInput('Space', 'down', e.timeStamp); return; }
+    if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); if (!e.repeat) keyInput(k, 'down', e.timeStamp); return; }
+    if ((k === 'p' || k === 'P' || k === 'Escape') && !e.repeat) {
+      if (G.mode === 'run' || G.mode === 'resume') { e.preventDefault(); Sound.play('button'); pauseGame('key'); }
+    }
+  });
+  document.addEventListener('keyup', function (e) {
+    var k = e.key;
+    if (k === ' ' || e.code === 'Space') { if (!overlayOpen()) e.preventDefault(); return; }
+    if (k === 'ArrowLeft' || k === 'ArrowRight') keyInput(k, 'up', e.timeStamp);
+  });
+  window.addEventListener('blur', function () { pauseGame('blur'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame('hidden'); });
+  window.addEventListener('pagehide', function () { pauseGame('hidden'); });
+
+  // ---------- 일시정지 ----------
+  function pauseGame(reason) {
+    if (G.ctl) { if (G.ctl.dragging || G.ctl.hold) G.ctl.cancel(); }
+    if (G.mode === 'resume') { G.mode = 'paused'; showPause(reason); return; }
+    if (G.mode !== 'run' || !G.run) return;
+    var p = G.run.phase; if (p === 'ending' || p === 'result') return;
+    freeze(); G.mode = 'paused';
+    showPause(reason);
+  }
+  function showPause(reason) {
+    Sound.setPaused(true); Sound.aimEnd();
+    var run = G.run;
+    $('pH').textContent = cmStr(shownHeight());
+    $('pSeg').textContent = Math.max(1, run.seg) + '/30';
+    $('pHearts').innerHTML = $('hearts').innerHTML;
+    $('ovPause').hidden = false; $('ready').hidden = true; $('keys').hidden = true; hideTags();
+    draw();
+    setTimeout(function () { if (!$('ovPause').hidden && reason !== 'blur' && reason !== 'hidden') $('resumeBtn').focus({ preventScroll: true }); }, 0);
+  }
+  function resumeGame() {
+    if (G.mode !== 'paused') return;
+    $('ovPause').hidden = true;
+    Sound.setPaused(false);
+    G.mode = 'resume'; G.resumeAt = now() + 1000;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+
+  // ---------- 첫 실패 해설 카드 ----------
+  var exCv = $('exCv'), exCtx = exCv.getContext('2d');
+  function openExplain(rec, t) {
+    freeze(t); G.mode = 'explain';
+    if (G.ctl) G.ctl.cancel();
+    Sound.aimEnd();
+    var W = Math.max(220, Math.min(L.SW - 40, 360)), H = Math.round(W * 0.72);
+    exCv.width = Math.round(W * dpr); exCv.height = Math.round(H * dpr); exCv.style.width = W + 'px'; exCv.style.height = H + 'px';
+    G.explain = { rec: rec, kind: rec.kind, W: W, H: H, at: now(), lockUntil: now() + 800 };
+    $('explain').hidden = false; $('exLock').toggleAttribute('hidden', false); $('exTap').toggleAttribute('hidden', true);
+    $('exFinger').toggleAttribute('hidden', rec.kind !== 'wither');
+    hideTags(); $('ready').hidden = true; $('keys').hidden = true;
+    explainFrame();
+  }
+  function explainFrame() {
+    var ex = G.explain; if (!ex) return;
+    var rec = ex.rec, W = ex.W, H = ex.H, tt = (now() - ex.at) / 1000, rm = reduced();
+    exCtx.setTransform(dpr, 0, 0, dpr, 0, 0); exCtx.clearRect(0, 0, W, H);
+    exCtx.fillStyle = P.well; exCtx.fillRect(0, 0, W, H);
+    var tag = $('exTag'), anchor = null, lockK = Math.min(1, (now() - ex.at) / 800);
+    if (rec.kind === 'miss') {
+      var rk = rm ? 0 : Dr.EASE.inOut((tt - 0.6) / 0.8);
+      anchor = Dr.drawExplainMiss(exCtx, P, W, H, rec.theta, rec.phi, rk, rm);
+      if (!rm && tt > 1.4 && tt < 1.6) { exCtx.save(); exCtx.globalAlpha = 0.35 * (1 - (tt - 1.4) / 0.2); exCtx.fillStyle = P.perfect; exCtx.fillRect(0, 0, W, H); exCtx.restore(); }
+      $('exNum').textContent = fmtAng(rec.e); $('exU').textContent = '°'; $('exTagIc').toggleAttribute('hidden', true); tag.toggleAttribute('hidden', rk >= 1);
+    } else if (rec.kind === 'rot') {
+      var o = Dr.drawExplainRot(exCtx, P, W, H, rec.u, rec.alpha, rec.phi, rec.B, E.brownSeg);
+      anchor = [o.deep[0] + 26, o.deep[1] + 20];
+      $('exNum').textContent = fmtDepth(rec.s - rec.u); $('exU').textContent = 'mm'; $('exTagIc').toggleAttribute('hidden', false); tag.toggleAttribute('hidden', false);
+    } else {
+      var c = (tt % 1.2) / 1.2, cutK = 0;
+      if (!rm) { var dragging = !!rec.wasDragging, g = $('exFingerG'), fx = 0, fy = 0, op = 1;
+        if (dragging) { fx = 40; if (c > 0.35 && c < 0.6) { fy = -8 * (c - 0.35) / 0.25; op = 1 - (c - 0.35) / 0.4; } else if (c >= 0.6) { fy = -8; op = 0.35; } cutK = c > 0.35 && c < 0.55 ? 1 - (c - 0.35) / 0.2 : 0; }
+        else { fx = Math.min(1, c / 0.4) * 40; if (c > 0.45 && c < 0.7) { fy = -8 * (c - 0.45) / 0.25; op = 1 - (c - 0.45) / 0.4; } else if (c >= 0.7) { fy = -8; op = 0.35; } cutK = c > 0.45 && c < 0.65 ? 1 - (c - 0.45) / 0.2 : 0; }
+        g.setAttribute('transform', 'translate(' + (8 + fx).toFixed(1) + ' ' + fy.toFixed(1) + ')'); g.setAttribute('opacity', op.toFixed(2)); }
+      Dr.drawExplainWither(exCtx, P, W, H, cutK);
+      tag.toggleAttribute('hidden', true);
+    }
+    if (anchor) { var tw = tag.offsetWidth || 50, th = tag.offsetHeight || 26; tag.style.transform = 'translate(' + Math.round(Dr.clamp(anchor[0] - tw / 2, 2, W - tw - 2)) + 'px,' + Math.round(Dr.clamp(anchor[1] - th / 2, 2, H - th - 2)) + 'px)'; }
+    var arc = $('exLockArc'), Lc = 2 * Math.PI * 9; arc.setAttribute('stroke-dasharray', (Lc * lockK).toFixed(1) + ' ' + Lc.toFixed(1));
+    if (lockK >= 1) { $('exLock').toggleAttribute('hidden', true); $('exTap').toggleAttribute('hidden', false); }
+  }
+  function closeExplain() {
+    var ex = G.explain; if (!ex || G.mode !== 'explain') return;
+    if (now() < ex.lockUntil) return;
+    G.explain = null; $('explain').hidden = true;
+    var t = G.frozenT; G.mode = 'run'; unfreeze(); G.run.closeExplain(t);
+  }
+  $('explain').addEventListener('pointerdown', function (e) { e.preventDefault(); Sound.unlock(); });
+  $('explain').addEventListener('click', function () { closeExplain(); });
+
+  // ---------- 매 프레임 ----------
+  function hintsNow(tg) {
+    var run = G.run, h = { ghost: false, parallel: false, brownPulse: 0, brownX: 0, brownX2: 0, finger: !!G.hint.finger };
+    if (!run || run.seg < 1) return h;
+    var p = run.phase, k = run.seg, act = p === 'pre' || p === 'aim';
+    h.ghost = k <= 2 && act;
+    if (k <= 3 && act) { var e = Math.abs(G.ctl.knifeAt(tg) - run.theta); h.parallel = e <= run.row.P + 1e-9; }
+    if (k === 4 && act) {
+      var ts = tg - G.segStartT;
+      if (ts < 0.8) h.brownPulse = Math.sin(Math.PI * ((ts / 0.4) % 1));
+      if (ts < 1.0) h.brownX = ts < 0.8 ? 1 : (1 - ts) / 0.2;
+      if (p === 'aim') {
+        var tau = tg - run.aimStart, half = run.row.T / 2;
+        if (!G.hint.brownChecked && tau >= half) { G.hint.brownChecked = true; var sc = run.scionAt(half); if (E.brownSeg(sc.u, sc.alpha, G.ctl.knifeAt(tg)).seg) G.hint.brownX2Until = half + 0.6; }
+        if (tau < G.hint.brownX2Until) h.brownX2 = 1;
+      }
+    }
+    return h;
+  }
+  function perFrame(tg) {
+    var run = G.run, ctl = G.ctl;
+    ctl.update(tg);
+    run.advanceTo(tg);
+    if (G.mode !== 'run') return;
+    var p = run.phase;
+    // 하늘색 보간
+    var v = G.vis, sk = (tg - v.skyAt) / 0.6; v.skyCm = sk >= 1 ? v.skyTo : v.skyAt < -1e8 ? v.skyCm : Dr.lerp(v.skyFrom, v.skyTo, Math.max(0, sk));
+    // 무입력 힌트 (첫 판, 1~10마디, 겨누기 절반)
+    if (p === 'aim' && !G.seen && !G.auto && run.seg <= 10 && !G.hint.idleShown && !G.hint.finger) {
+      var tau = tg - run.aimStart;
+      if (tau >= run.row.L / 2 && ctl.lastInputT < G.segStartT - 1e-6 && !ctl.dragging) { G.hint.idleShown = true; G.hint.finger = { at: now() / 1000, dir: Math.round(run.theta), once: true, fade: 1 }; }
+    }
+    if (G.hint.finger && G.hint.finger.once && now() / 1000 - G.hint.finger.at > 1.45) G.hint.finger = null;
+    if (G.hint.finger && p !== 'pre' && p !== 'aim' && !G.hint.finger.once) G.hint.finger = null;
+    // 말라 감: 남은 1초
+    if (p === 'aim' && G.droopSeg !== run.seg && tg - run.aimStart >= run.row.L - 1) { G.droopSeg = run.seg; Sound.play('droop'); }
+    // 평행 빛 소리 (1~3마디만)
+    var hn = hintsNow(tg);
+    if (hn.parallel && !G.prevPar && run.seg <= 3) Sound.play('align');
+    G.prevPar = hn.parallel;
+    if (p === 'pre' || p === 'aim' || p === 'judge' || p === 'grow' || p === 'fall') Sound.aim(ctl.knifeAt(tg));
+    if (p !== 'ending' && p !== 'result') updateTop(false);
+  }
+  function frame() {
+    requestAnimationFrame(frame);
+    var tn = now();
+    syncClock(tn);
+    if (G.mode === 'resume' && tn >= G.resumeAt) { G.mode = 'run'; unfreeze(); }
+    if (G.mode === 'run' && G.run) perFrame(gameNow());
+    if (G.mode === 'menu') Demo.frame(tn);
+    if (document.hidden) return;
+    if (G.mode === 'explain') { explainFrame(); return; }
+    if (G.mode === 'paused' || G.mode === 'result' || G.mode === 'menu') return;
+    draw();
+  }
+
+  var tagEl = $('tag'), floatEl = $('floatn'), budEl = $('budTag');
+  function hideTags() { tagEl.hidden = true; floatEl.hidden = true; budEl.hidden = true; }
+  function placeEl(el, x, y, a, sc) {
+    var w = el.offsetWidth, h = el.offsetHeight;
+    x = Dr.clamp(x, 4, L.SW - w - 4); y = Dr.clamp(y - h / 2, 4, L.SH - h - 4);
+    el.style.opacity = String(Dr.clamp(a, 0, 1));
+    el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)' + (sc != null && sc !== 1 ? ' scale(' + sc.toFixed(3) + ')' : '');
+  }
+  function draw() {
+    if (!L) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var run = G.run;
+    if (!run) { ctx.fillStyle = P.well; ctx.fillRect(0, 0, L.SW, L.SH); return; }
+    var tg = gameNow();
+    if (G.mode === 'paused') { ctx.fillStyle = P.well; ctx.fillRect(0, 0, L.SW, L.SH); return; }
+    var hn = hintsNow(tg), rm = reduced();
+    var readyLike = run.phase === 'ready' || run.phase === 'prep' || G.mode === 'resume';
+    var out = Scene.draw(ctx, P, L, run, G.ctl, tg, G.vis, { reduced: rm, real: now() / 1000, hints: hn, finger: G.hint.finger, readyZone: readyLike });
+    // 꼬리표·떠오르는 숫자 (DOM, 숫자·아이콘만)
+    if (out.tag && out.tag.a > 0) {
+      var tk = out.tag.kind;
+      tagEl.classList.toggle('plain', tk === 'wither');
+      $('tagIc').toggleAttribute('hidden', tk === 'miss');
+      $('tagIc').querySelector('use').setAttribute('href', tk === 'wither' ? '#icHour' : '#icRotSq');
+      $('tagNum').textContent = tk === 'miss' ? fmtAng(out.tag.e) : tk === 'rot' ? fmtDepth(out.tag.depth) : '';
+      $('tagU').textContent = tk === 'miss' ? '°' : tk === 'rot' ? 'mm' : '';
+      tagEl.hidden = false; placeEl(tagEl, out.tag.x, out.tag.y, out.tag.a);
+    } else tagEl.hidden = true;
+    if (out.float && out.float.a > 0) {
+      $('floatNum').textContent = '+' + fmt1(out.float.mm / 10); floatEl.classList.toggle('dim', !!out.float.dim);
+      floatEl.hidden = false; placeEl(floatEl, out.float.x, out.float.y, out.float.a);
+    } else floatEl.hidden = true;
+    if (out.bud && out.bud.a > 0) { budEl.hidden = false; placeEl(budEl, out.bud.x, out.bud.y + 26, out.bud.a, out.bud.sc); } else budEl.hidden = true;
+    // 준비 고리
+    var rd = $('ready');
+    if (readyLike && G.mode !== 'paused') {
+      var left, tot;
+      if (G.mode === 'resume') { left = Math.max(0, (G.resumeAt - now()) / 1000); tot = 1; }
+      else if (run.phase === 'ready') { left = Math.max(0, run.readyDur - (tg - run.pt)); tot = run.readyDur; }
+      else { left = Math.max(0, DUR.prep - (tg - run.pt)); tot = DUR.prep; }
+      rd.hidden = false;
+      rd.style.transform = 'translate(' + Math.round(L.zone.x + L.zone.w / 2 - 28) + 'px,' + Math.round(L.zone.y + L.zone.h / 2 - 28) + 'px)';
+      var Lc = 2 * Math.PI * 25; $('readyArc').setAttribute('stroke-dasharray', (Lc * left / tot).toFixed(1) + ' ' + Lc.toFixed(1));
+      $('readyNum').textContent = String(Math.max(1, Math.ceil(left - 1e-6)));
+    } else rd.hidden = true;
+    // 키보드·마우스 기기: 손가락 힌트와 같이 키캡
+    var keys = $('keys');
+    if (G.hint.finger && FINE.matches && !G.hint.finger.once) {
+      keys.hidden = false;
+      keys.style.transform = 'translate(' + Math.round(L.zone.x + 12) + 'px,' + Math.round(L.zone.y + 10) + 'px)';
+    } else keys.hidden = true;
+  }
+
+  // ---------- 결과 ----------
+  function showResult() {
+    var run = G.run, r = run.result();
+    G.lastResult = r; G.mode = 'result'; freeze();
+    Sound.aimEnd();
+    var best = readBest(), isNew = best == null || r.mm > best;
+    if (isNew) { lsSet(KEY.best, String(r.mm)); }
+    r.best = isNew ? r.mm : best; r.isNew = isNew && r.mm > 0;
+    G.seen = true; lsSet(KEY.seen, '1');
+    hideTags(); $('ready').hidden = true; $('keys').hidden = true;
+    $('ovResult').hidden = false;
+    paintResult(r);
+    var lbSlot = $('lbSlot'); lbSlot.innerHTML = '';
+    try { window.Leaderboard && Leaderboard.report({ game: 'cactus-graft', score: Math.floor(r.mm), eligible: true, reason: '', slot: lbSlot }); } catch (e) {}
+    G.resultLockUntil = now() + 800;
+    ['againBtn', 'menuBtn'].forEach(function (id) { $(id).disabled = true; });
+    setTimeout(function () { ['againBtn', 'menuBtn'].forEach(function (id) { $(id).disabled = false; }); if (!$('ovResult').hidden && FINE.matches) $('againBtn').focus({ preventScroll: true }); }, 800);
+    setTimeout(function () { if (G.mode === 'result') Sound.play(r.isNew ? 'record' : 'result'); }, 200);
+    live('결과: 키 ' + cmStr(r.mm) + '센티미터, ' + r.segReached + '마디');
+  }
+  function paintResult(r) {
+    $('rH').textContent = cmStr(r.mm);
+    var re = $('rEnd'), html = '';
+    if (r.end === 'finish') html = '<svg aria-hidden="true"><use href="#icFlower"/></svg><span class="num">30/30</span><span class="gd">· <span class="num">+' + fmt1(r.flowerMm / 10) + '</span> cm</span><span class="why">30마디 완주 · 꽃</span>';
+    else if (r.end === 'tilt') html = '<svg aria-hidden="true"><use href="#icLevel"/></svg><span class="num">' + r.segReached + '/30</span><span>· <span class="num">' + fmt1(Math.abs(r.tiltFinal)) + '</span>°</span><span class="why">탑이 기울어 쓰러짐</span>';
+    else html = '<span style="display:inline-flex;gap:2px;color:var(--muted)">' + [0, 1, 2].map(function () { return '<svg aria-hidden="true" style="fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:3 2.4"><use href="#icHeart"/></svg>'; }).join('') + '</span><span class="num">' + r.segReached + '/30</span><span class="why">실패 3번</span>';
+    re.innerHTML = html;
+    $('newRec').hidden = !r.isNew;
+    $('cPerf').textContent = r.perfect; $('cGood').textContent = r.good;
+    var nf = r.fails.miss + r.fails.rot + r.fails.wither; $('cFail').textContent = nf; $('cFailW').hidden = nf === 0;
+    $('sAng').textContent = r.avgAngleErr == null ? '-' : fmt1(r.avgAngleErr);
+    $('sMar').textContent = r.avgMargin == null ? '-' : fmt1(r.avgMargin);
+    var w = r.worst, wt = '';
+    if (w) {
+      if (r.end === 'finish') wt = '<span class="num">' + w.seg + '</span>마디 — <span class="num">' + fmt1(w.h) + '</span>mm 붙음 · 갈색까지 <span class="num">' + fmt1(w.margin) + '</span>mm 남김';
+      else if (r.end === 'tilt') wt = '<span class="num">' + w.seg + '</span>마디 ' + KIND_KO[w.kind] + ' — <span class="num">' + fmtAng(w.e || 0) + '</span>° 비뚤게' + (w.kind === 'good' ? ' 붙어' : '') + ' 탑이 <span class="num">' + fmt1(Math.abs(w.tiltAfter)) + '</span>° 기욺';
+      else wt = '<span class="num">' + w.seg + '</span>마디 ' + KIND_KO[w.kind] + (w.kind === 'rot' ? ' — 갈색에 <span class="num">' + fmtDepth(w.depth) + '</span>mm' : w.kind === 'miss' ? ' — <span class="num">' + fmtAng(w.e) + '</span>° 비뚤게' : '');
+    }
+    $('worstTxt').innerHTML = wt; $('worst').hidden = !w;
+    $('worst').style.borderLeftColor = w ? (w.kind === 'perfect' ? 'var(--body)' : w.kind === 'good' ? 'var(--good)' : w.kind === 'miss' ? 'var(--warn)' : w.kind === 'rot' ? 'var(--rot)' : 'var(--dry)') : '';
+    var rl = $('recLine');
+    rl.innerHTML = '<svg aria-hidden="true"><use href="#icRuler"/></svg>최고 <b class="num">' + cmStr(r.best || 0) + '</b>cm';
+    requestAnimationFrame(function () { drawMini(r); drawStrip(r); drawWorst(r); });
+  }
+  function drawMini(r) {
+    var c = $('miniCv'); if (document.body.classList.contains('low')) return;
+    var w = 96, h = 160, x = c.getContext('2d'), run = G.run;
+    c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var sky = Dr.skyFor(P, (r.mm - r.flowerMm) / 10), g = x.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    x.fillStyle = P.sand; x.fillRect(0, h - 12, w, 12);
+    var tm = Scene.towerModel(run, run.t, G.vis), Lm = { mm: L.mm, r: L.r, SH: h, Kx: w / 2, Sy: 0 };
+    var Hpx = (Dr.BASE_MM + tm.Hvis) * L.mm, potH = L.r * 2.3, fin = r.end === 'finish';
+    var tilt = fin ? 0 : (r.tiltFinal >= 0 ? 75 : -75), sc;
+    if (fin) sc = Math.min(1, (h - 16) / (Hpx + potH + L.r * 3.6));
+    else sc = Math.min(1, (w - 12) / (Hpx * Math.sin(75 * Math.PI / 180) + L.r * 4.2 * 0.5), (h - 20) / (potH + L.r * 2));
+    var bx = fin ? w / 2 : (tilt > 0 ? w - 12 - L.r * 2.1 * sc : 12 + L.r * 2.1 * sc), by = h - 6 - potH * sc;
+    var T = Dr.drawTower(x, P, Lm, { tilt: tilt, segs: tm.segs.map(function (s) { return Object.assign({}, s, { dome: s.dome }); }), baseRel: tm.baseRel, baseDome: tm.baseDome }, { bx: bx, by: by, scale: sc });
+    if (fin) Dr.drawFlower(x, P, T.topX, T.topY, T.r * 1.8, 1);
+  }
+  function drawStrip(r) {
+    var c = $('strip'), W = c.clientWidth || 300, H = c.clientHeight || 64, x = c.getContext('2d');
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W, H);
+    var lab = H >= 56 ? 12 : 0, bh = H - lab - 6, gap = 2, cw = (W - gap * 29) / 30, cnt = { perfect: 0, good: 0, miss: 0, rot: 0, wither: 0 };
+    var worstSeg = r.worst ? r.worst.seg : -1;
+    for (var i = 0; i < 30; i++) {
+      var s = r.strip[i], x0 = i * (cw + gap), base = bh + 4;
+      if (!s) { x.fillStyle = P.grid; x.fillRect(x0, base - 1, cw, 1); continue; }
+      cnt[s.kind]++;
+      var hh;
+      if (s.kind === 'perfect' || s.kind === 'good') {
+        hh = Math.max(6, bh * Math.min(1, s.added / 80)); x.fillStyle = s.kind === 'perfect' ? P.body : P.good; x.fillRect(x0, base - hh, cw, hh);
+        if (s.kind === 'perfect') { x.fillStyle = P.perfect; x.beginPath(); x.arc(x0 + cw / 2, base - hh, Math.min(2, cw / 3), 0, 7); x.fill(); }
+        else { x.strokeStyle = P.dryEdge; x.lineWidth = 1.2; x.beginPath(); x.moveTo(x0, base - hh + Math.min(4, cw)); x.lineTo(x0 + cw, base - hh); x.stroke(); }
+        if (s.bonus) { x.fillStyle = P.bud; x.strokeStyle = P.edge; x.lineWidth = 1; x.beginPath(); x.arc(x0 + cw / 2, base - hh - 5, Math.min(2.5, cw / 2.5), 0, 7); x.fill(); x.stroke(); }
+      } else if (s.kind === 'miss') {
+        x.fillStyle = P.warn; x.fillRect(x0, base - 6, cw, 6);
+        x.strokeStyle = P.warn; x.lineWidth = 1.2; x.beginPath(); x.moveTo(x0, base - 9); x.lineTo(x0 + cw, base - 9); x.lineTo(x0 + cw, base - 9 - Math.min(5, cw * 0.6)); x.stroke();
+      } else if (s.kind === 'rot') {
+        x.fillStyle = P.rot; x.fillRect(x0, base - 10, cw, 10);
+        x.save(); x.beginPath(); x.rect(x0, base - 10, cw, 10); x.clip(); x.strokeStyle = P.rotHatch; x.lineWidth = 1.2; for (var q = -10; q < cw; q += 4) { x.beginPath(); x.moveTo(x0 + q, base); x.lineTo(x0 + q + 10, base - 10); x.stroke(); } x.restore();
+      } else { x.strokeStyle = P.dry; x.lineWidth = 1.2; x.setLineDash([2, 2]); x.strokeRect(x0 + 0.6, base - bh * 0.5, cw - 1.2, bh * 0.5 - 0.6); x.setLineDash([]); }
+      if (i + 1 === worstSeg) { x.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e4572e'; x.lineWidth = 2; x.strokeRect(x0 - 1, 1, cw + 2, base); }
+      if (G.flashSeg === i + 1) { x.fillStyle = 'rgba(228,87,46,.25)'; x.fillRect(x0 - 1, 0, cw + 2, base + 1); }
+    }
+    if (lab) { x.fillStyle = P.muted; x.font = '10px system-ui, -apple-system, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'bottom'; [10, 20, 30].forEach(function (n) { x.fillText(String(n), (n - 1) * (cw + gap) + cw / 2, H); }); }
+    c.setAttribute('aria-label', '마디 띠: 완벽 ' + cnt.perfect + ', 좋음 ' + cnt.good + ', 어긋남 ' + cnt.miss + ', 무름 ' + cnt.rot + ', 말라 버림 ' + cnt.wither);
+  }
+  function drawWorst(r) {
+    var c = $('worstCv'), W = 120, H = 72, x = c.getContext('2d'), w = r.worst; if (!w) return;
+    c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.fillStyle = P.well; x.fillRect(0, 0, W, H);
+    if (r.end === 'tilt') {
+      var lg = r.tiltLog, n = lg.length, mx = W - 8;
+      x.strokeStyle = P.grid; x.lineWidth = 1; x.beginPath(); x.moveTo(4, H / 2); x.lineTo(W - 4, H / 2); x.stroke();
+      x.strokeStyle = P.warn; x.setLineDash([3, 3]); [10, -10].forEach(function (v) { var y = H / 2 - v * (H / 2 - 6) / 11; x.beginPath(); x.moveTo(4, y); x.lineTo(W - 4, y); x.stroke(); }); x.setLineDash([]);
+      x.strokeStyle = P.ink; x.lineWidth = 2; x.beginPath(); lg.forEach(function (v, i) { var px = 4 + (n > 1 ? i / (n - 1) : 0) * mx, py = H / 2 - Dr.clamp(v, -11, 11) * (H / 2 - 6) / 11; if (i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke();
+    } else if (w.kind === 'miss') Dr.drawExplainMiss(x, P, W, H, w.theta, w.phi, 0, false);
+    else if (w.kind === 'rot') Dr.drawExplainRot(x, P, W, H, w.u, w.alpha, w.phi, w.B, E.brownSeg);
+    else if (w.kind === 'wither') Dr.drawExplainWither(x, P, W, H, 0);
+    else {   // 완주: 가장 짧게 붙은 마디 — 칼선과 갈색 경계 사이 여유
+      var m = H / 64, L2 = { Kx: W / 2, Ky: H * 0.4, mm: m, r: 18 * m };
+      Dr.drawScion(x, P, L2, { u: w.u, alpha: 0, B: w.B }, { noClamp: true });
+      x.strokeStyle = P.knife; x.lineWidth = 2.5; x.beginPath(); var a = Dr.cv(w.phi - w.alpha); x.moveTo(L2.Kx - Math.cos(a) * 26 * m, L2.Ky - Math.sin(a) * 26 * m); x.lineTo(L2.Kx + Math.cos(a) * 26 * m, L2.Ky + Math.sin(a) * 26 * m); x.stroke();
+      x.strokeStyle = P.ok; x.lineWidth = 2; x.beginPath(); x.moveTo(L2.Kx + L2.r + 6, L2.Ky); x.lineTo(L2.Kx + L2.r + 6, L2.Ky + w.u * m); x.stroke();
+    }
+  }
+  function flashWorst() { var r = G.lastResult; if (!r || !r.worst || $('ovResult').hidden) return; G.flashSeg = r.worst.seg; drawStrip(r); clearTimeout(G.flashT); G.flashT = setTimeout(function () { G.flashSeg = null; if (G.lastResult) drawStrip(G.lastResult); }, 400); }
+  $('worst').addEventListener('pointerenter', flashWorst);
+  $('worst').addEventListener('click', flashWorst);
+
+  function again() { if (now() < G.resultLockUntil) return; beginFromButton(); }
+  function toMenu() {
+    Sound.unlock(); Sound.play('button');
+    if (G.mode !== 'result') Sound.stopAmbient();
+    Sound.setPaused(false); Sound.aimEnd();
+    G.mode = 'menu'; G.run = null; G.ctl = null; G.explain = null; freeze(0);
+    ['ovResult', 'ovPause'].forEach(function (id) { $(id).hidden = true; });
+    $('explain').hidden = true; hideTags(); $('ready').hidden = true; $('keys').hidden = true;
+    showStart();
+  }
+  function showStart() {
+    var best = readBest();
+    $('bestLine').hidden = best == null; if (best != null) $('bestNum').textContent = cmStr(best);
+    $('ovStart').hidden = false;
+    G.lastHText = ''; $('hNum').textContent = '0.0'; $('segNum').textContent = '1/30'; $('segChip').classList.add('learn');
+    Array.prototype.forEach.call($('hearts').children, function (h) { h.classList.remove('lost'); });
+    Demo.start();
+  }
+
+  // ---------- 버튼 ----------
+  function syncMute() {
+    var m = Sound.isMuted();
+    document.querySelectorAll('.icoOn').forEach(function (el) { el.toggleAttribute('hidden', m); });
+    document.querySelectorAll('.icoOff').forEach(function (el) { el.toggleAttribute('hidden', !m); });
+    ['muteBtn', 'pMute'].forEach(function (id) { $(id).setAttribute('aria-pressed', m ? 'true' : 'false'); $(id).setAttribute('aria-label', m ? '소리 켜기' : '소리 끄기'); });
+  }
+  function toggleMute() { Sound.unlock(); Sound.setMuted(!Sound.isMuted()); syncMute(); }
+  $('muteBtn').addEventListener('click', function () { toggleMute(); this.blur(); });
+  $('pMute').addEventListener('click', function () { toggleMute(); });
+  $('pauseBtn').addEventListener('click', function () {
+    Sound.unlock(); this.blur();
+    if (G.mode === 'paused') { Sound.play('button'); resumeGame(); }
+    else if (G.mode === 'run' || G.mode === 'resume') { Sound.play('button'); pauseGame('button'); }
+  });
+  ['muteBtn', 'pauseBtn', 'startBtn', 'againBtn', 'menuBtn', 'resumeBtn', 'restartBtn'].forEach(function (id) { $(id).addEventListener('pointerdown', function (e) { if (id === 'muteBtn' || id === 'pauseBtn') e.preventDefault(); }); });
+  $('startBtn').addEventListener('click', function () { this.blur(); beginFromButton(); });
+  $('resumeBtn').addEventListener('click', function () { Sound.unlock(); Sound.play('button'); resumeGame(); });
+  $('restartBtn').addEventListener('click', function () { Sound.unlock(); Sound.setPaused(false); $('ovPause').hidden = true; Sound.stopAmbient(); beginFromButton(); });
+  $('againBtn').addEventListener('click', function () { again(); });
+  $('menuBtn').addEventListener('click', function () { if (now() >= G.resultLockUntil) toMenu(); });
+  $('demoPlay').addEventListener('click', function () { Demo.play(); });
+
+  function live(t) { var l = $('live'); l.textContent = ''; setTimeout(function () { l.textContent = t; }, 30); }
+
+  // ---------- 시작 화면 데모 (엔진에 고정 입력을 시각 그대로 주입, 소리 없음) ----------
+  var Demo = (function () {
+    var dcv = $('demoCv'), dctx = dcv.getContext('2d'), VW = 360, VH = 324, DL = Dr.layout(VW, VH), dw = 360, script = E.demoScript();
+    var run = null, ctl = null, vis = null, t0 = 0, idx = 0, running = false, playing = false, results = [], fing = { x: 0, y: 0, pressed: false, a: 0, upAt: -1 }, doneAt = -1;
+    function reset() {
+      run = new E.Run({ seed: script.seed, faces: script.faces, rows: script.rows, nSeg: script.nSeg, readyDur: script.readyDur, demo: true });
+      ctl = new E.Ctl(run, {});
+      run.hooks.segStart = function (r, t) { ctl.segReset(t); };
+      vis = { crumbs: [], skyCm: 0, skipTrim1: true, ripple: null };
+      idx = 0; results = []; doneAt = -1; fing = { x: script.inputs[0].x, y: script.inputs[0].y, pressed: false, a: 0, upAt: -1 };
+    }
+    function resize(w) { dw = w; dcv.width = Math.round(w * dpr); dcv.height = Math.round(w * 0.9 * dpr); if (!running || !playing) paint(0, now()); }
+    function start() { reset(); running = true; playing = !reduced(); t0 = now(); $('demoPlay').hidden = playing; paint(0, now()); }
+    function stop() { running = false; }
+    function play() { reset(); playing = true; t0 = now(); $('demoPlay').hidden = true; }
+    function step(t) {
+      var ins = script.inputs;
+      while (idx < ins.length && ins[idx].t <= t) {
+        var ev = ins[idx++]; run.advanceTo(ev.t); ctl.update(ev.t);
+        if (ev.type === 'down') { ctl.down(ev.x, ev.y, ev.t, 1); fing.pressed = true; fing.a = 1; vis.ripple = { x: ev.x, y: ev.y, at: ev.t }; }
+        else if (ev.type === 'move') ctl.move(ev.x, ev.y, ev.t, 1);
+        else if (ev.type === 'up') { var rec = ctl.up(ev.x, ev.y, ev.t, 1); fing.pressed = false; fing.upAt = ev.t; if (rec) results.push(rec.kind); }
+        fing.x = ev.x; fing.y = ev.y;
+      }
+      run.advanceTo(t); ctl.update(t);
+      if (run.over && doneAt < 0) doneAt = t;
+    }
+    function frame(tn) {
+      if (!running || $('ovStart').hidden) return;
+      if (!playing) return;
+      var t = (tn - t0) / 1000;
+      step(t);
+      if (doneAt >= 0 && t - doneAt > 1.2) { reset(); t0 = tn; t = 0; }
+      paint(t, tn);
+    }
+    function paint(t, tn) {
+      if (!run) reset();
+      dctx.setTransform(dpr * dw / VW, 0, 0, dpr * dw / VW, 0, 0);
+      // 손가락: 다음 누름 0.3초 전에 나타나고, 뗀 뒤 0.4초 동안 들리며 사라짐
+      var ins = script.inputs, nx = null;
+      for (var i = idx; i < ins.length; i++) if (ins[i].type === 'down') { nx = ins[i]; break; }
+      var df = null;
+      if (fing.pressed) df = { x: fing.x, y: fing.y, pressed: true, a: 0.95 };
+      else if (fing.upAt >= 0 && t - fing.upAt < 0.4) df = { x: fing.x, y: fing.y - 12 * (t - fing.upAt) / 0.4, pressed: false, a: 0.95 * (1 - (t - fing.upAt) / 0.4) };
+      else if (nx && nx.t - t < 0.3) df = { x: nx.x, y: nx.y, pressed: false, a: 0.95 * (1 - Math.max(0, nx.t - t) / 0.3) };
+      var hn = { ghost: run.seg >= 1 && run.seg <= 2 && (run.phase === 'pre' || run.phase === 'aim'), parallel: false };
+      if (run.seg >= 1 && run.seg <= 3 && (run.phase === 'pre' || run.phase === 'aim')) hn.parallel = Math.abs(ctl.knifeAt(t) - run.theta) <= run.row.P + 1e-9;
+      var vr = { crumbs: [], skyCm: 0, skipTrim1: true, ripple: vis.ripple ? { x: vis.ripple.x, y: vis.ripple.y, at: vis.ripple.at } : null };
+      Scene.draw(dctx, P, DL, run, ctl, t, vr, { reduced: false, real: t, hints: hn, demoFinger: df });
+      // 아래 그림 3칸 강조
+      var s = run.seg, ph = run.phase, cur = run.cur, lastUp = fing.upAt;
+      $('cap1').classList.toggle('on', s >= 1 && s <= 2 && ph !== 'result');
+      $('cap2').classList.toggle('on', lastUp >= 0 && t - lastUp < 0.6 && cur && (cur.seg === 1 || cur.seg === 2 || cur.seg === 4));
+      $('cap3').classList.toggle('on', s === 5 && ph !== 'result');
+    }
+    return { resize: resize, start: start, stop: stop, play: play, frame: frame, results: function () { return results.slice(); }, script: function () { return script; } };
+  })();
+
+  // ---------- 테스트 훅 (QA 전용) ----------
+  function ensureRun(seed) { if (G.mode === 'menu' || !G.run || G.mode === 'result') startGame({ seed: seed }); }
+  function skipReady() { if (G.run && G.run.phase === 'ready' && G.clockOn) { var tg = gameNow(); G.origin -= (G.run.readyDur - tg) * 1000 + 1; perFrame(gameNow()); } }
+  window.__graft = {
+    state: function () {
+      var run = G.run, ctl = G.ctl;
+      if (!run) return { phase: G.mode === 'menu' ? 'menu' : G.mode, seed: G.seed, results: [] };
+      var tg = gameNow(), tau = run.phase === 'aim' ? tg - run.aimStart : null, sc = run.phase === 'aim' ? run.scionAt(tau) : null, knife = ctl.knifeAt(tg);
+      var s = sc ? E.sOf(knife, sc.alpha) : null, hn = hintsNow(tg);
+      var phase = G.mode === 'paused' ? 'paused' : G.mode === 'resume' ? 'resume' : G.mode === 'explain' ? 'explain' : run.phase === 'pre' ? (tg - run.pt < DUR.trim ? 'trim' : 'enter') : run.phase === 'prep' ? 'resume' : run.phase;
+      return {
+        phase: phase, runPhase: run.phase, seed: run.seed, seg: run.seg, fails: run.fails, tilt: run.tilt, theta: run.theta, d: run.d, knife: knife, knifeRaw: ctl.dragging ? knife : ctl.keyRawAt(tg),
+        armed: ctl.armedAt(tg), dragging: ctl.dragging, tau: tau, L: run.row.L, u: sc ? sc.u : null, alpha: sc ? sc.alpha : null, s: s, margin: sc ? sc.u - s : null,
+        h: sc ? 80 - sc.u : null, Hmm: run.H(), mm: run.mm(), combo: run.combo, gameT: tg,
+        hints: { finger: !!G.hint.finger, ghostLine: hn.ghost, parallelGlow: hn.parallel, brownPulse: hn.brownPulse > 0 || hn.brownX > 0 },
+        explaining: G.mode === 'explain' && G.explain ? G.explain.kind : null,
+        results: run.results.map(function (r) { return { seg: r.seg, kind: r.kind, phi: r.phi, theta: r.theta, e: r.e, u: r.u, alpha: r.alpha, s: r.s, margin: r.margin, h: r.h, added: r.added, bonus: r.bonus, tiltBefore: r.tiltBefore, tiltAfter: r.tiltAfter, tau: r.tau }; })
+      };
+    },
+    params: function (seg) { return E.params(seg); },
+    faces: function (seed) { return E.faces(seed >>> 0); },
+    scionAt: function (seg, tau) { var f = G.run ? G.run.faces : E.faces(0); return E.scion(E.params(seg), f[seg - 1].sway, tau); },
+    judge: function (o) { var j = E.judgeRow(E.params(o.seg), o.phi, o.theta, o.u, o.alpha || 0); return { kind: j.kind, e: j.e, s: j.s, margin: j.margin, h: j.h, added: j.added }; },
+    start: function (o) { o = o || {}; Sound.unlock(); startGame({ seed: o.seed }); return G.seed; },
+    skipReady: skipReady,
+    gotoSeg: function (k, o) {
+      o = o || {}; ensureRun(o.seed); if (G.mode !== 'run') return;
+      skipReady();
+      var run = G.run, t = gameNow();
+      if (o.tilt != null) run.tilt = o.tilt; if (o.fails != null) run.fails = o.fails; if (o.combo != null) run.combo = o.combo;
+      run.end = null; G.ctl.cancel(); run.startSeg(k, t); updateTop(true);
+    },
+    pointer: function (type, x, y, tMs) {
+      var ts = tMs != null ? tMs : now();
+      if (type === 'down') return ptrDown(x, y, ts, 'hook');
+      if (type === 'move') return ptrMove(x, y, ts, 'hook');
+      if (type === 'up') { var r = ptrUp(x, y, ts, 'hook'); return r ? Object.assign({}, r) : null; }
+      if (type === 'cancel') return ptrCancel('hook');
+    },
+    key: function (code, kind, tMs) { var r = keyInput(code, kind || 'down', tMs != null ? tMs : now()); return r ? Object.assign({}, r) : null; },
+    previewAngle: function () { if (!G.ctl) return null; var t = gameNow(); return G.ctl.dragging ? G.ctl.angleAt(t) : G.ctl.knifeAt(t); },
+    cutNow: function (phi) {
+      var run = G.run; if (!run || G.mode !== 'run') return null;
+      skipReady();
+      if (run.phase !== 'aim') { var need = run.aimStart - gameNow(); if (run.phase === 'pre' && need > 0) { G.origin -= need * 1000 + 1; perFrame(gameNow()); } }
+      if (run.phase !== 'aim') return null;
+      G.ctl.cancel(); G.ctl.raw = phi; G.ctl.knife = E.clamp(E.rInt(phi), -35, 35);
+      var r = keyInput('Space', 'down', now()); return r ? Object.assign({}, r) : null;
+    },
+    simulate: function (o) { return E.simulate(o); },
+    runBots: function (o) { return E.runBots(o); },
+    demoScript: function () { return E.demoScript(); },
+    demoResults: function () { return Demo.results(); },
+    lastResult: function () { return G.lastResult ? JSON.parse(JSON.stringify(G.lastResult)) : null; },
+    pause: function () { pauseGame('key'); }, resume: function () { resumeGame(); },
+    closeExplain: function () { if (G.explain) G.explain.lockUntil = 0; closeExplain(); },
+    setTilt: function (v) { if (G.run) G.run.tilt = v; }, setFails: function (n) { if (G.run) { G.run.fails = n; updateTop(true); } },
+    clearStorage: function () { [KEY.best, KEY.seen, KEY.explained].forEach(lsDel); G.seen = false; },
+    setAuto: function (on) { G.auto = !!on; },
+    layout: function () { return L ? JSON.parse(JSON.stringify(L)) : null; },
+    stageRect: function () { var b = stage.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; }
+  };
+
+  // ---------- 시작 ----------
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 50); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  syncPalette(); syncMute();
+  layout();
+  showStart();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
